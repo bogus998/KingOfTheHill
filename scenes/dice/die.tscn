@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/dice/die_controller.gd" id="1_die"]
+
+[node name="Die" type="PanelContainer"]
+script = ExtResource("1_die")
+custom_minimum_size = Vector2(64, 64)
+
+[node name="FaceLabel" type="Label" parent="."]
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "1"

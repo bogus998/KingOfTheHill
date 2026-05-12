@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/dice/die.tscn" id="1_die"]
+[ext_resource type="Script" path="res://scripts/dice/dice_pool_controller.gd" id="2_pool"]
+
+[node name="DicePool" type="VBoxContainer"]
+script = ExtResource("2_pool")
+
+[node name="DiceContainer" type="HBoxContainer" parent="."]
+
+[node name="Die0" parent="DiceContainer" instance=ExtResource("1_die")]
+[node name="Die1" parent="DiceContainer" instance=ExtResource("1_die")]
+[node name="Die2" parent="DiceContainer" instance=ExtResource("1_die")]
+[node name="Die3" parent="DiceContainer" instance=ExtResource("1_die")]
+[node name="Die4" parent="DiceContainer" instance=ExtResource("1_die")]
+[node name="Die5" parent="DiceContainer" instance=ExtResource("1_die")]
+
+[node name="RollButton" type="Button" parent="."]
+text = "Roll"
