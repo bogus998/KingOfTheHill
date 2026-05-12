@@ -1,7 +1,46 @@
 # Dwarf King of the Hill — Godot 4 Implementation Plan
 
-> **First implementation step:** Copy this plan to `PLAN.md` in the project root at
-> `/Users/arturboguslawski/Bogus/Projects/Games/King of the hill (dwarfs)/PLAN.md`
+## Testing Approach
+
+Tests use the **GUT** (Godot Unit Testing) plugin — the standard Godot 4 unit testing framework.
+
+### Installation (one-time)
+1. Godot editor → **AssetLib** → search "Gut" → Download & Install
+   *(or download v9.x from https://github.com/bitwes/Gut/releases)*
+2. **Project → Project Settings → Plugins → Gut → Enable**
+3. A GUT panel appears at the bottom of the editor
+
+### Running tests
+| Goal | Action |
+|---|---|
+| Run all tests | GUT panel → **Run All** |
+| Run one file | GUT panel → select file → **Run** |
+| Run from FileSystem | Right-click test file → **Run Script** (Ctrl+Shift+F5) |
+| Headless / CI | `godot --headless -s res://addons/gut/gut_cmdln.gd` |
+
+### File structure
+```
+tests/
+  unit/
+    test_m1_player_manager.gd   ← M1: PlayerManager state & signals
+    test_m1_card_shop.gd        ← M1: CardShop deck, purchase, refresh
+    test_m2_turn_manager.gd     ← M2: phases, next_player, vault bonus, skip
+    test_m3_dice_resolver.gd    ← M3: DiceResolver pure logic
+    test_m3_dice_pool.gd        ← M3: DicePool roll & hold mechanics
+    ...one file per system per milestone...
+```
+
+### Rules
+- Test files named `test_*.gd`, located in `tests/unit/`
+- Each class `extends GutTest`
+- Each test method named `test_*` — **tests exactly one thing**
+- `before_each()` resets all relevant state; no test shares state with another
+- Use GUT assertions: `assert_eq`, `assert_true`, `assert_false`, `assert_signal_emitted`
+- `watch_signals(obj)` before the action to enable signal assertions
+- Test files are **excluded from game exports**
+- Production scripts contain **no test code**
+
+---
 
 ## Context
 Starting from an empty Godot 4 project (`project.godot` + `icon.svg` only). The game is a dice game similar to King of Tokyo: 2–4 players roll 6 dice up to 3 times per turn, resolve symbols (numbers→gold, gems, claws/attacks, hearts/heal), occupy a central Vault position, and buy cards with gems. First to 20 gold or last standing wins. Supports VS AI and Hot-Seat modes.
@@ -262,70 +301,123 @@ All Kenney assets are CC0 (no attribution required). itch.io packs vary — chec
 ## Verification (per milestone)
 
 ### M1 — Data Layer
-- [ ] Print player states on game start: names, HP=10, gold=0, gems=0, pos=OUTSIDE
-- [ ] Print loaded card deck size: 10 placeholder cards shuffled
-- [ ] `PlayerManager.apply_damage(0, 3)` → player 0 HP = 7, signal fired
-- [ ] `PlayerManager.add_gold(0, 20)` → triggers `check_win_conditions` → winner declared
-- [ ] `CardShop.purchase(0, 0)` → gems deducted, card added to player hand, slot replenished
+GUT files: `tests/unit/test_m1_player_manager.gd`, `tests/unit/test_m1_card_shop.gd`
+- [ ] Initial state: HP=10, gold=0, gems=0, pos=OUTSIDE for all players
+- [ ] `apply_damage` reduces HP, emits `player_damaged`, eliminates at 0
+- [ ] `apply_heal` restores HP (capped at 10, ignored at vault)
+- [ ] `add_gold` emits `gold_changed`; reaching 20 emits `win_condition_met`
+- [ ] `spend_gems` returns false and makes no deduction when insufficient
+- [ ] Last player standing emits `win_condition_met`
+- [ ] CardShop loads 10 cards; 3 visible; purchase deducts gems and replenishes slot
+- [ ] Refresh costs 2 gems and emits `shop_updated`
 
 ### M2 — Turn State Machine
-- [ ] Output shows: `DICE_ROLL → RESOLUTION → BUY_CARDS → END_TURN` per player turn
-- [ ] With 2 players: after END_TURN for player 0, turn switches to player 1
-- [ ] Eliminating player 1 → skipped in turn order
-- [ ] Vault bonus: if player 0 is AT_VAULT at turn start → +2 gold before DICE_ROLL
+GUT file: `tests/unit/test_m2_turn_manager.gd`
+- [ ] Starts at player 0, DICE_ROLL, roll_count=0
+- [ ] `advance_phase` steps DICE_ROLL → RESOLUTION → BUY_CARDS → END_TURN
+- [ ] `advance_phase` does nothing when `is_game_active` is false
+- [ ] `next_player` moves to player 1, resets phase to DICE_ROLL, resets roll_count
+- [ ] `next_player` wraps back to player 0 after all players have gone
+- [ ] Vault player receives +2 gold at the start of their turn
+- [ ] Eliminated player is skipped in turn order
+- [ ] Correct signals emitted: `phase_changed`, `turn_started`, `turn_ended`
 
 ### M3 — Dice System
-- [ ] Roll button → all 6 dice show random faces (labels update)
-- [ ] Click a die → held overlay appears; re-roll → held die unchanged, others reroll
-- [ ] After 3 rolls → Roll button disabled
-- [ ] DiceResolver: input `[1,1,1,2,3,⚡]` → gold=1, gems=1, claws=0, hearts=0
-- [ ] DiceResolver: input `[2,2,2,2,🐾,❤️]` → gold=3 (2+1 extra), claws=1, hearts=1
-- [ ] DiceResolver: input `[🐾,🐾,🐾,⚡,⚡,❤️]` → claws=3, gems=2, hearts=1
+GUT files: `tests/unit/test_m3_dice_resolver.gd`, `tests/unit/test_m3_dice_pool.gd`
+
+**Automated (GUT):**
+- [ ] `DiceResolver`: `[1,1,1,2,3,⚡]` → gold=1, gems=1, claws=0, hearts=0
+- [ ] `DiceResolver`: `[2,2,2,2,🐾,❤️]` → gold=3 (2 + 1 extra), claws=1, hearts=1
+- [ ] `DiceResolver`: `[3,3,3,3,3,3]` → gold=6 (3 + 3 extra)
+- [ ] `DiceResolver`: `[1,2,3,⚡,🐾,❤️]` → gold=0 (no triple), gems=1, claws=1, hearts=1
+- [ ] `DiceResolver`: `[🐾,🐾,🐾,⚡,⚡,❤️]` → claws=3, gems=2, hearts=1
+- [ ] `DicePool`: all 6 dice start ACTIVE; `roll_active_dice()` changes their faces
+- [ ] `DicePool`: held die face unchanged after re-roll; ACTIVE dice change
+- [ ] `DicePool`: `toggle_hold()` switches die between ACTIVE and HELD
+- [ ] `DicePool`: emits `roll_completed` with correct face array after roll
+
+**Manual (play in editor):**
+- [ ] Roll button → die face labels update visually
+- [ ] Held die shows tinted overlay; un-hold removes it
+- [ ] Roll button disabled after 3rd roll
 
 ### M4 — Full 2-Player Game Loop
-- [ ] Player 1 rolls claws → vault empty → enters vault, gets +1 gold
-- [ ] Player 2 rolls 2 claws → player 1 (at vault) takes 2 damage; HP = 8
-- [ ] Escape dialog appears → Flee: player 2 enters vault, player 1 goes outside
-- [ ] Escape dialog → Stay: player 1 remains at vault with HP = 8
-- [ ] Player at vault rolls hearts → no healing (ignored)
-- [ ] Player outside rolls hearts → HP increases, capped at 10
-- [ ] Player reaches 0 HP → eliminated, skipped in turn order
-- [ ] Only 1 player alive → "last standing" win condition triggers
-- [ ] Player accumulates 20 gold → immediate win condition triggers
-- [ ] ResolutionPicker shows when multiple symbol groups exist; player-chosen order applied
+GUT file: `tests/unit/test_m4_vault_controller.gd`
+
+**Automated (GUT):**
+- [ ] `VaultController`: enter vault when empty → occupant set, +1 gold awarded, signal fired
+- [ ] `VaultController`: attack from outside → vault player takes claw-count damage
+- [ ] `VaultController`: attack at vault → all outside players take claw-count damage
+- [ ] `VaultController`: `handle_flee()` → attacker becomes occupant, previous occupant goes OUTSIDE
+- [ ] `VaultController`: `handle_stay()` → occupant unchanged after choosing to stay
+- [ ] `VaultController`: entering occupied vault via claw is not possible (must use flee path)
+
+**Manual (play in editor):**
+- [ ] Escape dialog appears when vault player takes damage; Flee/Stay buttons work
+- [ ] ResolutionPicker shows symbol groups; chosen order is applied
+- [ ] Hearts ignored for vault player; applied for outside player
+- [ ] Player at 0 HP is eliminated and skipped
+- [ ] 20 gold or last-standing win condition ends the game
 
 ### M5 — Card Shop
-- [ ] 3 cards visible at game start
-- [ ] Buy card with enough gems → gems deducted, card added to hand, slot replenished from deck
-- [ ] Buy card with insufficient gems → buy button disabled
-- [ ] Refresh (2 gems) → 3 new cards visible, 2 gems deducted
-- [ ] Refresh with < 2 gems → refresh button disabled
-- [ ] PERMANENT card in hand → passive effect active each turn
-- [ ] ONE_TIME card → effect fires, card removed from hand
-- [ ] Deck exhausted → shop shows fewer than 3 cards, no crash
+GUT file: `tests/unit/test_m5_card_effects.gd`
+
+**Automated (GUT):**
+- [ ] `CardEffectHandler`: `gain_gold_1` → player gold +1
+- [ ] `CardEffectHandler`: `heal_3` → player HP +3 (capped at 10)
+- [ ] `CardEffectHandler`: `gain_gems_2` → player gems +2
+- [ ] `CardEffectHandler`: `damage_all_2` → all other players take 2 damage
+- [ ] `CardEffectHandler`: `gem_per_turn_1` passive fires each turn start for owner
+- [ ] ONE_TIME card removed from hand after effect triggers
+- [ ] PERMANENT card remains in hand; passive effect active while held
+- [ ] Shop shows < 3 cards when deck is exhausted — no crash
+
+**Manual (play in editor):**
+- [ ] Buy button disabled when gems insufficient
+- [ ] Refresh button disabled when gems < 2
+- [ ] Card shop hidden outside BUY_CARDS phase
+- [ ] Purchased permanent cards appear in player hand panel
 
 ### M6 — AI Bot
-- [ ] Bot turn: 0.8–1.5s delay between each decision (visible in editor)
-- [ ] Bot holds Hearts when HP < 6 and outside
-- [ ] Bot holds Claws when at vault and HP is low
-- [ ] Bot buys cheapest affordable card during BUY_CARDS phase
-- [ ] Bot flees vault when HP < 4
+GUT file: `tests/unit/test_m6_bot_brain.gd`
+
+**Automated (GUT):**
+- [ ] `BotBrain.decide_holds()`: holds Hearts when HP < 6 and OUTSIDE
+- [ ] `BotBrain.decide_holds()`: holds Claws when AT_VAULT and HP is low
+- [ ] `BotBrain.decide_holds()`: holds matching numbers when gold needed
+- [ ] `BotBrain.decide_buy()`: returns cheapest affordable card index
+- [ ] `BotBrain.decide_buy()`: returns -1 when no card is affordable
+- [ ] `BotBrain.decide_flee()`: returns true when HP < 4 at vault
+- [ ] `BotBrain.decide_flee()`: returns false when HP ≥ 4
+- [ ] `BotBrain.get_thinking_delay()`: returns value in range [0.8, 1.5]
+
+**Manual (play in editor):**
+- [ ] Bot turn completes with visible 0.8–1.5s delay between actions
 - [ ] Full VS AI game (1 human + 1 bot) runs to completion without manual input
 
 ### M7 — Menus & Scene Flow
-- [ ] Launch game → main menu appears
-- [ ] Select VS AI, 2 players → setup screen shows bot count selector
-- [ ] Select Hot-Seat, 3 players → enter names for all 3
-- [ ] Game starts with correct player count and mode
-- [ ] Hot-Seat: "Pass device to [Player X]" screen appears between turns
-- [ ] Game over screen shows winner name and reason (gold/elimination/draw)
-- [ ] "Play Again" → returns to setup screen; "Main Menu" → returns to main menu
+*No GUT tests — all scene transitions and UI flow verified manually.*
+
+**Manual (launch game, no editor):**
+- [ ] Launch → main menu appears
+- [ ] VS AI → setup shows player name + bot count selector
+- [ ] Hot-Seat → setup shows name inputs for all players (2–4)
+- [ ] Game starts with correct player count and mode from setup
+- [ ] Hot-Seat: "Pass device to [Player X]" overlay appears between turns
+- [ ] Game over screen shows winner name and reason (gold / elimination / draw)
+- [ ] "Play Again" → returns to setup; "Main Menu" → returns to main menu
+- [ ] No crashes transitioning between any two scenes
 
 ### M8 — Audio & Polish
-- [ ] Dice roll → sound plays
-- [ ] Die held/unheld → click sound
-- [ ] Gold gained → coin sound
-- [ ] Damage taken → hit sound
-- [ ] Card purchased → buy sound
-- [ ] Vault entered/fled → vault sound
+*No GUT tests — audio, visuals, and animations verified by observation.*
+
+**Manual (play in editor):**
+- [ ] Dice roll → roll sound plays
+- [ ] Die held/un-held → click sound plays
+- [ ] Gold gained → coin sound plays
+- [ ] Damage taken → hit sound plays
+- [ ] Card purchased → buy sound plays
+- [ ] Vault entered or fled → vault sound plays
+- [ ] Dice shake on roll; gold counter animates on gain; damage flash on hit
+- [ ] All Controls use the custom Theme (no default grey boxes)
 - [ ] No visual regressions from Milestones 1–7

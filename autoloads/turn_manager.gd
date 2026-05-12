@@ -1,2 +1,55 @@
 extends Node
-# Milestone 2 — stub so project.godot autoload entry is valid
+
+enum TurnPhase { DICE_ROLL, RESOLUTION, BUY_CARDS, END_TURN }
+
+signal phase_changed(new_phase: TurnPhase)
+signal turn_started(player_index: int)
+signal turn_ended(player_index: int)
+
+var current_phase: TurnPhase = TurnPhase.DICE_ROLL
+var current_player_index: int = 0
+var roll_count: int = 0
+var is_game_active: bool = false
+
+func begin() -> void:
+	is_game_active = true
+	current_player_index = 0
+	_start_turn()
+
+func advance_phase() -> void:
+	if not is_game_active:
+		return
+	match current_phase:
+		TurnPhase.DICE_ROLL:
+			_set_phase(TurnPhase.RESOLUTION)
+		TurnPhase.RESOLUTION:
+			_set_phase(TurnPhase.BUY_CARDS)
+		TurnPhase.BUY_CARDS:
+			emit_signal("turn_ended", current_player_index)
+			_set_phase(TurnPhase.END_TURN)
+		TurnPhase.END_TURN:
+			pass  # caller must call next_player() explicitly
+
+func next_player() -> void:
+	if not is_game_active:
+		return
+	var start := current_player_index
+	var size := PlayerManager.players.size()
+	current_player_index = (current_player_index + 1) % size
+	while PlayerManager.players[current_player_index].is_eliminated:
+		current_player_index = (current_player_index + 1) % size
+		if current_player_index == start:
+			return  # all other players eliminated — win condition already fired
+	_start_turn()
+
+func _start_turn() -> void:
+	roll_count = 0
+	# Award vault survival bonus before dice roll
+	if PlayerManager.players[current_player_index].position == PlayerData.PlayerPosition.AT_VAULT:
+		PlayerManager.add_gold(current_player_index, 2)
+	emit_signal("turn_started", current_player_index)
+	_set_phase(TurnPhase.DICE_ROLL)
+
+func _set_phase(phase: TurnPhase) -> void:
+	current_phase = phase
+	emit_signal("phase_changed", phase)

@@ -10,8 +10,12 @@ var _deck: Array[CardData] = []
 var visible_cards: Array[CardData] = []
 
 func _ready() -> void:
+	reset()
+
+func reset() -> void:
 	_deck = CardCatalog.load_all_cards()
 	_deck.shuffle()
+	visible_cards.clear()
 	_replenish()
 
 func purchase(slot_index: int, player_index: int) -> bool:
