@@ -1,0 +1,29 @@
+# Godot 4 — generated files
+.godot/
+
+# Exported binaries
+builds/
+*.apk
+*.aab
+*.ipa
+*.exe
+*.x86_64
+*.x86
+*.arm64
+*.dmg
+*.pkg
+*.zip
+
+# macOS metadata
+.DS_Store
+
+# Claude Code
+.claude/
+
+# Import cache (auto-regenerated)
+*.import
+
+# Mono / C# build artifacts
+.mono/
+data_*/
+mono_crash.*.json
