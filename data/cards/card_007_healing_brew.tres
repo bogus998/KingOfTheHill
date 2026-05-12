@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+
+[resource]
+script = ExtResource("1_carddata")
+card_name = "Healing Brew"
+description = "Restore 3 HP immediately."
+gem_cost = 2
+card_type = 0
+effect_id = "heal_3"

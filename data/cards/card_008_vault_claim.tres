@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+
+[resource]
+script = ExtResource("1_carddata")
+card_name = "Vault Claim"
+description = "Gain +2 gold for every turn you spend in the Vault."
+gem_cost = 4
+card_type = 1
+effect_id = "vault_bonus_gold_2"

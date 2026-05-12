@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+
+[resource]
+script = ExtResource("1_carddata")
+card_name = "Berserker"
+description = "Each Claw symbol deals +1 extra damage."
+gem_cost = 5
+card_type = 1
+effect_id = "claw_bonus_damage_1"

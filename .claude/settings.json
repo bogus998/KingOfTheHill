@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "godot-general@local": true,
+    "godot-turn-based@local": true
+  }
+}

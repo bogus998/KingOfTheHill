@@ -1,0 +1,33 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="DwarfKingOfTheHill"
+config/features=PackedStringArray("4.6", "Mobile")
+config/icon="res://icon.svg"
+config/run/main_scene="res://scenes/game/main_game.tscn"
+
+[autoload]
+
+AudioManager="*res://autoloads/audio_manager.gd"
+PlayerManager="*res://autoloads/player_manager.gd"
+CardShop="*res://autoloads/card_shop.gd"
+TurnManager="*res://autoloads/turn_manager.gd"
+GameManager="*res://autoloads/game_manager.gd"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+renderer/rendering_method="mobile"

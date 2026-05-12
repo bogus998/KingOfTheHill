@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+
+[resource]
+script = ExtResource("1_carddata")
+card_name = "War Cry"
+description = "Deal 2 damage to all other players immediately."
+gem_cost = 5
+card_type = 0
+effect_id = "damage_all_2"
