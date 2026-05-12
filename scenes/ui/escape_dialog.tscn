@@ -1,0 +1,25 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/escape_dialog_controller.gd" id="1_esc"]
+
+[node name="EscapeDialog" type="Panel"]
+script = ExtResource("1_esc")
+visible = false
+custom_minimum_size = Vector2(300, 100)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="MessageLabel" type="Label" parent="VBoxContainer"]
+text = "Flee or Stay?"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="VBoxContainer"]
+alignment = 1
+
+[node name="FleeButton" type="Button" parent="VBoxContainer/Buttons"]
+text = "Flee"
+
+[node name="StayButton" type="Button" parent="VBoxContainer/Buttons"]
+text = "Stay"

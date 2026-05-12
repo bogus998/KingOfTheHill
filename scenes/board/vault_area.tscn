@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/game/vault_controller.gd" id="1_vault"]
+
+[node name="VaultArea" type="Panel"]
+script = ExtResource("1_vault")
+custom_minimum_size = Vector2(120, 100)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "THE VAULT"
+
+[node name="OccupantLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "Empty"

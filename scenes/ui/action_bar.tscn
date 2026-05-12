@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/action_bar_controller.gd" id="1_action"]
+
+[node name="ActionBar" type="HBoxContainer"]
+script = ExtResource("1_action")
+
+[node name="EndRollButton" type="Button" parent="."]
+text = "End Roll"
+visible = false
+
+[node name="EndTurnButton" type="Button" parent="."]
+text = "End Turn"
+visible = false
