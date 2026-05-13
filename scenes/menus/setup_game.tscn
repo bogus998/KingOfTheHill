@@ -1,0 +1,29 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/menus/setup_game_controller.gd" id="1_setup"]
+
+[node name="SetupGame" type="Control"]
+script = ExtResource("1_setup")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+text = "Setup Game"
+
+[node name="PlayerCountRow" type="HBoxContainer" parent="VBox"]
+
+[node name="CountLabel" type="Label" parent="VBox/PlayerCountRow"]
+text = "Players:"
+
+[node name="SpinBox" type="SpinBox" parent="VBox/PlayerCountRow"]
+min_value = 2.0
+max_value = 4.0
+value = 2.0
+
+[node name="NamesContainer" type="VBoxContainer" parent="VBox"]
+
+[node name="StartButton" type="Button" parent="VBox"]
+text = "Start Game"
+
+[node name="BackButton" type="Button" parent="VBox"]
+text = "Back"

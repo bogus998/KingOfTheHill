@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/menus/game_over_controller.gd" id="1_over"]
+
+[node name="GameOver" type="Control"]
+script = ExtResource("1_over")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+text = "Game Over"
+
+[node name="ResultLabel" type="Label" parent="VBox"]
+text = ""
+
+[node name="ReasonLabel" type="Label" parent="VBox"]
+text = ""
+
+[node name="PlayAgainButton" type="Button" parent="VBox"]
+text = "Play Again"
+
+[node name="MainMenuButton" type="Button" parent="VBox"]
+text = "Main Menu"

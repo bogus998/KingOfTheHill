@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/game/main_game_controller.gd" id="1_ctrl"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="2_hud"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/escape_dialog.tscn" id="6_escape"]
 [ext_resource type="PackedScene" path="res://scenes/cards/card_shop.tscn" id="7_shop"]
 [ext_resource type="PackedScene" path="res://scenes/players/card_hand.tscn" id="8_hand"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pass_device_screen.tscn" id="9_pass"]
 
 [node name="MainGame" type="Node"]
 script = ExtResource("1_ctrl")
@@ -35,3 +36,5 @@ player_index = 1
 [node name="ActionBar" parent="Canvas/VBox" instance=ExtResource("5_action")]
 
 [node name="EscapeDialog" parent="Canvas" instance=ExtResource("6_escape")]
+
+[node name="PassDeviceScreen" parent="Canvas" instance=ExtResource("9_pass")]

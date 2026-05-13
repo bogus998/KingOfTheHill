@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/menus/main_menu_controller.gd" id="1_menu"]
+
+[node name="MainMenu" type="Control"]
+script = ExtResource("1_menu")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+text = "King of the Hill"
+
+[node name="VSAIButton" type="Button" parent="VBox"]
+text = "VS AI"
+
+[node name="HotSeatButton" type="Button" parent="VBox"]
+text = "Hot-Seat"
+
+[node name="QuitButton" type="Button" parent="VBox"]
+text = "Quit"
+
+[connection signal="pressed" from="VBox/VSAIButton" to="." method="_on_vs_ai_pressed"]
+[connection signal="pressed" from="VBox/HotSeatButton" to="." method="_on_hot_seat_pressed"]
+[connection signal="pressed" from="VBox/QuitButton" to="." method="_on_quit_pressed"]

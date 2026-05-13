@@ -5,6 +5,7 @@ extends Node
 @onready var _action_bar = $Canvas/VBox/ActionBar
 @onready var _escape_dialog = $Canvas/EscapeDialog
 @onready var _vault_area = $Canvas/VBox/HUD/VaultArea
+@onready var _pass_screen = $Canvas/PassDeviceScreen
 
 var _last_roll_result: Dictionary = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
@@ -33,16 +34,23 @@ func _ready() -> void:
 	_escape_dialog.flee_pressed.connect(_on_flee)
 	_escape_dialog.stay_pressed.connect(_on_stay)
 
-	# Temporary auto-start; replaced by setup menu in Milestone 7
-	GameManager.start_game({"players": [
-		{"name": "Thorin", "is_bot": false},
-		{"name": "Bot",    "is_bot": true},
-	]})
+	_pass_screen.ready_pressed.connect(func(): pass)  # hide handled inside pass_screen
+
+	var config := GameManager.pending_config
+	if config.is_empty():
+		config = {"players": [
+			{"name": "Thorin", "is_bot": false},
+			{"name": "Bot",    "is_bot": true},
+		], "mode": "vs_ai"}
+	GameManager.game_mode = config.get("mode", "vs_ai")
+	GameManager.start_game(config)
 
 func _on_turn_started(player_index: int) -> void:
 	_last_roll_result = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
 	if PlayerManager.players[player_index].is_bot:
 		_run_bot_turn.call_deferred()
+	elif GameManager.game_mode == "hot_seat":
+		_pass_screen.show_for_player(PlayerManager.players[player_index].player_name)
 
 func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:
 	if phase == TurnManager.TurnPhase.END_TURN:
@@ -106,6 +114,8 @@ func _on_game_ended(winner_index: int, reason: String) -> void:
 		])
 	else:
 		print("Game Over! Draw!")
+	await get_tree().create_timer(1.5).timeout
+	get_tree().change_scene_to_file("res://scenes/menus/game_over.tscn")
 
 func _run_bot_turn() -> void:
 	var bot_index := TurnManager.current_player_index

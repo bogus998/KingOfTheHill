@@ -11,10 +11,10 @@ config_version=5
 [application]
 
 config/name="DwarfKingOfTheHill"
-run/main_scene="res://scenes/game/main_game.tscn"
+run/main_scene="res://scenes/menus/main_menu.tscn"
 config/features=PackedStringArray("4.6", "Mobile")
 config/icon="res://icon.svg"
-config/run/main_scene="res://scenes/game/main_game.tscn"
+config/run/main_scene="res://scenes/menus/main_menu.tscn"
 
 [autoload]
 

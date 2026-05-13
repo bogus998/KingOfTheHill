@@ -3,6 +3,11 @@ extends Node
 signal game_started
 signal game_ended(winner_index: int, reason: String)
 
+var game_mode: String = "vs_ai"
+var pending_config: Dictionary = {}
+var last_winner_index: int = -1
+var last_winner_reason: String = ""
+
 func start_game(config: Dictionary) -> void:
 	var player_configs: Array[Dictionary] = []
 	player_configs.assign(config.get("players", []))
@@ -15,6 +20,8 @@ func start_game(config: Dictionary) -> void:
 
 func declare_winner(winner_index: int, reason: String) -> void:
 	TurnManager.is_game_active = false
+	last_winner_index = winner_index
+	last_winner_reason = reason
 	emit_signal("game_ended", winner_index, reason)
 
 func _on_win_condition_met(winner_index: int, reason: String) -> void:
