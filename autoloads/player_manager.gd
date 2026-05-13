@@ -6,6 +6,7 @@ signal player_eliminated(player_index: int)
 signal gold_changed(player_index: int, new_gold: int)
 signal gem_changed(player_index: int, new_gems: int)
 signal position_changed(player_index: int, new_position: PlayerData.PlayerPosition)
+signal card_hand_changed(player_index: int)
 signal win_condition_met(winner_index: int, reason: String)
 
 const MAX_HEALTH := 10
@@ -68,9 +69,11 @@ func get_vault_occupant() -> int:
 
 func add_card_to_hand(player_index: int, card: CardData) -> void:
 	players[player_index].cards_in_hand.append(card)
+	emit_signal("card_hand_changed", player_index)
 
 func remove_card_from_hand(player_index: int, card: CardData) -> void:
 	players[player_index].cards_in_hand.erase(card)
+	emit_signal("card_hand_changed", player_index)
 
 func check_win_conditions() -> void:
 	var alive := _alive_players()

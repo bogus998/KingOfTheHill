@@ -51,3 +51,5 @@ func _on_roll_pressed() -> void:
 func _on_turn_started(_player_index: int) -> void:
 	_roll_count = 0
 	_roll_button.disabled = false
+	for die in _dice:
+		die.reset_hold()

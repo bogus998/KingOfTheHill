@@ -1,0 +1,25 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_display_controller.gd" id="1_display"]
+
+[node name="CardDisplay" type="PanelContainer"]
+script = ExtResource("1_display")
+custom_minimum_size = Vector2(150, 120)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="VBox"]
+text = "Card Name"
+
+[node name="CostLabel" type="Label" parent="VBox"]
+text = "💎 1"
+
+[node name="DescLabel" type="Label" parent="VBox"]
+text = "Description"
+autowrap_mode = 3
+
+[node name="BuyButton" type="Button" parent="VBox"]
+text = "Buy"
+
+[connection signal="pressed" from="VBox/BuyButton" to="." method="_on_buy_button_pressed"]

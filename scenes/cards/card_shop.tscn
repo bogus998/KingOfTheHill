@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_shop_controller.gd" id="1_shop"]
+[ext_resource type="PackedScene" path="res://scenes/cards/card_display.tscn" id="2_display"]
+
+[node name="CardShop" type="PanelContainer"]
+script = ExtResource("1_shop")
+visible = false
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+horizontal_alignment = 1
+text = "Card Shop"
+
+[node name="Slots" type="HBoxContainer" parent="VBox"]
+
+[node name="Slot0" parent="VBox/Slots" instance=ExtResource("2_display")]
+slot_index = 0
+
+[node name="Slot1" parent="VBox/Slots" instance=ExtResource("2_display")]
+slot_index = 1
+
+[node name="Slot2" parent="VBox/Slots" instance=ExtResource("2_display")]
+slot_index = 2
+
+[node name="RefreshButton" type="Button" parent="VBox"]
+text = "Refresh (💎2)"

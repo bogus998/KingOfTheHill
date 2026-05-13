@@ -9,9 +9,11 @@ extends Node
 var _last_roll_result: Dictionary = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
 var _resolution_controller: Node = preload("res://scripts/game/resolution_controller.gd").new()
+var _card_effect_handler: Node = preload("res://scripts/cards/card_effect_handler.gd").new()
 
 func _ready() -> void:
 	add_child(_resolution_controller)
+	add_child(_card_effect_handler)
 
 	GameManager.game_ended.connect(_on_game_ended)
 	TurnManager.phase_changed.connect(_on_phase_changed)

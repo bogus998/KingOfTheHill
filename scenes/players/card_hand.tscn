@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/players/card_hand_controller.gd" id="1_hand"]
+
+[node name="CardHand" type="PanelContainer"]
+script = ExtResource("1_hand")
+custom_minimum_size = Vector2(200, 50)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+text = "Hand"
+
+[node name="CardsContainer" type="HBoxContainer" parent="VBox"]
