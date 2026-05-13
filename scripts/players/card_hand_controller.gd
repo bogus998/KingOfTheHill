@@ -20,4 +20,6 @@ func _refresh() -> void:
 	for card in PlayerManager.players[player_index].cards_in_hand:
 		var label := Label.new()
 		label.text = card.card_name
+		label.tooltip_text = "%s\n💎%d — %s" % [card.card_name, card.gem_cost, card.description]
+		label.mouse_filter = Control.MOUSE_FILTER_STOP
 		_cards_container.add_child(label)
