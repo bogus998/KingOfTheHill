@@ -43,7 +43,7 @@ tests/
 ---
 
 ## Context
-Starting from an empty Godot 4 project (`project.godot` + `icon.svg` only). The game is a dice game similar to King of Tokyo: 2–4 players roll 6 dice up to 3 times per turn, resolve symbols (numbers→gold, gems, claws/attacks, hearts/heal), occupy a central Vault position, and buy cards with gems. First to 20 gold or last standing wins. Supports VS AI and Hot-Seat modes.
+Starting from an empty Godot 4 project (`project.godot` + `icon.svg` only). The game is a dice game similar to King of Tokyo: 2–4 players roll 6 dice up to 3 times per turn, resolve symbols (numbers→gold, gems, claws/attacks, hearts/heal), occupy a central Vault position, and buy cards with gems. First to 20 gold or last standing wins. A single setup screen builds the roster: 2–4 players, each typed Human or Bot.
 
 Full GDD: https://www.notion.so/35aeaebd188281cb871ff45f083a4d28
 
@@ -250,10 +250,10 @@ UI panels **never call PlayerManager directly** — they only react to signals.
 3. VS AI mode fully playable
 
 ### Milestone 7 — Menus & Full Scene Flow
-1. `scenes/menus/main_menu.tscn`
-2. `scenes/menus/setup_game.tscn` — mode selector, player count, names
+1. `scenes/menus/main_menu.tscn` — single "Start Game" entry point
+2. `scenes/menus/setup_game.tscn` — unified roster screen: add/remove players (2–4), per-player Human/Bot type, editable names (bots default `bot_#`)
 3. `scenes/menus/game_over.tscn` — winner, reason, play again
-4. `scenes/ui/pass_device_screen.tscn` for Hot-Seat
+4. `scenes/ui/pass_device_screen.tscn` — shown before every human turn
 5. Set `main_menu.tscn` as main scene in project.godot
 
 ### Milestone 8 — Audio, Art & Polish
@@ -396,14 +396,25 @@ GUT file: `tests/unit/test_m6_bot_brain.gd`
 - [ ] Full VS AI game (1 human + 1 bot) runs to completion without manual input
 
 ### M7 — Menus & Scene Flow
-*No GUT tests — all scene transitions and UI flow verified manually.*
+GUT files: `tests/unit/test_m7_setup_flow.gd`, `tests/unit/test_m7_hud.gd`
+
+**Automated (GUT):**
+- [ ] Setup screen starts with 1 Human player row
+- [ ] `add_player()` adds rows and is capped at 4
+- [ ] `remove_player()` removes rows; the last remaining row cannot be removed
+- [ ] A Bot-typed row's default name is `bot_#`
+- [ ] `get_player_configs()` reports correct name + is_bot per row
+- [ ] Blank name field falls back to the type-appropriate default name
+- [ ] HUD builds exactly one player panel per configured player (2, 3, and 4)
 
 **Manual (launch game, no editor):**
-- [ ] Launch → main menu appears
-- [ ] VS AI → setup shows player name + bot count selector
-- [ ] Hot-Seat → setup shows name inputs for all players (2–4)
-- [ ] Game starts with correct player count and mode from setup
-- [ ] Hot-Seat: "Pass device to [Player X]" overlay appears between turns
+- [ ] Launch → main menu shows a single "Start Game" button
+- [ ] Start Game → setup screen opens with one Human row
+- [ ] "Add Player" adds rows (disabled at 4); "Remove" disabled with one row left
+- [ ] "Start Game" disabled until ≥2 players
+- [ ] Switching a row to Bot defaults its name to `bot_#`; name stays editable
+- [ ] 3- and 4-player games show that many player panels and card hands
+- [ ] "Pass device to [Player X]" overlay appears before every human turn
 - [ ] Game over screen shows winner name and reason (gold / elimination / draw)
 - [ ] "Play Again" → returns to setup; "Main Menu" → returns to main menu
 - [ ] No crashes transitioning between any two scenes

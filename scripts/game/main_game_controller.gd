@@ -41,15 +41,14 @@ func _ready() -> void:
 		config = {"players": [
 			{"name": "Thorin", "is_bot": false},
 			{"name": "Bot",    "is_bot": true},
-		], "mode": "vs_ai"}
-	GameManager.game_mode = config.get("mode", "vs_ai")
+		]}
 	GameManager.start_game(config)
 
 func _on_turn_started(player_index: int) -> void:
 	_last_roll_result = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
 	if PlayerManager.players[player_index].is_bot:
 		_run_bot_turn.call_deferred()
-	elif GameManager.game_mode == "hot_seat":
+	else:
 		_pass_screen.show_for_player(PlayerManager.players[player_index].player_name)
 
 func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:

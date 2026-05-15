@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/action_bar.tscn" id="5_action"]
 [ext_resource type="PackedScene" path="res://scenes/ui/escape_dialog.tscn" id="6_escape"]
 [ext_resource type="PackedScene" path="res://scenes/cards/card_shop.tscn" id="7_shop"]
-[ext_resource type="PackedScene" path="res://scenes/players/card_hand.tscn" id="8_hand"]
+[ext_resource type="Script" path="res://scripts/players/card_hands_controller.gd" id="8_hands"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pass_device_screen.tscn" id="9_pass"]
 
 [node name="MainGame" type="Node"]
@@ -20,12 +20,7 @@ script = ExtResource("1_ctrl")
 [node name="HUD" parent="Canvas/VBox" instance=ExtResource("2_hud")]
 
 [node name="CardHands" type="HBoxContainer" parent="Canvas/VBox"]
-
-[node name="CardHand0" parent="Canvas/VBox/CardHands" instance=ExtResource("8_hand")]
-player_index = 0
-
-[node name="CardHand1" parent="Canvas/VBox/CardHands" instance=ExtResource("8_hand")]
-player_index = 1
+script = ExtResource("8_hands")
 
 [node name="DicePool" parent="Canvas/VBox" instance=ExtResource("3_dice")]
 

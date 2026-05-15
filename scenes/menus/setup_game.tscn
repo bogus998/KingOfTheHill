@@ -10,17 +10,13 @@ script = ExtResource("1_setup")
 [node name="TitleLabel" type="Label" parent="VBox"]
 text = "Setup Game"
 
-[node name="PlayerCountRow" type="HBoxContainer" parent="VBox"]
+[node name="PlayersContainer" type="VBoxContainer" parent="VBox"]
 
-[node name="CountLabel" type="Label" parent="VBox/PlayerCountRow"]
-text = "Players:"
+[node name="AddPlayerButton" type="Button" parent="VBox"]
+text = "Add Player"
 
-[node name="SpinBox" type="SpinBox" parent="VBox/PlayerCountRow"]
-min_value = 2.0
-max_value = 4.0
-value = 2.0
-
-[node name="NamesContainer" type="VBoxContainer" parent="VBox"]
+[node name="HintLabel" type="Label" parent="VBox"]
+text = "2-4 players"
 
 [node name="StartButton" type="Button" parent="VBox"]
 text = "Start Game"

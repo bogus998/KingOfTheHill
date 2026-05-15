@@ -3,7 +3,6 @@ extends Node
 signal game_started
 signal game_ended(winner_index: int, reason: String)
 
-var game_mode: String = "vs_ai"
 var pending_config: Dictionary = {}
 var last_winner_index: int = -1
 var last_winner_reason: String = ""
