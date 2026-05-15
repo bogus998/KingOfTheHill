@@ -23,6 +23,9 @@ func roll_active_dice() -> void:
 		die.roll()
 	_roll_count += 1
 	TurnManager.roll_count = _roll_count
+	if _roll_count == 1:
+		for die in _dice:
+			die.set_holdable(true)
 	if _roll_count >= MAX_ROLLS:
 		_roll_button.disabled = true
 	emit_signal("roll_completed", get_all_faces())

@@ -57,6 +57,7 @@ func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:
 
 func _on_roll_completed(faces: Array) -> void:
 	_last_roll_result = DiceResolver.resolve(faces)
+	_action_bar.set_end_roll_enabled(true)
 
 func _on_end_roll() -> void:
 	TurnManager.advance_phase()  # DICE_ROLL → RESOLUTION

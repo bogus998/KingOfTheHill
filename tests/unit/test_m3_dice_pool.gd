@@ -53,3 +53,43 @@ func test_toggle_hold_twice_returns_to_active() -> void:
 
 func test_get_all_faces_returns_6_elements() -> void:
 	assert_eq(_pool.get_all_faces().size(), 6)
+
+# ── Hold gating (dice not holdable before first roll) ─────────────────────────
+
+func test_dice_not_holdable_before_first_roll() -> void:
+	for i in 6:
+		assert_false(_pool.get_die(i)._holdable)
+
+func test_dice_become_holdable_after_first_roll() -> void:
+	_pool.roll_active_dice()
+	for i in 6:
+		assert_true(_pool.get_die(i)._holdable)
+
+func test_dice_not_holdable_after_reset_hold() -> void:
+	_pool.roll_active_dice()
+	for i in 6:
+		_pool.get_die(i).reset_hold()
+		assert_false(_pool.get_die(i)._holdable)
+
+func test_gui_click_ignored_before_first_roll() -> void:
+	var die: Node = _pool.get_die(0)
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	die._gui_input(event)
+	assert_eq(die.state, die.DieState.ACTIVE)
+
+func test_gui_click_holds_die_after_first_roll() -> void:
+	_pool.roll_active_dice()
+	var die: Node = _pool.get_die(0)
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	die._gui_input(event)
+	assert_eq(die.state, die.DieState.HELD)
+
+func test_holdable_remains_true_on_subsequent_rolls() -> void:
+	_pool.roll_active_dice()
+	_pool.roll_active_dice()
+	for i in 6:
+		assert_true(_pool.get_die(i)._holdable)

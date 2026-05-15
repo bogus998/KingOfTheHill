@@ -4,6 +4,7 @@ enum DieState { ACTIVE, HELD }
 
 var face: DiceResolver.DieFace = DiceResolver.DieFace.ONE
 var state: DieState = DieState.ACTIVE
+var _holdable: bool = false
 
 @onready var _face_label: Label = $FaceLabel
 
@@ -13,7 +14,12 @@ signal hold_changed(is_held: bool)
 func _ready() -> void:
 	_face_label.text = _face_to_text(face)
 
+func set_holdable(value: bool) -> void:
+	_holdable = value
+
 func _gui_input(event: InputEvent) -> void:
+	if not _holdable:
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		toggle_hold()
 		accept_event()
@@ -32,6 +38,7 @@ func toggle_hold() -> void:
 	emit_signal("hold_changed", state == DieState.HELD)
 
 func reset_hold() -> void:
+	_holdable = false
 	if state == DieState.HELD:
 		state = DieState.ACTIVE
 		modulate = Color.WHITE

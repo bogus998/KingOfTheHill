@@ -8,9 +8,16 @@ signal end_turn_requested
 
 func _ready() -> void:
 	TurnManager.phase_changed.connect(_on_phase_changed)
+	TurnManager.turn_started.connect(_on_turn_started)
 	_end_roll_btn.pressed.connect(func(): emit_signal("end_roll_requested"))
 	_end_turn_btn.pressed.connect(func(): emit_signal("end_turn_requested"))
 	_on_phase_changed(TurnManager.current_phase)
+
+func set_end_roll_enabled(value: bool) -> void:
+	_end_roll_btn.disabled = not value
+
+func _on_turn_started(_player_index: int) -> void:
+	_end_roll_btn.disabled = true
 
 func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:
 	_end_roll_btn.visible = (phase == TurnManager.TurnPhase.DICE_ROLL)
