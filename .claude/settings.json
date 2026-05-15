@@ -1,6 +1,6 @@
 {
   "enabledPlugins": {
-    "godot-general@local": true,
-    "godot-turn-based@local": true
+    "godot-turn-based@local-godot-marketplace": true,
+    "godot-general@local-godot-marketplace": true
   }
 }

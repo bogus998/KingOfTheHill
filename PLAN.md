@@ -22,12 +22,12 @@ Tests use the **GUT** (Godot Unit Testing) plugin — the standard Godot 4 unit 
 ```
 tests/
   unit/
-    test_m1_player_manager.gd   ← M1: PlayerManager state & signals
-    test_m1_card_shop.gd        ← M1: CardShop deck, purchase, refresh
-    test_m2_turn_manager.gd     ← M2: phases, next_player, vault bonus, skip
-    test_m3_dice_resolver.gd    ← M3: DiceResolver pure logic
-    test_m3_dice_pool.gd        ← M3: DicePool roll & hold mechanics
-    ...one file per system per milestone...
+	test_m1_player_manager.gd   ← M1: PlayerManager state & signals
+	test_m1_card_shop.gd        ← M1: CardShop deck, purchase, refresh
+	test_m2_turn_manager.gd     ← M2: phases, next_player, vault bonus, skip
+	test_m3_dice_resolver.gd    ← M3: DiceResolver pure logic
+	test_m3_dice_pool.gd        ← M3: DicePool roll & hold mechanics
+	...one file per system per milestone...
 ```
 
 ### Rules
@@ -107,9 +107,9 @@ res://
 │       ├── resolution_picker.tscn
 │       └── escape_dialog.tscn
 └── assets/
-    ├── fonts/
-    ├── textures/ (dice faces, card back, UI icons)
-    └── audio/ (sfx/, music/)
+	├── fonts/
+	├── textures/ (dice faces, card back, UI icons)
+	└── audio/ (sfx/, music/)
 ```
 
 ---
