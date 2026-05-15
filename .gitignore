@@ -5,3 +5,12 @@
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Godot exports
+export_presets.cfg
+*.translation
+/builds/
+/exports/
+
+# Claude Code
+.claude/
