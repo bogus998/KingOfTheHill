@@ -1,11 +1,11 @@
 extends Node
 
-@onready var _safe_area: MarginContainer = $Canvas/SafeArea
-@onready var _dice_pool: DicePoolController = $Canvas/SafeArea/VBox/DicePool
-@onready var _resolution_picker: ResolutionPickerController = $Canvas/SafeArea/VBox/ResolutionPicker
-@onready var _action_bar: ActionBarController = $Canvas/SafeArea/VBox/ActionBar
+@onready var _safe_area: MarginContainer = $UILayer/SafeArea
+@onready var _dice_pool: DicePoolController = $UILayer/SafeArea/VBox/DicePool
+@onready var _resolution_picker: ResolutionPickerController = $UILayer/SafeArea/VBox/ResolutionPicker
+@onready var _action_bar: ActionBarController = $UILayer/SafeArea/VBox/ActionBar
 @onready var _escape_dialog: EscapeDialogController = $OverlayLayer/EscapeDialog
-@onready var _vault_area: VaultController = $Canvas/SafeArea/VBox/HUD/VaultArea
+@onready var _vault_area: VaultController = $UILayer/SafeArea/VBox/HUD/VaultArea
 @onready var _pass_screen: PassDeviceScreenController = $OverlayLayer/PassDeviceScreen
 
 var _last_roll_result: Dictionary = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }

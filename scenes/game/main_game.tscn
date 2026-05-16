@@ -13,31 +13,51 @@
 [node name="MainGame" type="Node"]
 script = ExtResource("1_ctrl")
 
-[node name="Canvas" type="CanvasLayer" parent="."]
+[node name="World" type="Node2D" parent="."]
 
-[node name="SafeArea" type="MarginContainer" parent="Canvas"]
+[node name="Vault" type="Marker2D" parent="World"]
+position = Vector2(540, 960)
+
+[node name="Characters" type="Node2D" parent="World"]
+y_sort_enabled = true
+
+[node name="Character0" type="AnimatedSprite2D" parent="World/Characters"]
+position = Vector2(270, 1200)
+
+[node name="Character1" type="AnimatedSprite2D" parent="World/Characters"]
+position = Vector2(810, 1200)
+
+[node name="Character2" type="AnimatedSprite2D" parent="World/Characters"]
+position = Vector2(270, 720)
+
+[node name="Character3" type="AnimatedSprite2D" parent="World/Characters"]
+position = Vector2(810, 720)
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="SafeArea" type="MarginContainer" parent="UILayer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="Canvas/SafeArea"]
+[node name="VBox" type="VBoxContainer" parent="UILayer/SafeArea"]
 layout_mode = 2
 
-[node name="HUD" parent="Canvas/SafeArea/VBox" instance=ExtResource("2_hud")]
+[node name="HUD" parent="UILayer/SafeArea/VBox" instance=ExtResource("2_hud")]
 
-[node name="CardHands" type="HBoxContainer" parent="Canvas/SafeArea/VBox"]
+[node name="CardHands" type="HBoxContainer" parent="UILayer/SafeArea/VBox"]
 layout_mode = 2
 script = ExtResource("8_hands")
 
-[node name="DicePool" parent="Canvas/SafeArea/VBox" instance=ExtResource("3_dice")]
+[node name="DicePool" parent="UILayer/SafeArea/VBox" instance=ExtResource("3_dice")]
 
-[node name="ResolutionPicker" parent="Canvas/SafeArea/VBox" instance=ExtResource("4_res")]
+[node name="ResolutionPicker" parent="UILayer/SafeArea/VBox" instance=ExtResource("4_res")]
 
-[node name="CardShop" parent="Canvas/SafeArea/VBox" instance=ExtResource("7_shop")]
+[node name="CardShop" parent="UILayer/SafeArea/VBox" instance=ExtResource("7_shop")]
 
-[node name="ActionBar" parent="Canvas/SafeArea/VBox" instance=ExtResource("5_action")]
+[node name="ActionBar" parent="UILayer/SafeArea/VBox" instance=ExtResource("5_action")]
 
 [node name="OverlayLayer" type="CanvasLayer" parent="."]
 layer = 10
