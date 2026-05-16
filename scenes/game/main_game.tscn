@@ -16,22 +16,22 @@ script = ExtResource("1_ctrl")
 [node name="World" type="Node2D" parent="."]
 
 [node name="Vault" type="Marker2D" parent="World"]
-position = Vector2(540, 960)
+position = Vector2(960, 540)
 
 [node name="Characters" type="Node2D" parent="World"]
 y_sort_enabled = true
 
 [node name="Character0" type="AnimatedSprite2D" parent="World/Characters"]
-position = Vector2(270, 1200)
+position = Vector2(480, 675)
 
 [node name="Character1" type="AnimatedSprite2D" parent="World/Characters"]
-position = Vector2(810, 1200)
+position = Vector2(1440, 675)
 
 [node name="Character2" type="AnimatedSprite2D" parent="World/Characters"]
-position = Vector2(270, 720)
+position = Vector2(480, 405)
 
 [node name="Character3" type="AnimatedSprite2D" parent="World/Characters"]
-position = Vector2(810, 720)
+position = Vector2(1440, 405)
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 

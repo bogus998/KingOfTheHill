@@ -4,7 +4,7 @@
 
 [node name="PlayerPanel" type="PanelContainer"]
 script = ExtResource("1_pp")
-custom_minimum_size = Vector2(110, 120)
+custom_minimum_size = Vector2(180, 130)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
