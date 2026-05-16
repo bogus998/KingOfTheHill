@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Lucky Strike"
-description = "Gain +1 gold immediately."
-gem_cost = 2
-card_type = 0
-effect_id = "gain_gold_1"
+card_name = "Nimble Dodge"
+description = "Once per turn, spend 1 gem to negate 1 damage."
+gem_cost = 4
+card_type = 1
+effect_id = "nimble_dodge"

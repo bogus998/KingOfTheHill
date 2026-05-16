@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Lucky Strike"
-description = "Gain +1 gold immediately."
-gem_cost = 2
+card_name = "Tax Collection"
+description = "Gain +2 gold. All other dwarfs lose gems equal to half their current total."
+gem_cost = 6
 card_type = 0
-effect_id = "gain_gold_1"
+effect_id = "gold_2_steal_gems"

@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Lucky Strike"
-description = "Gain +1 gold immediately."
+card_name = "Forge Master"
+description = "When buying cards, you may look at and buy the top card of the deck."
 gem_cost = 2
-card_type = 0
-effect_id = "gain_gold_1"
+card_type = 1
+effect_id = "peek_deck"

@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Lucky Strike"
-description = "Gain +1 gold immediately."
-gem_cost = 2
-card_type = 0
-effect_id = "gain_gold_1"
+card_name = "Trickster's Bargain"
+description = "When you flee the Vault, take one PERMANENT card from the dwarf claiming it."
+gem_cost = 3
+card_type = 1
+effect_id = "trickster_bargain"

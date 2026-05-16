@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Lucky Strike"
-description = "Gain +1 gold immediately."
-gem_cost = 2
-card_type = 0
-effect_id = "gain_gold_1"
+card_name = "Chain Strike"
+description = "When you deal damage, adjacent dwarfs each take 1 extra damage."
+gem_cost = 4
+card_type = 1
+effect_id = "chain_damage_1"

@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Lucky Strike"
-description = "Gain +1 gold immediately."
+card_name = "Empty Purse"
+description = "At the end of your turn, if you have 0 gems, gain 1 gem."
 gem_cost = 2
-card_type = 0
-effect_id = "gain_gold_1"
+card_type = 1
+effect_id = "gem_if_empty"

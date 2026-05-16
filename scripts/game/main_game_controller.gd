@@ -37,6 +37,7 @@ func _ready() -> void:
 
 	CardShop.card_purchased.connect(_card_effect_handler._on_card_purchased)
 	TurnManager.turn_started.connect(_card_effect_handler._on_turn_started)
+	TurnManager.turn_ended.connect(_card_effect_handler._on_turn_ended)
 
 	var config := GameManager.pending_config
 	if config.is_empty():
