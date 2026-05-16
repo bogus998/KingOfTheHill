@@ -1,3 +1,4 @@
+class_name DieController
 extends PanelContainer
 
 enum DieState { ACTIVE, HELD }
@@ -30,19 +31,19 @@ func roll() -> void:
 	var faces := DiceResolver.DieFace.values()
 	face = faces[randi() % faces.size()]
 	_face_label.text = _face_to_text(face)
-	emit_signal("face_changed", face)
+	face_changed.emit(face)
 
 func toggle_hold() -> void:
 	state = DieState.HELD if state == DieState.ACTIVE else DieState.ACTIVE
 	modulate = Color(0.5, 0.7, 1.0) if state == DieState.HELD else Color.WHITE
-	emit_signal("hold_changed", state == DieState.HELD)
+	hold_changed.emit(state == DieState.HELD)
 
 func reset_hold() -> void:
 	_holdable = false
 	if state == DieState.HELD:
 		state = DieState.ACTIVE
 		modulate = Color.WHITE
-		emit_signal("hold_changed", false)
+		hold_changed.emit(false)
 
 func set_face(f: DiceResolver.DieFace) -> void:
 	face = f

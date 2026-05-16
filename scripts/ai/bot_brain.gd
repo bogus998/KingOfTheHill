@@ -1,4 +1,5 @@
-extends Node
+class_name BotBrain
+extends RefCounted
 
 func decide_holds(faces: Array, player_data: PlayerData) -> Array[bool]:
 	var holds: Array[bool] = []

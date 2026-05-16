@@ -1,13 +1,13 @@
 extends GutTest
 
-var _brain: Node = null
+var _brain: BotBrain = null
 
 func before_each() -> void:
 	GameManager.start_game({"players": [
 		{"name": "Thorin", "is_bot": false},
 		{"name": "Bot",    "is_bot": true},
 	]})
-	_brain = add_child_autofree(load("res://scripts/ai/bot_brain.gd").new())
+	_brain = BotBrain.new()
 
 func _make_player(hp: int, pos: PlayerData.PlayerPosition, gold: int = 0) -> PlayerData:
 	var p := PlayerData.new()

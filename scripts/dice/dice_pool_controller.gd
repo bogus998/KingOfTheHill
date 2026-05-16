@@ -4,7 +4,7 @@ signal roll_completed(faces: Array)
 
 const MAX_ROLLS := 3
 
-var _dice: Array = []
+var _dice: Array[DieController] = []
 var _roll_count: int = 0
 
 @onready var _roll_button: Button = $RollButton
@@ -28,13 +28,13 @@ func roll_active_dice() -> void:
 			die.set_holdable(true)
 	if _roll_count >= MAX_ROLLS:
 		_roll_button.disabled = true
-	emit_signal("roll_completed", get_all_faces())
+	roll_completed.emit(get_all_faces())
 
 func toggle_hold(die_index: int) -> void:
 	if die_index >= 0 and die_index < _dice.size():
 		_dice[die_index].toggle_hold()
 
-func get_die(die_index: int) -> Node:
+func get_die(die_index: int) -> DieController:
 	if die_index >= 0 and die_index < _dice.size():
 		return _dice[die_index]
 	return null

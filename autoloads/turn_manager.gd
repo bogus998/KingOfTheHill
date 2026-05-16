@@ -25,7 +25,7 @@ func advance_phase() -> void:
 		TurnPhase.RESOLUTION:
 			_set_phase(TurnPhase.BUY_CARDS)
 		TurnPhase.BUY_CARDS:
-			emit_signal("turn_ended", current_player_index)
+			turn_ended.emit(current_player_index)
 			_set_phase(TurnPhase.END_TURN)
 		TurnPhase.END_TURN:
 			pass  # caller must call next_player() explicitly
@@ -47,9 +47,9 @@ func _start_turn() -> void:
 	# Award vault survival bonus before dice roll
 	if PlayerManager.players[current_player_index].position == PlayerData.PlayerPosition.AT_VAULT:
 		PlayerManager.add_gold(current_player_index, 2)
-	emit_signal("turn_started", current_player_index)
+	turn_started.emit(current_player_index)
 	_set_phase(TurnPhase.DICE_ROLL)
 
 func _set_phase(phase: TurnPhase) -> void:
 	current_phase = phase
-	emit_signal("phase_changed", phase)
+	phase_changed.emit(phase)

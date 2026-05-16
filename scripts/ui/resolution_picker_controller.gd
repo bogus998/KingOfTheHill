@@ -6,7 +6,7 @@ signal apply_requested
 @onready var _apply_btn: Button = $VBoxContainer/ApplyButton
 
 func _ready() -> void:
-	_apply_btn.pressed.connect(func(): emit_signal("apply_requested"))
+	_apply_btn.pressed.connect(func(): apply_requested.emit())
 	visible = false
 
 func show_result(result: Dictionary) -> void:

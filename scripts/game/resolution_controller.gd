@@ -1,4 +1,5 @@
-extends Node
+class_name ResolutionController
+extends RefCounted
 
 func apply_non_claw(player_index: int, result: Dictionary) -> void:
 	if result["gold"] > 0:

@@ -15,13 +15,13 @@ func start_game(config: Dictionary) -> void:
 		PlayerManager.win_condition_met.connect(_on_win_condition_met)
 	CardShop.reset()
 	TurnManager.begin()
-	emit_signal("game_started")
+	game_started.emit()
 
 func declare_winner(winner_index: int, reason: String) -> void:
 	TurnManager.is_game_active = false
 	last_winner_index = winner_index
 	last_winner_reason = reason
-	emit_signal("game_ended", winner_index, reason)
+	game_ended.emit(winner_index, reason)
 
 func _on_win_condition_met(winner_index: int, reason: String) -> void:
 	declare_winner(winner_index, reason)

@@ -9,8 +9,8 @@ signal end_turn_requested
 func _ready() -> void:
 	TurnManager.phase_changed.connect(_on_phase_changed)
 	TurnManager.turn_started.connect(_on_turn_started)
-	_end_roll_btn.pressed.connect(func(): emit_signal("end_roll_requested"))
-	_end_turn_btn.pressed.connect(func(): emit_signal("end_turn_requested"))
+	_end_roll_btn.pressed.connect(func(): end_roll_requested.emit())
+	_end_turn_btn.pressed.connect(func(): end_turn_requested.emit())
 	_on_phase_changed(TurnManager.current_phase)
 
 func set_end_roll_enabled(value: bool) -> void:

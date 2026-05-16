@@ -30,7 +30,7 @@ func purchase(slot_index: int, player_index: int) -> bool:
 	else:
 		# ONE_TIME cards go directly to an effect queue — handled by caller
 		pass
-	emit_signal("card_purchased", player_index, card)
+	card_purchased.emit(player_index, card)
 	_replenish()
 	return true
 
@@ -44,4 +44,4 @@ func refresh_pool(player_index: int) -> bool:
 func _replenish() -> void:
 	while visible_cards.size() < VISIBLE_SLOTS and _deck.size() > 0:
 		visible_cards.append(_deck.pop_back())
-	emit_signal("shop_updated", visible_cards)
+	shop_updated.emit(visible_cards)

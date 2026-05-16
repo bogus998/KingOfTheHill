@@ -43,12 +43,12 @@ func test_purchase_emits_card_purchased_signal() -> void:
 	assert_signal_emitted(CardShop, "card_purchased")
 
 func test_permanent_card_added_to_hand() -> void:
-	for i in CardShop.visible_cards.size():
-		if CardShop.visible_cards[i].card_type == CardData.CardType.PERMANENT:
-			CardShop.purchase(i, 0)
-			assert_eq(PlayerManager.players[0].cards_in_hand.size(), 1)
-			return
-	pass  # no permanent card visible — not a failure
+	var card := CardData.new()
+	card.card_type = CardData.CardType.PERMANENT
+	card.gem_cost = 1
+	CardShop.visible_cards[0] = card
+	CardShop.purchase(0, 0)
+	assert_eq(PlayerManager.players[0].cards_in_hand.size(), 1)
 
 # ── refresh ───────────────────────────────────────────────────────────────────
 

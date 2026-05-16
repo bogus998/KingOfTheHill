@@ -10,16 +10,14 @@ extends Node
 
 var _last_roll_result: Dictionary = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
-var _resolution_controller: Node = preload("res://scripts/game/resolution_controller.gd").new()
+var _resolution_controller := ResolutionController.new()
 var _card_effect_handler: Node = preload("res://scripts/cards/card_effect_handler.gd").new()
-var _bot_brain: Node = preload("res://scripts/ai/bot_brain.gd").new()
+var _bot_brain := BotBrain.new()
 
 func _ready() -> void:
 	_apply_safe_area()
 
-	add_child(_resolution_controller)
 	add_child(_card_effect_handler)
-	add_child(_bot_brain)
 
 	GameManager.game_ended.connect(_on_game_ended)
 	TurnManager.phase_changed.connect(_on_phase_changed)
@@ -149,7 +147,7 @@ func _run_bot_turn() -> void:
 				var die = _dice_pool.get_die(i)
 				if die == null:
 					continue
-				var is_held: bool = die.state == 1  # DieState.HELD = 1
+				var is_held: bool = die.state == DieController.DieState.HELD
 				if holds[i] != is_held:
 					_dice_pool.toggle_hold(i)
 

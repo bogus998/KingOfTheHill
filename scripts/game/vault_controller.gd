@@ -11,20 +11,20 @@ func handle_claws(player_index: int, claw_count: int) -> void:
 		if occupant == -1:
 			PlayerManager.set_position(player_index, PlayerData.PlayerPosition.AT_VAULT)
 			PlayerManager.add_gold(player_index, 1)
-			emit_signal("vault_entered", player_index)
+			vault_entered.emit(player_index)
 		else:
 			PlayerManager.apply_damage(occupant, claw_count)
 			if PlayerManager.players[occupant].is_eliminated:
 				PlayerManager.set_position(player_index, PlayerData.PlayerPosition.AT_VAULT)
-				emit_signal("vault_entered", player_index)
+				vault_entered.emit(player_index)
 			else:
-				emit_signal("escape_requested", player_index, occupant)
+				escape_requested.emit(player_index, occupant)
 	else:
 		for i in PlayerManager.players.size():
 			var p := PlayerManager.players[i]
 			if not p.is_eliminated and p.position == PlayerData.PlayerPosition.OUTSIDE:
 				PlayerManager.apply_damage(i, claw_count)
-		emit_signal("vault_attacked", player_index, claw_count)
+		vault_attacked.emit(player_index, claw_count)
 
 func handle_flee(attacker_index: int) -> void:
 	var occupant := PlayerManager.get_vault_occupant()
