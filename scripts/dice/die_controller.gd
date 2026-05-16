@@ -14,6 +14,7 @@ signal hold_changed(is_held: bool)
 
 func _ready() -> void:
 	_face_label.text = _face_to_text(face)
+	pivot_offset = custom_minimum_size / 2.0
 
 func set_holdable(value: bool) -> void:
 	_holdable = value
@@ -32,11 +33,17 @@ func roll() -> void:
 	face = faces[randi() % faces.size()]
 	_face_label.text = _face_to_text(face)
 	face_changed.emit(face)
+	AudioManager.play_sfx("dice_roll")
+	var tw := create_tween()
+	tw.tween_property(self, "scale", Vector2(1.2, 1.2), 0.06)
+	tw.tween_property(self, "scale", Vector2(0.9, 0.9), 0.06)
+	tw.tween_property(self, "scale", Vector2(1.0, 1.0), 0.05)
 
 func toggle_hold() -> void:
 	state = DieState.HELD if state == DieState.ACTIVE else DieState.ACTIVE
 	modulate = Color(0.5, 0.7, 1.0) if state == DieState.HELD else Color.WHITE
 	hold_changed.emit(state == DieState.HELD)
+	AudioManager.play_sfx("die_hold")
 
 func reset_hold() -> void:
 	_holdable = false

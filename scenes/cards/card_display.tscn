@@ -9,6 +9,12 @@ custom_minimum_size = Vector2(150, 120)
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2
 
+[node name="Icon" type="TextureRect" parent="VBox"]
+custom_minimum_size = Vector2(0, 60)
+stretch_mode = 5
+expand_mode = 2
+visible = false
+
 [node name="NameLabel" type="Label" parent="VBox"]
 text = "Card Name"
 

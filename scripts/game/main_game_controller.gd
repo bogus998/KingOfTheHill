@@ -88,6 +88,7 @@ func _on_apply_results() -> void:
 		TurnManager.advance_phase()  # RESOLUTION → BUY_CARDS
 
 func _on_vault_entered(_player_index: int) -> void:
+	AudioManager.play_sfx("vault_enter")
 	TurnManager.advance_phase()
 
 func _on_vault_attacked(_attacker: int, _claws: int) -> void:
@@ -109,6 +110,7 @@ func _on_flee() -> void:
 	_vault_area.handle_flee(_pending_attacker)
 	_escape_dialog.hide_dialog()
 	_pending_attacker = -1
+	AudioManager.play_sfx("vault_flee")
 	TurnManager.advance_phase()
 
 func _on_stay() -> void:
