@@ -1,16 +1,6 @@
 class_name CardEffectHandler
 extends RefCounted
 
-# Pure reactive logic — no scene-tree presence needed, so RefCounted (see node-alternatives).
-# Effects dispatch via a match, NOT a Dictionary of lambdas: GDScript lambdas capture `self`,
-# so storing them on a member would form a self → _effects → lambda → self reference cycle
-# that a RefCounted can never free (it would leak on every game session).
-# Signal hookup happens in _init() since RefCounted has no _ready().
-
-func _init() -> void:
-	CardShop.card_purchased.connect(_on_card_purchased)
-	TurnManager.turn_started.connect(_on_turn_started)
-
 func apply_immediate(card: CardData, player_index: int) -> void:
 	_apply_effect(card.effect_id, player_index)
 	if card.card_type == CardData.CardType.ONE_TIME:

@@ -7,9 +7,15 @@ func before_each() -> void:
 		{"name": "Thorin", "is_bot": false},
 		{"name": "Gimli",  "is_bot": false},
 	]})
-	# RefCounted — no add_child; reassigning each test frees the prior handler,
-	# which auto-disconnects it from the autoload signals.
 	_handler = CardEffectHandler.new()
+	CardShop.card_purchased.connect(_handler._on_card_purchased)
+	TurnManager.turn_started.connect(_handler._on_turn_started)
+
+func after_each() -> void:
+	if CardShop.card_purchased.is_connected(_handler._on_card_purchased):
+		CardShop.card_purchased.disconnect(_handler._on_card_purchased)
+	if TurnManager.turn_started.is_connected(_handler._on_turn_started):
+		TurnManager.turn_started.disconnect(_handler._on_turn_started)
 
 func _make_card(type: CardData.CardType, effect: String, cost: int = 1) -> CardData:
 	var c := CardData.new()
