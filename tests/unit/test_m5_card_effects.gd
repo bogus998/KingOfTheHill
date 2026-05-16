@@ -1,13 +1,15 @@
 extends GutTest
 
-var _handler: Node = null
+var _handler: CardEffectHandler = null
 
 func before_each() -> void:
 	GameManager.start_game({"players": [
 		{"name": "Thorin", "is_bot": false},
 		{"name": "Gimli",  "is_bot": false},
 	]})
-	_handler = add_child_autofree(load("res://scripts/cards/card_effect_handler.gd").new())
+	# RefCounted — no add_child; reassigning each test frees the prior handler,
+	# which auto-disconnects it from the autoload signals.
+	_handler = CardEffectHandler.new()
 
 func _make_card(type: CardData.CardType, effect: String, cost: int = 1) -> CardData:
 	var c := CardData.new()

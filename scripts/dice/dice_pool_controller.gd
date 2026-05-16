@@ -1,4 +1,4 @@
-extends Node
+extends VBoxContainer
 
 signal roll_completed(faces: Array)
 

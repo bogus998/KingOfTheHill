@@ -1,4 +1,4 @@
-extends Node
+extends Panel
 
 signal vault_entered(player_index: int)
 signal vault_attacked(attacker_index: int, claw_count: int)

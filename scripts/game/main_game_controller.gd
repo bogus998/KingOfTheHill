@@ -11,13 +11,11 @@ extends Node
 var _last_roll_result: Dictionary = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
 var _resolution_controller := ResolutionController.new()
-var _card_effect_handler: Node = preload("res://scripts/cards/card_effect_handler.gd").new()
+var _card_effect_handler := CardEffectHandler.new()
 var _bot_brain := BotBrain.new()
 
 func _ready() -> void:
 	_apply_safe_area()
-
-	add_child(_card_effect_handler)
 
 	GameManager.game_ended.connect(_on_game_ended)
 	TurnManager.phase_changed.connect(_on_phase_changed)
