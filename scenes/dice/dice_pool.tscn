@@ -17,3 +17,7 @@ script = ExtResource("2_pool")
 
 [node name="RollButton" type="Button" parent="."]
 text = "Roll"
+
+[node name="EndRoundButton" type="Button" parent="."]
+text = "Confirm"
+visible = false

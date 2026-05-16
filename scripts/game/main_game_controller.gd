@@ -24,7 +24,7 @@ func _ready() -> void:
 	TurnManager.turn_started.connect(_on_turn_started)
 
 	_dice_pool.roll_completed.connect(_on_roll_completed)
-	_action_bar.end_roll_requested.connect(_on_end_roll)
+	_dice_pool.end_roll_requested.connect(_on_end_roll)
 	_action_bar.end_turn_requested.connect(_on_end_turn)
 	_resolution_picker.apply_requested.connect(_on_apply_results)
 
@@ -76,7 +76,6 @@ func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:
 
 func _on_roll_completed(faces: Array) -> void:
 	_last_roll_result = DiceResolver.resolve(faces)
-	_action_bar.set_end_roll_enabled(true)
 
 func _on_end_roll() -> void:
 	TurnManager.advance_phase()  # DICE_ROLL → RESOLUTION

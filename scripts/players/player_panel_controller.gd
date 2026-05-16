@@ -3,7 +3,8 @@ extends PanelContainer
 signal view_cards_requested
 
 @onready var _name_label: Label = $VBoxContainer/NameLabel
-@onready var _health_bar: ProgressBar = $VBoxContainer/HealthBar
+@onready var _health_bar: ProgressBar = $VBoxContainer/HealthBarContainer/HealthBar
+@onready var _hp_label: Label = $VBoxContainer/HealthBarContainer/HPLabel
 @onready var _gold_label: Label = $VBoxContainer/GoldLabel
 @onready var _gems_label: Label = $VBoxContainer/GemsLabel
 @onready var _view_cards_btn: Button = $VBoxContainer/ViewCardsButton
@@ -17,18 +18,23 @@ func _ready() -> void:
 	TurnManager.turn_started.connect(func(_idx): _refresh())
 	GameManager.game_started.connect(_refresh)
 	_view_cards_btn.pressed.connect(func(): view_cards_requested.emit())
+	var fill_style := StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.8, 0.1, 0.1)
+	_health_bar.add_theme_stylebox_override("fill", fill_style)
 	_refresh()
 
 func _on_damaged(idx: int, new_hp: int) -> void:
 	if idx != TurnManager.current_player_index:
 		return
 	_health_bar.value = new_hp
+	_hp_label.text = "%d / %d" % [new_hp, PlayerManager.MAX_HEALTH]
 	_flash_damage()
 
 func _on_healed(idx: int, new_hp: int) -> void:
 	if idx != TurnManager.current_player_index:
 		return
 	_health_bar.value = new_hp
+	_hp_label.text = "%d / %d" % [new_hp, PlayerManager.MAX_HEALTH]
 
 func _on_gold_changed(idx: int, new_gold: int) -> void:
 	if idx != TurnManager.current_player_index:
@@ -60,6 +66,7 @@ func _refresh() -> void:
 	var p := PlayerManager.players[TurnManager.current_player_index]
 	_name_label.text = p.player_name
 	_health_bar.value = p.health
+	_hp_label.text = "%d / %d" % [p.health, PlayerManager.MAX_HEALTH]
 	_gold_label.text = "%d/20" % p.gold
 	_gems_label.text = "💎 %d" % p.gems
 	_view_cards_btn.text = "View Cards (%d)" % p.cards_in_hand.size()

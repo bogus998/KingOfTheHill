@@ -20,9 +20,11 @@ func show_for_player(idx: int) -> void:
 		var display = _CARD_DISPLAY.instantiate()
 		_cards_container.add_child(display)
 		display.refresh(card, -1)
+		display.set_buy_visible(false)
 	for card in p.spent_one_time_cards:
 		var display = _CARD_DISPLAY.instantiate()
 		_cards_container.add_child(display)
 		display.refresh(card, -1)
+		display.set_buy_visible(false)
 		display.modulate = Color(0.5, 0.5, 0.5)
 	visible = true

@@ -22,5 +22,8 @@ func refresh(card: CardData, player_gems: int) -> void:
 	_desc_label.text = card.description
 	_buy_button.disabled = player_gems < card.gem_cost
 
+func set_buy_visible(value: bool) -> void:
+	_buy_button.visible = value
+
 func _on_buy_button_pressed() -> void:
 	buy_pressed.emit(slot_index)

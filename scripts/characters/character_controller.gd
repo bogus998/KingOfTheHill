@@ -18,6 +18,8 @@ static var _shared_frames: SpriteFrames
 
 @export var player_index: int = 0
 
+@onready var _name_label: Label = $NameLabel
+
 var _base_position: Vector2
 var _tween: Tween
 
@@ -32,6 +34,7 @@ func _ready() -> void:
 	if visible:
 		_update_facing()
 	_base_position = position
+	_update_name_label()
 
 
 func _exit_tree() -> void:
@@ -110,6 +113,15 @@ func _on_players_setup() -> void:
 	_refresh_visibility()
 	if visible:
 		_update_facing()
+	_update_name_label()
+
+
+func _update_name_label() -> void:
+	if player_index < PlayerManager.players.size():
+		_name_label.text = PlayerManager.players[player_index].player_name
+		_name_label.visible = true
+	else:
+		_name_label.visible = false
 
 
 func _on_player_eliminated(idx: int) -> void:
