@@ -1,3 +1,4 @@
+class_name ActionBarController
 extends HBoxContainer
 
 signal end_roll_requested

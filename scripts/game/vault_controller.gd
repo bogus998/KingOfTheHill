@@ -1,3 +1,4 @@
+class_name VaultController
 extends Panel
 
 signal vault_entered(player_index: int)

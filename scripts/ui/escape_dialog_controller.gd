@@ -1,3 +1,4 @@
+class_name EscapeDialogController
 extends Panel
 
 signal flee_pressed

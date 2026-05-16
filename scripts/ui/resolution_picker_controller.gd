@@ -1,3 +1,4 @@
+class_name ResolutionPickerController
 extends Panel
 
 signal apply_requested

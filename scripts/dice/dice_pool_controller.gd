@@ -1,3 +1,4 @@
+class_name DicePoolController
 extends VBoxContainer
 
 signal roll_completed(faces: Array)

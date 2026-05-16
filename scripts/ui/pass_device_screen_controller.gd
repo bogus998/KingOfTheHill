@@ -1,3 +1,4 @@
+class_name PassDeviceScreenController
 extends Panel
 
 signal ready_pressed
