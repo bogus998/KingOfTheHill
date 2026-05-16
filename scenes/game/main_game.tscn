@@ -15,21 +15,33 @@ script = ExtResource("1_ctrl")
 
 [node name="Canvas" type="CanvasLayer" parent="."]
 
-[node name="VBox" type="VBoxContainer" parent="Canvas"]
+[node name="SafeArea" type="MarginContainer" parent="Canvas"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="HUD" parent="Canvas/VBox" instance=ExtResource("2_hud")]
+[node name="VBox" type="VBoxContainer" parent="Canvas/SafeArea"]
+layout_mode = 2
 
-[node name="CardHands" type="HBoxContainer" parent="Canvas/VBox"]
+[node name="HUD" parent="Canvas/SafeArea/VBox" instance=ExtResource("2_hud")]
+
+[node name="CardHands" type="HBoxContainer" parent="Canvas/SafeArea/VBox"]
+layout_mode = 2
 script = ExtResource("8_hands")
 
-[node name="DicePool" parent="Canvas/VBox" instance=ExtResource("3_dice")]
+[node name="DicePool" parent="Canvas/SafeArea/VBox" instance=ExtResource("3_dice")]
 
-[node name="ResolutionPicker" parent="Canvas/VBox" instance=ExtResource("4_res")]
+[node name="ResolutionPicker" parent="Canvas/SafeArea/VBox" instance=ExtResource("4_res")]
 
-[node name="CardShop" parent="Canvas/VBox" instance=ExtResource("7_shop")]
+[node name="CardShop" parent="Canvas/SafeArea/VBox" instance=ExtResource("7_shop")]
 
-[node name="ActionBar" parent="Canvas/VBox" instance=ExtResource("5_action")]
+[node name="ActionBar" parent="Canvas/SafeArea/VBox" instance=ExtResource("5_action")]
 
-[node name="EscapeDialog" parent="Canvas" instance=ExtResource("6_escape")]
+[node name="OverlayLayer" type="CanvasLayer" parent="."]
+layer = 10
 
-[node name="PassDeviceScreen" parent="Canvas" instance=ExtResource("9_pass")]
+[node name="EscapeDialog" parent="OverlayLayer" instance=ExtResource("6_escape")]
+
+[node name="PassDeviceScreen" parent="OverlayLayer" instance=ExtResource("9_pass")]

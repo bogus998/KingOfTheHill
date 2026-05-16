@@ -1,11 +1,12 @@
 extends Node
 
-@onready var _dice_pool = $Canvas/VBox/DicePool
-@onready var _resolution_picker = $Canvas/VBox/ResolutionPicker
-@onready var _action_bar = $Canvas/VBox/ActionBar
-@onready var _escape_dialog = $Canvas/EscapeDialog
-@onready var _vault_area = $Canvas/VBox/HUD/VaultArea
-@onready var _pass_screen = $Canvas/PassDeviceScreen
+@onready var _safe_area: MarginContainer = $Canvas/SafeArea
+@onready var _dice_pool = $Canvas/SafeArea/VBox/DicePool
+@onready var _resolution_picker = $Canvas/SafeArea/VBox/ResolutionPicker
+@onready var _action_bar = $Canvas/SafeArea/VBox/ActionBar
+@onready var _escape_dialog = $OverlayLayer/EscapeDialog
+@onready var _vault_area = $Canvas/SafeArea/VBox/HUD/VaultArea
+@onready var _pass_screen = $OverlayLayer/PassDeviceScreen
 
 var _last_roll_result: Dictionary = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
@@ -14,6 +15,8 @@ var _card_effect_handler: Node = preload("res://scripts/cards/card_effect_handle
 var _bot_brain: Node = preload("res://scripts/ai/bot_brain.gd").new()
 
 func _ready() -> void:
+	_apply_safe_area()
+
 	add_child(_resolution_controller)
 	add_child(_card_effect_handler)
 	add_child(_bot_brain)
@@ -43,6 +46,16 @@ func _ready() -> void:
 			{"name": "Bot",    "is_bot": true},
 		]}
 	GameManager.start_game(config)
+
+func _apply_safe_area() -> void:
+	var safe: Rect2i = DisplayServer.get_display_safe_area()
+	var screen: Vector2i = DisplayServer.screen_get_size()
+	# Safe area is in physical screen pixels; convert to stretched canvas units.
+	var scale: Vector2 = get_viewport().get_visible_rect().size / Vector2(get_window().size)
+	_safe_area.add_theme_constant_override("margin_top", int(safe.position.y * scale.y))
+	_safe_area.add_theme_constant_override("margin_bottom", int((screen.y - safe.end.y) * scale.y))
+	_safe_area.add_theme_constant_override("margin_left", int(safe.position.x * scale.x))
+	_safe_area.add_theme_constant_override("margin_right", int((screen.x - safe.end.x) * scale.x))
 
 func _on_turn_started(player_index: int) -> void:
 	_last_roll_result = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }

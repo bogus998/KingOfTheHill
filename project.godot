@@ -24,6 +24,14 @@ CardShop="*res://autoloads/card_shop.gd"
 TurnManager="*res://autoloads/turn_manager.gd"
 GameManager="*res://autoloads/game_manager.gd"
 
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/handheld/orientation="portrait"
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg")
