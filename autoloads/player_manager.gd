@@ -1,5 +1,6 @@
 extends Node
 
+signal players_setup()
 signal player_damaged(player_index: int, new_hp: int)
 signal player_healed(player_index: int, new_hp: int)
 signal player_eliminated(player_index: int)
@@ -20,6 +21,7 @@ func setup(configs: Array[Dictionary]) -> void:
 		p.player_name = cfg.get("name", "Player")
 		p.is_bot = cfg.get("is_bot", false)
 		players.append(p)
+	players_setup.emit()
 
 func apply_damage(player_index: int, amount: int) -> void:
 	var p := players[player_index]
