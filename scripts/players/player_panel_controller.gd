@@ -27,14 +27,14 @@ func _on_damaged(idx: int, new_hp: int) -> void:
 	if idx != TurnManager.current_player_index:
 		return
 	_health_bar.value = new_hp
-	_hp_label.text = "%d / %d" % [new_hp, PlayerManager.MAX_HEALTH]
+	_hp_label.text = "%d / %d" % [new_hp, PlayerManager.players[idx].max_health]
 	_flash_damage()
 
 func _on_healed(idx: int, new_hp: int) -> void:
 	if idx != TurnManager.current_player_index:
 		return
 	_health_bar.value = new_hp
-	_hp_label.text = "%d / %d" % [new_hp, PlayerManager.MAX_HEALTH]
+	_hp_label.text = "%d / %d" % [new_hp, PlayerManager.players[idx].max_health]
 
 func _on_gold_changed(idx: int, new_gold: int) -> void:
 	if idx != TurnManager.current_player_index:
@@ -66,7 +66,7 @@ func _refresh() -> void:
 	var p := PlayerManager.players[TurnManager.current_player_index]
 	_name_label.text = p.player_name
 	_health_bar.value = p.health
-	_hp_label.text = "%d / %d" % [p.health, PlayerManager.MAX_HEALTH]
+	_hp_label.text = "%d / %d" % [p.health, p.max_health]
 	_gold_label.text = "%d/20" % p.gold
 	_gems_label.text = "💎 %d" % p.gems
 	_view_cards_btn.text = "View Cards (%d)" % p.cards_in_hand.size()

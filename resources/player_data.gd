@@ -12,3 +12,12 @@ enum PlayerPosition { OUTSIDE, AT_VAULT }
 @export var cards_in_hand: Array[CardData] = []
 @export var spent_one_time_cards: Array[CardData] = []
 @export var is_bot: bool = false
+
+# Stat modifiers set on card purchase (persist while card is in hand)
+@export var damage_reduction: int = 0
+@export var max_health: int = 10
+@export var gem_gain_bonus: int = 0
+@export var heal_bonus: int = 0
+
+# Per-turn tracking (reset at turn start)
+var damage_dealt_this_turn: int = 0

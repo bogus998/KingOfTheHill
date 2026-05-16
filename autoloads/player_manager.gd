@@ -9,8 +9,7 @@ signal gem_changed(player_index: int, new_gems: int)
 signal position_changed(player_index: int, new_position: PlayerData.PlayerPosition)
 signal card_hand_changed(player_index: int)
 signal win_condition_met(winner_index: int, reason: String)
-
-const MAX_HEALTH := 10
+signal damage_applied(attacker_index: int, target_index: int, amount: int)
 
 var players: Array[PlayerData] = []
 
@@ -23,21 +22,25 @@ func setup(configs: Array[Dictionary]) -> void:
 		players.append(p)
 	players_setup.emit()
 
-func apply_damage(player_index: int, amount: int) -> void:
+func apply_damage(player_index: int, amount: int, attacker_index: int = -1) -> void:
 	var p := players[player_index]
 	if p.is_eliminated:
 		return
-	p.health = max(0, p.health - amount)
+	var actual: int = max(0, amount - p.damage_reduction)
+	p.health = max(0, p.health - actual)
 	player_damaged.emit(player_index, p.health)
+	if actual > 0 and attacker_index >= 0 and attacker_index != player_index:
+		players[attacker_index].damage_dealt_this_turn += actual
+	damage_applied.emit(attacker_index, player_index, actual)
 	if p.health == 0:
 		_eliminate(player_index)
 	check_win_conditions()
 
 func apply_heal(player_index: int, amount: int) -> void:
 	var p := players[player_index]
-	if p.is_eliminated or p.position == PlayerData.PlayerPosition.AT_VAULT:
+	if p.is_eliminated or p.position == PlayerData.PlayerPosition.AT_VAULT or amount <= 0:
 		return
-	p.health = min(MAX_HEALTH, p.health + amount)
+	p.health = min(p.max_health, p.health + amount + p.heal_bonus)
 	player_healed.emit(player_index, p.health)
 
 func add_gold(player_index: int, amount: int) -> void:
@@ -48,7 +51,7 @@ func add_gold(player_index: int, amount: int) -> void:
 
 func add_gems(player_index: int, amount: int) -> void:
 	var p := players[player_index]
-	p.gems += amount
+	p.gems += amount + p.gem_gain_bonus
 	gem_changed.emit(player_index, p.gems)
 
 func spend_gems(player_index: int, amount: int) -> bool:

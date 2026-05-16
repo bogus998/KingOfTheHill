@@ -8,6 +8,18 @@ func apply_immediate(card: CardData, player_index: int) -> void:
 		PlayerManager.remove_card_from_hand(player_index, card)
 
 func _on_card_purchased(player_index: int, card: CardData) -> void:
+	# Apply static modifiers for permanent cards on purchase
+	if card.card_type == CardData.CardType.PERMANENT:
+		match card.effect_id:
+			"damage_reduction_1":
+				PlayerManager.players[player_index].damage_reduction += 1
+			"health_cap_plus_2":
+				PlayerManager.players[player_index].max_health += 2
+				PlayerManager.apply_heal(player_index, 2)
+			"regen_bonus":
+				PlayerManager.players[player_index].heal_bonus += 1
+			"gem_bonus_on_gain":
+				PlayerManager.players[player_index].gem_gain_bonus += 1
 	if card.card_type == CardData.CardType.ONE_TIME:
 		apply_immediate(card, player_index)
 	# Fire gold_on_purchase for any permanent in hand (including the just-bought card)
@@ -18,6 +30,7 @@ func _on_card_purchased(player_index: int, card: CardData) -> void:
 func _on_turn_started(player_index: int) -> void:
 	if player_index >= PlayerManager.players.size():
 		return
+	PlayerManager.players[player_index].damage_dealt_this_turn = 0
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT:
 			_apply_effect(card.effect_id, player_index)
@@ -73,6 +86,9 @@ func _apply_effect(effect_id: String, player_index: int) -> void:
 		"vault_bonus_gold_2":
 			if PlayerManager.players[player_index].position == PlayerData.PlayerPosition.AT_VAULT:
 				PlayerManager.add_gold(player_index, 2)
+		"vault_dweller":
+			if PlayerManager.players[player_index].position == PlayerData.PlayerPosition.AT_VAULT:
+				PlayerManager.add_gold(player_index, 1)
 
 func _apply_turn_end_effect(effect_id: String, player_index: int) -> void:
 	match effect_id:
@@ -84,18 +100,24 @@ func _apply_turn_end_effect(effect_id: String, player_index: int) -> void:
 			var bonus: int = PlayerManager.players[player_index].gems / 6
 			if bonus > 0:
 				PlayerManager.add_gold(player_index, bonus)
+		"gold_if_no_damage":
+			if PlayerManager.players[player_index].damage_dealt_this_turn == 0:
+				PlayerManager.add_gold(player_index, 1)
+		"heavy_strike_gold":
+			if PlayerManager.players[player_index].damage_dealt_this_turn >= 3:
+				PlayerManager.add_gold(player_index, 2)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 func _damage_others(source_index: int, amount: int) -> void:
 	for i in PlayerManager.players.size():
 		if i != source_index and not PlayerManager.players[i].is_eliminated:
-			PlayerManager.apply_damage(i, amount)
+			PlayerManager.apply_damage(i, amount, source_index)
 
 func _damage_all(source_index: int, amount: int) -> void:
 	for i in PlayerManager.players.size():
 		if not PlayerManager.players[i].is_eliminated:
-			PlayerManager.apply_damage(i, amount)
+			PlayerManager.apply_damage(i, amount, source_index)
 
 func _steal_gold_from_others(source_index: int, amount: int) -> void:
 	for i in PlayerManager.players.size():
@@ -128,3 +150,36 @@ func _apply_underdog_gold(player_index: int) -> void:
 			if PlayerManager.players[i].gold < my_gold:
 				return
 	PlayerManager.add_gold(player_index, 1)
+
+# ── Signal callbacks (connect via main_game_controller) ───────────────────────
+
+func _on_damage_applied(attacker_index: int, target_index: int, amount: int) -> void:
+	if amount <= 0 or attacker_index < 0 or attacker_index == target_index:
+		return
+	if _has_card(target_index, "reflective_1"):
+		PlayerManager.apply_damage(attacker_index, 1)
+	if _has_card(attacker_index, "life_drain"):
+		PlayerManager.apply_heal(attacker_index, 1)
+	if _has_card(attacker_index, "chain_damage_1"):
+		for i in PlayerManager.players.size():
+			if i != attacker_index and i != target_index and not PlayerManager.players[i].is_eliminated:
+				PlayerManager.apply_damage(i, 1)
+	if amount >= 2 and _has_card(target_index, "gem_on_heavy_damage"):
+		PlayerManager.add_gems(target_index, 1)
+
+func _on_player_eliminated(eliminated_index: int) -> void:
+	for i in PlayerManager.players.size():
+		if i != eliminated_index and not PlayerManager.players[i].is_eliminated:
+			if _has_card(i, "gold_on_kill"):
+				PlayerManager.add_gold(i, 3)
+
+func _on_position_changed(player_index: int, new_pos: PlayerData.PlayerPosition) -> void:
+	if new_pos == PlayerData.PlayerPosition.AT_VAULT:
+		if _has_card(player_index, "gold_2_enter_vault"):
+			PlayerManager.add_gold(player_index, 2)
+
+func _has_card(player_index: int, effect_id: String) -> bool:
+	for card in PlayerManager.players[player_index].cards_in_hand:
+		if card.effect_id == effect_id:
+			return true
+	return false
