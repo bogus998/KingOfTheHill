@@ -10,4 +10,5 @@ enum PlayerPosition { OUTSIDE, AT_VAULT }
 @export var position: PlayerPosition = PlayerPosition.OUTSIDE
 @export var is_eliminated: bool = false
 @export var cards_in_hand: Array[CardData] = []
+@export var spent_one_time_cards: Array[CardData] = []
 @export var is_bot: bool = false

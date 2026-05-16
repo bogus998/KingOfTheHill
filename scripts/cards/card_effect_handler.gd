@@ -4,6 +4,7 @@ extends RefCounted
 func apply_immediate(card: CardData, player_index: int) -> void:
 	_apply_effect(card.effect_id, player_index)
 	if card.card_type == CardData.CardType.ONE_TIME:
+		PlayerManager.players[player_index].spent_one_time_cards.append(card)
 		PlayerManager.remove_card_from_hand(player_index, card)
 
 func _on_card_purchased(player_index: int, card: CardData) -> void:

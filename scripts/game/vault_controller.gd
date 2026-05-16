@@ -5,6 +5,10 @@ signal vault_entered(player_index: int)
 signal vault_attacked(attacker_index: int, claw_count: int)
 signal escape_requested(attacker_index: int, defender_index: int)
 
+var _round: int = 1
+var _turn_in_round: int = 0
+var _prev_player_index: int = -1
+
 func handle_claws(player_index: int, claw_count: int) -> void:
 	var player := PlayerManager.players[player_index]
 	if player.position == PlayerData.PlayerPosition.OUTSIDE:
@@ -38,7 +42,29 @@ func handle_stay() -> void:
 
 func _ready() -> void:
 	PlayerManager.position_changed.connect(_update_display)
+	TurnManager.turn_started.connect(_on_turn_started)
+	GameManager.game_started.connect(_reset_counters)
 	_update_display(0, PlayerData.PlayerPosition.OUTSIDE)
+
+func _reset_counters() -> void:
+	_round = 1
+	_turn_in_round = 0
+	_prev_player_index = -1
+	_update_round_label()
+
+func _on_turn_started(player_index: int) -> void:
+	if _prev_player_index != -1 and player_index <= _prev_player_index:
+		_round += 1
+		_turn_in_round = 0
+	_turn_in_round += 1
+	_prev_player_index = player_index
+	_update_round_label()
+
+func _update_round_label() -> void:
+	var label: Label = get_node_or_null("VBoxContainer/RoundLabel")
+	if label == null:
+		return
+	label.text = "Round %d | Turn %d" % [_round, _turn_in_round]
 
 func _update_display(_idx: int, _pos: PlayerData.PlayerPosition) -> void:
 	var label: Label = get_node_or_null("VBoxContainer/OccupantLabel")

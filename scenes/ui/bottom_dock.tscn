@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/dice/dice_pool.tscn" id="1_dice"]
+[ext_resource type="PackedScene" path="res://scenes/players/card_hand.tscn" id="2_hand"]
+[ext_resource type="PackedScene" path="res://scenes/ui/action_bar.tscn" id="3_action"]
+
+[node name="BottomDock" type="PanelContainer"]
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="DiceSection" type="HBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DicePool" parent="HBox/DiceSection" instance=ExtResource("1_dice")]
+
+[node name="CenterSection" type="HBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ActiveCardHand" parent="HBox/CenterSection" instance=ExtResource("2_hand")]
+
+[node name="ActionSection" type="HBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ActionBar" parent="HBox/ActionSection" instance=ExtResource("3_action")]

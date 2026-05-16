@@ -1,15 +1,15 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/game/main_game_controller.gd" id="1_ctrl"]
-[ext_resource type="Script" path="res://scripts/characters/character_controller.gd" id="10_char"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="2_hud"]
-[ext_resource type="PackedScene" path="res://scenes/dice/dice_pool.tscn" id="3_dice"]
+[ext_resource type="Script" path="res://scripts/characters/character_controller.gd" id="2_char"]
+[ext_resource type="PackedScene" path="res://scenes/board/vault_area.tscn" id="3_vault"]
 [ext_resource type="PackedScene" path="res://scenes/ui/resolution_picker.tscn" id="4_res"]
-[ext_resource type="PackedScene" path="res://scenes/ui/action_bar.tscn" id="5_action"]
-[ext_resource type="PackedScene" path="res://scenes/ui/escape_dialog.tscn" id="6_escape"]
+[ext_resource type="PackedScene" path="res://scenes/players/player_panel.tscn" id="5_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/bottom_dock.tscn" id="6_dock"]
 [ext_resource type="PackedScene" path="res://scenes/cards/card_shop.tscn" id="7_shop"]
-[ext_resource type="Script" path="res://scripts/players/card_hands_controller.gd" id="8_hands"]
-[ext_resource type="PackedScene" path="res://scenes/ui/pass_device_screen.tscn" id="9_pass"]
+[ext_resource type="PackedScene" path="res://scenes/ui/card_detail_screen.tscn" id="8_cds"]
+[ext_resource type="PackedScene" path="res://scenes/ui/escape_dialog.tscn" id="9_escape"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pass_device_screen.tscn" id="10_pass"]
 
 [node name="MainGame" type="Node"]
 script = ExtResource("1_ctrl")
@@ -24,22 +24,22 @@ y_sort_enabled = true
 
 [node name="Character0" type="AnimatedSprite2D" parent="World/Characters"]
 position = Vector2(480, 675)
-script = ExtResource("10_char")
+script = ExtResource("2_char")
 player_index = 0
 
 [node name="Character1" type="AnimatedSprite2D" parent="World/Characters"]
 position = Vector2(1440, 675)
-script = ExtResource("10_char")
+script = ExtResource("2_char")
 player_index = 1
 
 [node name="Character2" type="AnimatedSprite2D" parent="World/Characters"]
 position = Vector2(480, 405)
-script = ExtResource("10_char")
+script = ExtResource("2_char")
 player_index = 2
 
 [node name="Character3" type="AnimatedSprite2D" parent="World/Characters"]
 position = Vector2(1440, 405)
-script = ExtResource("10_char")
+script = ExtResource("2_char")
 player_index = 3
 
 [node name="UILayer" type="CanvasLayer" parent="."]
@@ -51,26 +51,87 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="UILayer/SafeArea"]
+[node name="UIRoot" type="Control" parent="UILayer/SafeArea"]
 layout_mode = 2
+mouse_filter = 2
 
-[node name="HUD" parent="UILayer/SafeArea/VBox" instance=ExtResource("2_hud")]
+[node name="VaultInfoPanel" parent="UILayer/SafeArea/UIRoot" instance=ExtResource("3_vault")]
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_left = -150.0
+offset_right = 150.0
+offset_top = 8.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 1
 
-[node name="CardHands" type="HBoxContainer" parent="UILayer/SafeArea/VBox"]
-layout_mode = 2
-script = ExtResource("8_hands")
+[node name="ResolutionPicker" parent="UILayer/SafeArea/UIRoot" instance=ExtResource("4_res")]
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_right = 200.0
+offset_top = -100.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="DicePool" parent="UILayer/SafeArea/VBox" instance=ExtResource("3_dice")]
+[node name="ActivePlayerPanel" parent="UILayer/SafeArea/UIRoot" instance=ExtResource("5_panel")]
+layout_mode = 1
+anchor_left = 0.0
+anchor_right = 0.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_right = 216.0
+offset_top = -176.0
+offset_bottom = -8.0
+grow_horizontal = 1
+grow_vertical = 0
 
-[node name="ResolutionPicker" parent="UILayer/SafeArea/VBox" instance=ExtResource("4_res")]
+[node name="BottomDock" parent="UILayer/SafeArea/UIRoot" instance=ExtResource("6_dock")]
+layout_mode = 1
+anchor_left = 0.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 232.0
+offset_right = 0.0
+offset_top = -180.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 0
 
-[node name="CardShop" parent="UILayer/SafeArea/VBox" instance=ExtResource("7_shop")]
+[node name="ShopPanel" parent="UILayer/SafeArea/UIRoot" instance=ExtResource("7_shop")]
+layout_mode = 1
+anchor_left = 0.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 232.0
+offset_right = 0.0
+offset_top = -380.0
+offset_bottom = -180.0
+grow_horizontal = 2
+grow_vertical = 0
 
-[node name="ActionBar" parent="UILayer/SafeArea/VBox" instance=ExtResource("5_action")]
+[node name="CardDetailScreen" parent="UILayer/SafeArea/UIRoot" instance=ExtResource("8_cds")]
+layout_mode = 1
+anchor_left = 0.0
+anchor_right = 1.0
+anchor_top = 0.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="OverlayLayer" type="CanvasLayer" parent="."]
 layer = 10
 
-[node name="EscapeDialog" parent="OverlayLayer" instance=ExtResource("6_escape")]
+[node name="EscapeDialog" parent="OverlayLayer" instance=ExtResource("9_escape")]
 
-[node name="PassDeviceScreen" parent="OverlayLayer" instance=ExtResource("9_pass")]
+[node name="PassDeviceScreen" parent="OverlayLayer" instance=ExtResource("10_pass")]

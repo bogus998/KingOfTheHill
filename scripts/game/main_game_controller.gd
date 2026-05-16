@@ -1,12 +1,14 @@
 extends Node
 
 @onready var _safe_area: MarginContainer = $UILayer/SafeArea
-@onready var _dice_pool: DicePoolController = $UILayer/SafeArea/VBox/DicePool
-@onready var _resolution_picker: ResolutionPickerController = $UILayer/SafeArea/VBox/ResolutionPicker
-@onready var _action_bar: ActionBarController = $UILayer/SafeArea/VBox/ActionBar
+@onready var _dice_pool: DicePoolController = $UILayer/SafeArea/UIRoot/BottomDock/HBox/DiceSection/DicePool
+@onready var _resolution_picker: ResolutionPickerController = $UILayer/SafeArea/UIRoot/ResolutionPicker
+@onready var _action_bar: ActionBarController = $UILayer/SafeArea/UIRoot/BottomDock/HBox/ActionSection/ActionBar
 @onready var _escape_dialog: EscapeDialogController = $OverlayLayer/EscapeDialog
-@onready var _vault_area: VaultController = $UILayer/SafeArea/VBox/HUD/VaultArea
+@onready var _vault_area: VaultController = $UILayer/SafeArea/UIRoot/VaultInfoPanel
 @onready var _pass_screen: PassDeviceScreenController = $OverlayLayer/PassDeviceScreen
+@onready var _active_player_panel = $UILayer/SafeArea/UIRoot/ActivePlayerPanel
+@onready var _card_detail_screen = $UILayer/SafeArea/UIRoot/CardDetailScreen
 
 var _last_roll_result: Dictionary = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
@@ -34,6 +36,10 @@ func _ready() -> void:
 	_escape_dialog.stay_pressed.connect(_on_stay)
 
 	_pass_screen.ready_pressed.connect(func(): pass)  # hide handled inside pass_screen
+
+	_active_player_panel.view_cards_requested.connect(
+		func(): _card_detail_screen.show_for_player(TurnManager.current_player_index)
+	)
 
 	CardShop.card_purchased.connect(_card_effect_handler._on_card_purchased)
 	TurnManager.turn_started.connect(_card_effect_handler._on_turn_started)

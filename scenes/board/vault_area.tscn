@@ -16,3 +16,11 @@ text = "THE VAULT"
 [node name="OccupantLabel" type="Label" parent="VBoxContainer"]
 horizontal_alignment = 1
 text = "Empty"
+
+[node name="BonusLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "+2 gold/turn in vault"
+
+[node name="RoundLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "Round 1 | Turn 1"

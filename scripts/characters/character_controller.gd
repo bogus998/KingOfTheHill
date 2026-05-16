@@ -18,6 +18,9 @@ static var _shared_frames: SpriteFrames
 
 @export var player_index: int = 0
 
+var _base_position: Vector2
+var _tween: Tween
+
 
 func _ready() -> void:
 	_ensure_frames()
@@ -28,6 +31,7 @@ func _ready() -> void:
 	_refresh_visibility()
 	if visible:
 		_update_facing()
+	_base_position = position
 
 
 func _exit_tree() -> void:
@@ -57,6 +61,15 @@ func _refresh_visibility() -> void:
 	visible = player_index < PlayerManager.players.size()
 
 
+func _tween_to(target: Vector2) -> void:
+	if position.is_equal_approx(target):
+		return
+	if _tween:
+		_tween.kill()
+	_tween = create_tween()
+	_tween.tween_property(self, "position", target, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+
+
 func _update_facing() -> void:
 	var data: PlayerData = PlayerManager.players[player_index]
 	if data.is_eliminated:
@@ -64,8 +77,11 @@ func _update_facing() -> void:
 		return
 
 	if data.position == PlayerData.PlayerPosition.AT_VAULT:
+		_tween_to(_VAULT_POSITION)
 		play("idle_south")
 		return
+
+	_tween_to(_base_position)
 
 	var dir: Vector2 = _VAULT_POSITION - global_position
 	var angle: float = rad_to_deg(atan2(dir.y, dir.x))

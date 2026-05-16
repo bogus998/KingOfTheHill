@@ -17,7 +17,6 @@ func _build_panels() -> void:
 	var left_count := int(ceil(count / 2.0))
 	for i in count:
 		var panel := PLAYER_PANEL.instantiate()
-		panel.player_index = i
 		if i < left_count:
 			_left.add_child(panel)
 		else:

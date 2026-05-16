@@ -35,6 +35,13 @@ func _refresh_display() -> void:
 	_refresh_button.disabled = gems < CardShop.REFRESH_COST
 
 func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:
-	visible = (phase == TurnManager.TurnPhase.BUY_CARDS)
 	if phase == TurnManager.TurnPhase.BUY_CARDS:
+		visible = true
+		modulate.a = 0.0
 		_refresh_display()
+		var tw := create_tween()
+		tw.tween_property(self, "modulate:a", 1.0, 0.3)
+	else:
+		var tw := create_tween()
+		tw.tween_property(self, "modulate:a", 0.0, 0.2)
+		tw.tween_callback(func(): visible = false)
