@@ -21,8 +21,8 @@ offset_left = -300.0
 offset_top = -200.0
 offset_right = 300.0
 offset_bottom = 200.0
-grow_horizontal = 3
-grow_vertical = 3
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="TitleLabel" type="Label" parent="VBox"]
 text = "Setup Game"

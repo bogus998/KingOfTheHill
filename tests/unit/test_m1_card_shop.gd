@@ -7,9 +7,9 @@ func before_each() -> void:
 
 # ── Deck loading ──────────────────────────────────────────────────────────────
 
-func test_deck_loads_10_cards() -> void:
+func test_deck_loads_all_cards() -> void:
 	var total := CardShop.visible_cards.size() + CardShop._deck.size()
-	assert_eq(total, 10)
+	assert_eq(total, CardCatalog.load_all_cards().size())
 
 func test_three_cards_visible_at_start() -> void:
 	assert_eq(CardShop.visible_cards.size(), 3)
