@@ -4,13 +4,13 @@
 
 [node name="CardDisplay" type="PanelContainer"]
 script = ExtResource("1_display")
-custom_minimum_size = Vector2(150, 120)
+custom_minimum_size = Vector2(220, 0)
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2
 
 [node name="Icon" type="TextureRect" parent="VBox"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 84)
 stretch_mode = 5
 expand_mode = 2
 visible = false

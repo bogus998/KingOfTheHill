@@ -4,10 +4,11 @@
 
 [node name="Die" type="PanelContainer"]
 script = ExtResource("1_die")
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(88, 88)
 
 [node name="FaceLabel" type="Label" parent="."]
 layout_mode = 2
+theme_override_font_sizes/font_size = 40
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "1"

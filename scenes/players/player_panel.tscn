@@ -4,7 +4,7 @@
 
 [node name="PlayerPanel" type="PanelContainer"]
 script = ExtResource("1_pp")
-custom_minimum_size = Vector2(200, 160)
+custom_minimum_size = Vector2(260, 0)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -15,7 +15,7 @@ text = "Player"
 
 [node name="HealthBarContainer" type="Control" parent="VBoxContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 size_flags_horizontal = 3
 
 [node name="HealthBar" type="ProgressBar" parent="VBoxContainer/HealthBarContainer"]
