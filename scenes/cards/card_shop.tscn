@@ -28,3 +28,13 @@ slot_index = 2
 [node name="RefreshButton" type="Button" parent="VBox"]
 text = "Refresh (🪙2)"
 custom_minimum_size = Vector2(0, 56)
+
+[node name="PeekButton" type="Button" parent="VBox"]
+text = "Peek Deck"
+custom_minimum_size = Vector2(0, 56)
+visible = false
+
+[node name="BuyFromOthersButton" type="Button" parent="VBox"]
+text = "Buy from Dwarfs"
+custom_minimum_size = Vector2(0, 56)
+visible = false

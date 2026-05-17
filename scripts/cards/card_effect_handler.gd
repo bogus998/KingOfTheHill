@@ -6,14 +6,25 @@ extends RefCounted
 ## calls the matching hook on `card.effect`. Smoke Bomb charge tracking is the
 ## one exception: charges are cross-cutting state consumed by the dice UI.
 
+signal mimic_ui_needed(player_index: int)
+
 var _card_charges: Dictionary = {}
 
 func apply_immediate(card: CardData, player_index: int) -> void:
 	if card.effect != null:
 		card.effect.apply_immediate(player_index)
+		if card.effect.effect_id == CardEffectId.Id.EXTRA_TURN:
+			TurnManager.pending_extra_turn = true
 	if card.card_type == CardData.CardType.ONE_TIME:
 		PlayerManager.players[player_index].spent_one_time_cards.append(card)
-		PlayerManager.remove_card_from_hand(player_index, card)
+		var hand := PlayerManager.players[player_index].cards_in_hand
+		if hand.has(card):
+			PlayerManager.remove_card_from_hand(player_index, card)
+		elif card.effect != null:
+			for c in hand:
+				if c.effect != null and c.effect.effect_id == card.effect.effect_id:
+					PlayerManager.remove_card_from_hand(player_index, c)
+					break
 
 func on_roll_finalized(player_index: int, final_faces: Array) -> void:
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
@@ -28,13 +39,29 @@ func use_smoke_bomb_charge(card: CardData, player_index: int) -> void:
 	if _card_charges[card] == 0:
 		_card_charges.erase(card)
 		PlayerManager.players[player_index].spent_one_time_cards.append(card)
-		PlayerManager.remove_card_from_hand(player_index, card)
+		var hand := PlayerManager.players[player_index].cards_in_hand
+		var to_remove: CardData = card if hand.has(card) else null
+		if to_remove == null:
+			for c in hand:
+				if c.effect != null and c.effect.effect_id == CardEffectId.Id.SMOKE_BOMB:
+					to_remove = c
+					break
+		if to_remove != null:
+			PlayerManager.remove_card_from_hand(player_index, to_remove)
 
 func _on_card_purchased(player_index: int, card: CardData) -> void:
 	if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 		card.effect.on_acquired(player_index)
 		if card.effect.effect_id == CardEffectId.Id.SMOKE_BOMB:
 			_card_charges[card] = (card.effect as SmokeBombEffect).charges
+		elif card.effect.effect_id == CardEffectId.Id.GOLD_BATTERY:
+			# add_card_to_hand duplicates the resource, so `card` here is the pre-dup
+			# original. Find the freshly added instance by its effect_id and charges == 0.
+			for c in PlayerManager.players[player_index].cards_in_hand:
+				if c.effect != null and c.effect.effect_id == CardEffectId.Id.GOLD_BATTERY \
+						and c.charges == 0:
+					c.charges = 6
+					break
 	if card.card_type == CardData.CardType.ONE_TIME:
 		apply_immediate(card, player_index)
 	# Notify every permanent in hand (including the just-bought card) of the buy.
@@ -70,7 +97,29 @@ func _on_turn_started(player_index: int) -> void:
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			if TurnManager.is_repeated_turn and card.effect.is_income_passive():
 				continue
+			if card.effect.effect_id == CardEffectId.Id.GOLD_BATTERY:
+				continue  # handled separately below (needs card reference for charges)
+			if card.effect.effect_id == CardEffectId.Id.MIMIC:
+				continue  # handled separately below (needs UI or bot decision)
 			card.effect.on_turn_started(player_index)
+	# Gold Battery: dispense gold and decrement charge counter (skip on repeated turns)
+	if not TurnManager.is_repeated_turn:
+		for card in p.cards_in_hand.duplicate():
+			if card.effect != null and card.effect.effect_id == CardEffectId.Id.GOLD_BATTERY \
+					and card.charges > 0:
+				PlayerManager.add_gold(player_index, 2)
+				card.charges -= 1
+				if card.charges <= 0:
+					PlayerManager.remove_card_from_hand(player_index, card)
+				break
+	# Mimic (Copycat): copy an opponent's PERMANENT effect for this turn
+	for card in p.cards_in_hand.duplicate():
+		if card.effect != null and card.effect.effect_id == CardEffectId.Id.MIMIC:
+			if p.is_bot:
+				_auto_resolve_mimic(player_index)
+			else:
+				mimic_ui_needed.emit(player_index)
+			break
 	# Apply shrink penalty after PERMANENT loop (die_count_modifier already set by PERMANENT cards)
 	if p.shrink_stacks > 0:
 		p.die_count_modifier -= p.shrink_stacks
@@ -120,3 +169,59 @@ func _on_position_changed(player_index: int, new_pos: PlayerData.PlayerPosition)
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			card.effect.on_position_changed(player_index, new_pos)
+
+# ── Group 6 helpers ───────────────────────────────────────────────────────────
+
+func needs_recycle(player_index: int) -> bool:
+	var p := PlayerManager.players[player_index]
+	var has_recycle := false
+	var has_recyclable := false
+	for card in p.cards_in_hand:
+		if card.effect == null:
+			continue
+		if card.effect.effect_id == CardEffectId.Id.RECYCLE_CARDS:
+			has_recycle = true
+		elif card.card_type == CardData.CardType.PERMANENT:
+			has_recyclable = true
+	return has_recycle and has_recyclable
+
+func complete_recycle(player_index: int, chosen_cards: Array[CardData]) -> void:
+	for card in chosen_cards:
+		PlayerManager.add_gold(player_index, card.gold_cost)
+		PlayerManager.remove_card_from_hand(player_index, card)
+
+func complete_mimic(player_index: int, chosen_card: CardData) -> void:
+	if chosen_card != null and chosen_card.effect != null:
+		chosen_card.effect.on_turn_started(player_index)
+
+func complete_buy_from_others(buyer_index: int, card: CardData) -> void:
+	var owner_index := -1
+	for i in PlayerManager.players.size():
+		if PlayerManager.players[i].cards_in_hand.has(card):
+			owner_index = i
+			break
+	if owner_index < 0 or owner_index == buyer_index:
+		return
+	if not PlayerManager.spend_gold(buyer_index, card.gold_cost):
+		return
+	PlayerManager.remove_card_from_hand(owner_index, card)
+	PlayerManager.add_card_to_hand(buyer_index, card)
+
+func _auto_resolve_mimic(player_index: int) -> void:
+	var eligible := _mimic_eligible_cards(player_index)
+	if eligible.is_empty():
+		return
+	eligible.sort_custom(func(a: CardData, b: CardData) -> bool: return a.gold_cost > b.gold_cost)
+	complete_mimic(player_index, eligible[0])
+
+func _mimic_eligible_cards(player_index: int) -> Array[CardData]:
+	var result: Array[CardData] = []
+	for i in PlayerManager.players.size():
+		if i == player_index or PlayerManager.players[i].is_eliminated:
+			continue
+		for card in PlayerManager.players[i].cards_in_hand:
+			if card.card_type == CardData.CardType.PERMANENT and card.effect != null \
+					and card.effect.effect_id != CardEffectId.Id.MIMIC \
+					and card.effect.effect_id != CardEffectId.Id.GOLD_BATTERY:
+				result.append(card)
+	return result

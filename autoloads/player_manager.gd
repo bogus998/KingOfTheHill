@@ -10,6 +10,7 @@ signal position_changed(player_index: int, new_position: PlayerData.PlayerPositi
 signal card_hand_changed(player_index: int)
 signal win_condition_met(winner_index: int, reason: String)
 signal damage_applied(attacker_index: int, target_index: int, amount: int)
+signal player_respawned(player_index: int)
 
 var players: Array[PlayerData] = []
 
@@ -91,7 +92,7 @@ func get_vault_occupant() -> int:
 	return -1
 
 func add_card_to_hand(player_index: int, card: CardData) -> void:
-	players[player_index].cards_in_hand.append(card)
+	players[player_index].cards_in_hand.append(card.duplicate())
 	card_hand_changed.emit(player_index)
 
 func remove_card_from_hand(player_index: int, card: CardData) -> void:
@@ -120,8 +121,35 @@ func check_win_conditions() -> void:
 		win_condition_met.emit(-1, "draw")
 
 func _eliminate(player_index: int) -> void:
+	if _check_revival(player_index):
+		return
 	players[player_index].is_eliminated = true
 	player_eliminated.emit(player_index)
+
+func _check_revival(player_index: int) -> bool:
+	var p := players[player_index]
+	# shield_bearer: keeps all other cards, only discards itself
+	for card in p.cards_in_hand:
+		if card.effect != null and card.effect.effect_id == CardEffectId.Id.SHIELD_BEARER:
+			remove_card_from_hand(player_index, card)
+			p.gems = 0
+			gem_changed.emit(player_index, 0)
+			p.health = p.max_health
+			player_healed.emit(player_index, p.health)
+			player_respawned.emit(player_index)
+			return true
+	# respawn: clears all cards on revival
+	for card in p.cards_in_hand:
+		if card.effect != null and card.effect.effect_id == CardEffectId.Id.RESPAWN:
+			p.cards_in_hand.clear()
+			card_hand_changed.emit(player_index)
+			p.gems = 0
+			gem_changed.emit(player_index, 0)
+			p.health = p.max_health
+			player_healed.emit(player_index, p.health)
+			player_respawned.emit(player_index)
+			return true
+	return false
 
 func _alive_players() -> Array[int]:
 	var alive: Array[int] = []

@@ -9,3 +9,4 @@ enum CardType { ONE_TIME, PERMANENT }
 @export var card_type: CardType = CardType.ONE_TIME
 @export var card_icon: Texture2D
 @export var effect: CardEffect
+@export var charges: int = 0

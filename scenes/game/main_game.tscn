@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/game/main_game_controller.gd" id="1_ctrl"]
 [ext_resource type="Script" path="res://scripts/characters/character_controller.gd" id="2_char"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/card_detail_screen.tscn" id="8_cds"]
 [ext_resource type="PackedScene" path="res://scenes/ui/escape_dialog.tscn" id="9_escape"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pass_device_screen.tscn" id="10_pass"]
+[ext_resource type="PackedScene" path="res://scenes/ui/card_picker_dialog.tscn" id="11_cpd"]
 
 [node name="MainGame" type="Node"]
 script = ExtResource("1_ctrl")
@@ -157,3 +158,5 @@ layer = 10
 [node name="EscapeDialog" parent="OverlayLayer" instance=ExtResource("9_escape")]
 
 [node name="PassDeviceScreen" parent="OverlayLayer" instance=ExtResource("10_pass")]
+
+[node name="CardPickerDialog" parent="OverlayLayer" instance=ExtResource("11_cpd")]

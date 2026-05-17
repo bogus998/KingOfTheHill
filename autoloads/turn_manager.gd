@@ -13,6 +13,7 @@ var is_game_active: bool = false
 var is_repeated_turn: bool = false
 var _repeat_turn_pending: bool = false
 var _repeat_turn_die_penalty: int = 0
+var pending_extra_turn: bool = false
 
 func begin() -> void:
 	is_game_active = true
@@ -43,6 +44,10 @@ func advance_phase() -> void:
 
 func next_player() -> void:
 	if not is_game_active:
+		return
+	if pending_extra_turn:
+		pending_extra_turn = false
+		_start_turn()
 		return
 	var start := current_player_index
 	var size := PlayerManager.players.size()
