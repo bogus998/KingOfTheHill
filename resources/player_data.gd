@@ -30,3 +30,7 @@ var wildcard_pending: bool = false
 var pending_die_penalty: int = 0
 var repeat_turn_used: bool = false
 var war_drums_triggered: bool = false
+var poison_stacks: int = 0
+var shrink_stacks: int = 0
+var camouflage_active: bool = false
+var gold_dodge_active: bool = false

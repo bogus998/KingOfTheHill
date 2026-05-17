@@ -46,6 +46,12 @@ func _on_turn_started(player_index: int) -> void:
 	if player_index >= PlayerManager.players.size():
 		return
 	var p := PlayerManager.players[player_index]
+	# Poison tick before per-turn reset
+	if p.poison_stacks > 0:
+		PlayerManager.apply_damage(player_index, p.poison_stacks)
+		p.poison_stacks -= 1
+		if p.is_eliminated:
+			return
 	# Reset per-turn modifier flags
 	p.damage_dealt_this_turn = 0
 	p.die_count_modifier = 0
@@ -63,6 +69,9 @@ func _on_turn_started(player_index: int) -> void:
 			if TurnManager.is_repeated_turn and card.effect.is_income_passive():
 				continue
 			card.effect.on_turn_started(player_index)
+	# Apply shrink penalty after PERMANENT loop (die_count_modifier already set by PERMANENT cards)
+	if p.shrink_stacks > 0:
+		p.die_count_modifier -= p.shrink_stacks
 
 func _on_turn_ended(player_index: int) -> void:
 	if player_index >= PlayerManager.players.size():
@@ -70,6 +79,11 @@ func _on_turn_ended(player_index: int) -> void:
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			card.effect.on_turn_ended(player_index)
+	var p := PlayerManager.players[player_index]
+	if p.shrink_stacks > 0:
+		p.shrink_stacks -= 1
+	p.camouflage_active = false
+	p.gold_dodge_active = false
 
 func _on_damage_applied(attacker_index: int, target_index: int, amount: int) -> void:
 	if amount <= 0 or attacker_index < 0 or attacker_index == target_index:

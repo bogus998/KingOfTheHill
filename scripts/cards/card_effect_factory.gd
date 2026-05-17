@@ -75,5 +75,11 @@ static func _build(id: CardEffectId.Id) -> CardEffect:
 		CardEffectId.Id.GEM_ON_KILL: return GemOnKillEffect.new(3)
 		CardEffectId.Id.GEM_2_ENTER_VAULT: return GemOnEnterVaultEffect.new(2)
 
+		# ── Status effects ────────────────────────────────────────────────────
+		CardEffectId.Id.POISON: return PlagueBladeEffect.new()
+		CardEffectId.Id.SHRINK: return WeakeningCurseEffect.new()
+		CardEffectId.Id.CAMOUFLAGE: return StoneSkinEffect.new()
+		CardEffectId.Id.GOLD_DODGE: return DodgeRollEffect.new()
+
 		# ── Not yet implemented — no-op stub ──────────────────────────────────
 		_: return CardEffect.new()
