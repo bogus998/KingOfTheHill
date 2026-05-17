@@ -60,6 +60,8 @@ func _on_turn_started(player_index: int) -> void:
 	p.free_reroll_threes = false
 	p.can_set_die_before_roll = false
 	p.war_drums_triggered = false
+	p.nimble_dodge_used_this_turn = false
+	p.nimble_dodge_active = false
 	# repeat_turn_used stays true through a repeated turn to block re-triggering
 	if not TurnManager.is_repeated_turn:
 		p.repeat_turn_used = false
@@ -98,6 +100,21 @@ func _on_player_eliminated(eliminated_index: int) -> void:
 		for card in PlayerManager.players[i].cards_in_hand.duplicate():
 			if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 				card.effect.on_player_eliminated(i, eliminated_index)
+
+func apply_active_ability(effect_id: CardEffectId.Id, player_index: int) -> void:
+	match effect_id:
+		CardEffectId.Id.RAPID_HEALING:
+			if PlayerManager.spend_gold(player_index, 2):
+				PlayerManager.apply_heal(player_index, 1)
+		CardEffectId.Id.NIMBLE_DODGE:
+			var p := PlayerManager.players[player_index]
+			if not p.nimble_dodge_used_this_turn:
+				if PlayerManager.spend_gold(player_index, 1):
+					p.nimble_dodge_active = true
+					p.nimble_dodge_used_this_turn = true
+		CardEffectId.Id.SLOW_GRINDER:
+			if PlayerManager.spend_gold(player_index, 3):
+				PlayerManager.add_gems(player_index, 1)
 
 func _on_position_changed(player_index: int, new_pos: PlayerData.PlayerPosition) -> void:
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():

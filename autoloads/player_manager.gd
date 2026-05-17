@@ -29,6 +29,12 @@ func apply_damage(player_index: int, amount: int, attacker_index: int = -1) -> v
 	if p.gold_dodge_active:
 		damage_applied.emit(attacker_index, player_index, 0)
 		return
+	if p.nimble_dodge_active:
+		p.nimble_dodge_active = false
+		amount = max(0, amount - 1)
+		if amount == 0:
+			damage_applied.emit(attacker_index, player_index, 0)
+			return
 	if p.camouflage_active:
 		amount = _resolve_camouflage(amount)
 	var actual: int = max(0, amount - p.damage_reduction)

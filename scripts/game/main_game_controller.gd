@@ -26,6 +26,7 @@ func _ready() -> void:
 	_dice_pool.roll_completed.connect(_on_roll_completed)
 	_dice_pool.end_roll_requested.connect(_on_end_roll)
 	_action_bar.end_turn_requested.connect(_on_end_turn)
+	_action_bar.ability_used.connect(_on_ability_used)
 	_resolution_picker.apply_requested.connect(_on_apply_results)
 
 	_vault_area.vault_entered.connect(_on_vault_entered)
@@ -132,6 +133,9 @@ func _on_stay() -> void:
 	_escape_dialog.hide_dialog()
 	_pending_attacker = -1
 	TurnManager.advance_phase()
+
+func _on_ability_used(effect_id: CardEffectId.Id, player_index: int) -> void:
+	_card_effect_handler.apply_active_ability(effect_id, player_index)
 
 func _on_end_turn() -> void:
 	TurnManager.advance_phase()  # BUY_CARDS → END_TURN (triggers next_player via _on_phase_changed)

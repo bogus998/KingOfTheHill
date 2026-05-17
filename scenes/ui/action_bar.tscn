@@ -1,9 +1,12 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/action_bar_controller.gd" id="1_action"]
+[ext_resource type="PackedScene" path="res://scenes/ui/active_abilities_panel.tscn" id="2_panel"]
 
-[node name="ActionBar" type="HBoxContainer"]
+[node name="ActionBar" type="VBoxContainer"]
 script = ExtResource("1_action")
+
+[node name="ActiveAbilitiesPanel" parent="." instance=ExtResource("2_panel")]
 
 [node name="EndTurnButton" type="Button" parent="."]
 custom_minimum_size = Vector2(200, 56)

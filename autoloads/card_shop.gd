@@ -21,8 +21,9 @@ func reset() -> void:
 func purchase(slot_index: int, player_index: int) -> bool:
 	if slot_index >= visible_cards.size():
 		return false
-	var card := visible_cards[slot_index]
-	if not PlayerManager.spend_gold(player_index, card.gold_cost):
+	var card: CardData = visible_cards[slot_index]
+	var effective_cost: int = max(0, card.gold_cost - discount_for(player_index))
+	if not PlayerManager.spend_gold(player_index, effective_cost):
 		return false
 	visible_cards.remove_at(slot_index)
 	if card.card_type == CardData.CardType.PERMANENT:
@@ -39,6 +40,13 @@ func refresh_pool(player_index: int) -> bool:
 	visible_cards.clear()
 	_replenish()
 	return true
+
+func discount_for(player_index: int) -> int:
+	var count := 0
+	for c in PlayerManager.players[player_index].cards_in_hand:
+		if c.effect != null and c.effect.effect_id == CardEffectId.Id.GOLD_DISCOUNT_1:
+			count += 1
+	return count
 
 func _replenish() -> void:
 	while visible_cards.size() < VISIBLE_SLOTS and _deck.size() > 0:

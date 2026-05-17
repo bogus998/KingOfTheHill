@@ -27,11 +27,16 @@ func _on_shop_updated(_cards: Array) -> void:
 func _refresh_display() -> void:
 	if PlayerManager.players.is_empty():
 		return
-	var gold: int = PlayerManager.players[TurnManager.current_player_index].gold
+	var player_idx := TurnManager.current_player_index
+	var gold: int = PlayerManager.players[player_idx].gold
+	var discount: int = CardShop.discount_for(player_idx)
 	var slots := [_slot0, _slot1, _slot2]
 	for i in slots.size():
 		var card: CardData = CardShop.visible_cards[i] if i < CardShop.visible_cards.size() else null
-		slots[i].refresh(card, gold)
+		if card != null and discount > 0:
+			slots[i].refresh(card, gold, max(0, card.gold_cost - discount))
+		else:
+			slots[i].refresh(card, gold)
 	_refresh_button.disabled = gold < CardShop.REFRESH_COST
 
 func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:

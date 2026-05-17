@@ -34,3 +34,5 @@ var poison_stacks: int = 0
 var shrink_stacks: int = 0
 var camouflage_active: bool = false
 var gold_dodge_active: bool = false
+var nimble_dodge_used_this_turn: bool = false
+var nimble_dodge_active: bool = false
