@@ -21,6 +21,8 @@ All fields reset to defaults when `PlayerData.new()` is called at game setup.
 
 ## 2. Where Counters Are Applied and Decremented
 
+Effects should be enum, instead of strings. Enum effect should be descriptive, not single integer. 
+
 ### `poison_stacks`
 - **Applied:** `_apply_effect("poison", player_index)` — increments stacks on all targets hit.
 - **Ticks:** Top of `CardEffectHandler._on_turn_started`, before PERMANENT card loop. `apply_damage(player_index, poison_stacks)`, then `poison_stacks -= 1`. Guard with `if p.is_eliminated: return` after damage.
@@ -184,6 +186,21 @@ if p.gem_dodge_active:
 | R6 | Bot AI awareness of status effects | Out of scope; document as known bot limitation |
 | R7 | `randi()` in `PlayerManager` introduces non-determinism | Acceptable; extract seeded RNG later if test determinism needed |
 | R8 | Shrink + `get_all_faces()` returning hidden-die values to bot | Fix `get_all_faces()` to skip non-visible dice |
+
+---
+
+## Tests
+
+**Test file:** `tests/unit/test_m5_group4_status.gd` (create when implementing this group)
+
+Use the same `before_each`/`after_each`/`_make_card` pattern as the other group test files. Camouflage involves `randi()` — either seed the RNG before the test or test only that the signal fires, not the exact HP value.
+
+| Effect | Scenarios to cover |
+|---|---|
+| `poison` | Tick fires each `turn_started`; HP decreases by stack count; stacks decrement by 1 per tick; stacks reach 0 and stop; player can be eliminated by poison tick |
+| `gem_dodge` | `gem_dodge_active` flag set on card equip; `apply_damage` call is fully blocked while flag is true; flag cleared after first blocked hit; second hit in same turn lands normally |
+| `shrink` | `die_count_modifier` reduced by shrink stacks on `turn_started`; floored at enough to keep at least 1 active die; stacks decrement each `turn_ended`; `die_count_modifier` returns to normal once stacks reach 0 |
+| `camouflage` | Verify `_resolve_camouflage` is invoked on incoming damage; at minimum assert `damage_applied` signal fires (exact HP depends on RNG — do not assert specific value unless RNG is seeded) |
 
 ---
 

@@ -271,6 +271,26 @@ This avoids making `_on_turn_started` / `_on_turn_ended` async.
 
 ---
 
+## Tests
+
+**Test file:** `tests/unit/test_m5_group6_special.gd` (create when implementing this group)
+
+Group 6 has the most UI-coupled effects. Focus unit tests on pure logic paths that don't require dialog input. Dialog-driven flows (`mimic`, `recycle_cards`, `buy_from_others`, `opportunist`) must be tested manually on-device.
+
+| Effect | Scenarios to cover | UI-only |
+|---|---|---|
+| `respawn` | Player HP reaches 0 → `player_respawned` emitted at 1 HP; card consumed; second elimination (no `respawn` in hand) is permanent | No |
+| `shield_bearer` | Ally reaches 0 HP → shield holder takes the killing blow instead; shield card consumed; holder's own death does not trigger shield | No |
+| `extra_turn` | `TurnManager.pending_extra_turn` set to true after `apply_immediate`; card removed from hand | No |
+| `gem_battery` | Gems granted while card is in hand decrement charge counter; card auto-removed from hand at 0 charges | No |
+| `recycle_cards` | Gems awarded per card discarded; hand size decreases | Yes — picker dialog |
+| `mimic` | Effect of chosen card applied to caster; `mimic` itself excluded from picker options | Yes — picker dialog |
+| `peek_deck` | Top N cards of deck inspected without purchasing; deck order unchanged | Yes — peek overlay |
+| `buy_from_others` | Purchase succeeds using target player's visible card; card removed from target's shop slot | Yes — buy picker |
+| `opportunist` | Interrupt fires when shop refreshes; caster can buy new card before active player | Yes — interrupt prompt |
+
+---
+
 ## Files to Modify
 
 | File | Change |

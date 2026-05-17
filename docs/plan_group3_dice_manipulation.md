@@ -165,6 +165,32 @@ static func count_face(faces: Array, face: DieFace) -> int
 
 ---
 
+## Tests
+
+**Test file:** `tests/unit/test_m5_group3_dice.gd`
+
+All Group 3 effects are already covered. When adding new effects to this group, append tests to that file following the existing pattern (`before_each`/`after_each` shared, one test per scenario).
+
+| Effect | Covered scenarios |
+|---|---|
+| `extra_die` | `die_count_modifier` incremented; stacks with two copies |
+| `bonus_reroll_1` | `has_free_reroll_after_max` flag set |
+| `free_reroll_threes` | `free_reroll_threes` flag set |
+| `set_die_to_one` | `can_set_die_before_roll` flag set |
+| modifier reset | All flags cleared at turn start |
+| `wildcard_die` | `wildcard_pending` set; card removed (ONE_TIME) |
+| `smoke_bomb` | Extra reroll on use; card removed when charges depleted |
+| `all_faces_bonus` | 9 gold on all six faces; 0 gold when a face is missing |
+| `combo_master` | 2 gold on 1-2-3 combo; 0 gold without all three |
+| `triple_one_gold_bonus_2` | 2 gold on triple ONE; 0 gold with only two ONEs |
+| `triple_one_extra_turn` | `repeat_turn_pending` set; blocked when guard already used |
+| `repeat_turn_used` | Persists through repeated turn; resets on normal turn start |
+| `triple_two_damage_2` | 2 damage to others on triple TWO; no damage without triple |
+| `war_drums` | Triggered on 4+ gold roll; debuffs others on `turn_ended`; no debuff when not triggered |
+| repeated-turn income | Passives skipped; die modifiers still apply |
+
+---
+
 ## Files to Modify
 
 | File | Change |

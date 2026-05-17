@@ -189,6 +189,22 @@ In `apply_active_ability`:
 
 ---
 
+## Tests
+
+**Test file:** `tests/unit/test_m5_group5_gems.gd` (create when implementing this group)
+
+Active gem-spend effects are triggered by `CardEffectHandler.apply_active_ability` — test through that method, not through UI signals. UI wiring (`ActionAbilitiesPanel`, `PassDeviceScreen`) must be verified manually.
+
+| Effect | Scenarios to cover |
+|---|---|
+| `gem_discount_1` | `CardShop.purchase` succeeds with 1 fewer gem; card is still not buyable when gems < (cost - discount); two copies stack the discount |
+| `rapid_healing` | `apply_active_ability` deducts the gem cost and applies heal; no heal when gems insufficient |
+| `nimble_dodge` | `nimble_dodge_active` flag set by `apply_active_ability`; next `apply_damage` call blocked; flag cleared after first blocked hit; second hit in same turn lands |
+| `slow_grinder` | `apply_active_ability` converts gems to gold at the correct rate; no conversion when gems = 0 |
+| `paid_healing` | Heal applied when `resolution_controller` emits `paid_healing_offered` and player accepts; gems deducted; no effect if declined |
+
+---
+
 ## Files to Modify
 
 | File | Change |
