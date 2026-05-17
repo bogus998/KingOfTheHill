@@ -1,6 +1,11 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+[ext_resource type="Script" path="res://resources/effects/card_effect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="effect"]
+script = ExtResource("2_effect")
+effect_id = 54
 
 [resource]
 script = ExtResource("1_carddata")
@@ -8,4 +13,4 @@ card_name = "Die Jacker"
 description = "Once per turn, reroll one die of each other dwarf."
 gem_cost = 3
 card_type = 1
-effect_id = "die_jacker"
+effect = SubResource("effect")

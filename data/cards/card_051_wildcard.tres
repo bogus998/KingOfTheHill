@@ -1,6 +1,11 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+[ext_resource type="Script" path="res://resources/effects/immediate/wildcard_die_effect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="effect"]
+script = ExtResource("2_effect")
+effect_id = 19
 
 [resource]
 script = ExtResource("1_carddata")
@@ -8,4 +13,4 @@ card_name = "Wildcard"
 description = "Change one of your dice to any result. Discard when used."
 gem_cost = 3
 card_type = 1
-effect_id = "wildcard_die"
+effect = SubResource("effect")

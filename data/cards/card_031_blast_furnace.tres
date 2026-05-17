@@ -1,6 +1,13 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+[ext_resource type="Script" path="res://resources/effects/immediate/gold_and_damage_all_effect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="effect"]
+script = ExtResource("2_effect")
+effect_id = 11
+gold = 2
+damage = 3
 
 [resource]
 script = ExtResource("1_carddata")
@@ -8,4 +15,4 @@ card_name = "Blast Furnace"
 description = "Gain +2 gold and deal 3 damage to all other dwarfs."
 gem_cost = 6
 card_type = 0
-effect_id = "gold_2_damage_all_3"
+effect = SubResource("effect")

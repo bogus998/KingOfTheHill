@@ -1,6 +1,13 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+[ext_resource type="Script" path="res://resources/effects/immediate/damage_all_effect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="effect"]
+script = ExtResource("2_effect")
+effect_id = 10
+amount = 3
+include_self = true
 
 [resource]
 script = ExtResource("1_carddata")
@@ -8,4 +15,4 @@ card_name = "Cave-In"
 description = "Deal 3 damage to all dwarfs including yourself."
 gem_cost = 4
 card_type = 0
-effect_id = "damage_all_including_self_3"
+effect = SubResource("effect")

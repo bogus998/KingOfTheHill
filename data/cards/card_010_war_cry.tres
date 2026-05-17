@@ -1,6 +1,13 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
+[ext_resource type="Script" path="res://resources/effects/immediate/damage_all_effect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="effect"]
+script = ExtResource("2_effect")
+effect_id = 9
+amount = 2
+include_self = false
 
 [resource]
 script = ExtResource("1_carddata")
@@ -8,4 +15,4 @@ card_name = "War Cry"
 description = "Deal 2 damage to all other players immediately."
 gem_cost = 5
 card_type = 0
-effect_id = "damage_all_2"
+effect = SubResource("effect")
