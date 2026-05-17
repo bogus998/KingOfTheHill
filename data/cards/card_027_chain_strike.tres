@@ -12,6 +12,6 @@ amount = 1
 script = ExtResource("1_carddata")
 card_name = "Chain Strike"
 description = "When you deal damage, adjacent dwarfs each take 1 extra damage."
-gem_cost = 4
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

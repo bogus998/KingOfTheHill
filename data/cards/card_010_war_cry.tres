@@ -13,6 +13,6 @@ include_self = false
 script = ExtResource("1_carddata")
 card_name = "War Cry"
 description = "Deal 2 damage to all other players immediately."
-gem_cost = 5
+gold_cost = 5
 card_type = 0
 effect = SubResource("effect")

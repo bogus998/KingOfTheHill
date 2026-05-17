@@ -10,7 +10,7 @@ effect_id = 68
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Healer's Forge"
-description = "Use your Heart results to heal other dwarfs; they pay you 2 gems per health restored."
-gem_cost = 4
+description = "Use your Heart results to heal other dwarfs; they pay you 2 gold per health restored."
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

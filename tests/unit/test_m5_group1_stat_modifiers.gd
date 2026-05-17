@@ -35,7 +35,7 @@ func _make_card(type: CardData.CardType, effect: CardEffectId.Id, cost: int = 1)
 	var c := CardData.new()
 	c.card_type = type
 	c.effect = CardEffectFactory.create(effect)
-	c.gem_cost = cost
+	c.gold_cost = cost
 	return c
 
 # ── Group 1: Static stat modifiers ───────────────────────────────────────────
@@ -78,10 +78,10 @@ func test_regen_bonus_adds_extra_to_each_heal() -> void:
 	PlayerManager.apply_heal(0, 2)
 	assert_eq(PlayerManager.players[0].health, 8)  # 5 + 2 + 1 bonus
 
-func test_gem_bonus_on_gain_adds_extra_gem() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_BONUS_ON_GAIN)
+func test_gold_bonus_on_gain_adds_extra_gold() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_BONUS_ON_GAIN)
 	PlayerManager.add_card_to_hand(0, card)
 	_handler._on_card_purchased(0, card)
-	assert_eq(PlayerManager.players[0].gem_gain_bonus, 1)
-	PlayerManager.add_gems(0, 3)
-	assert_eq(PlayerManager.players[0].gems, 4)  # 3 + 1 bonus
+	assert_eq(PlayerManager.players[0].gold_gain_bonus, 1)
+	PlayerManager.add_gold(0, 3)
+	assert_eq(PlayerManager.players[0].gold, 4)  # 3 + 1 bonus

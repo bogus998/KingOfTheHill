@@ -21,9 +21,9 @@ func handle_claws(player_index: int, claw_count: int) -> void:
 		var occupant := PlayerManager.get_vault_occupant()
 		if occupant == -1:
 			PlayerManager.set_position(player_index, PlayerData.PlayerPosition.AT_VAULT)
-			PlayerManager.add_gold(player_index, 1)
-			if _has_effect(player_index, CardEffectId.Id.GOLD_PER_CLAW):
-				PlayerManager.add_gold(player_index, claw_count)
+			PlayerManager.add_gems(player_index, 1)
+			if _has_effect(player_index, CardEffectId.Id.GEM_PER_CLAW):
+				PlayerManager.add_gems(player_index, claw_count)
 			vault_entered.emit(player_index)
 		else:
 			if _has_effect(player_index, CardEffectId.Id.NOVA_ATTACK):
@@ -32,8 +32,8 @@ func handle_claws(player_index: int, claw_count: int) -> void:
 						PlayerManager.apply_damage(i, attack_damage, player_index)
 			else:
 				PlayerManager.apply_damage(occupant, attack_damage, player_index)
-			if _has_effect(player_index, CardEffectId.Id.GOLD_PER_CLAW):
-				PlayerManager.add_gold(player_index, claw_count)
+			if _has_effect(player_index, CardEffectId.Id.GEM_PER_CLAW):
+				PlayerManager.add_gems(player_index, claw_count)
 			if PlayerManager.players[occupant].is_eliminated:
 				PlayerManager.set_position(player_index, PlayerData.PlayerPosition.AT_VAULT)
 				vault_entered.emit(player_index)
@@ -49,8 +49,8 @@ func handle_claws(player_index: int, claw_count: int) -> void:
 			var p := PlayerManager.players[i]
 			if not p.is_eliminated and p.position == PlayerData.PlayerPosition.OUTSIDE:
 				PlayerManager.apply_damage(i, attack_damage + bonus_damage, player_index)
-		if _has_effect(player_index, CardEffectId.Id.GOLD_PER_CLAW):
-			PlayerManager.add_gold(player_index, claw_count)
+		if _has_effect(player_index, CardEffectId.Id.GEM_PER_CLAW):
+			PlayerManager.add_gems(player_index, claw_count)
 		vault_attacked.emit(player_index, claw_count)
 
 func handle_flee(attacker_index: int) -> void:

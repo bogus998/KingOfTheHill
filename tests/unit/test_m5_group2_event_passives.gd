@@ -35,73 +35,73 @@ func _make_card(type: CardData.CardType, effect: CardEffectId.Id, cost: int = 1)
 	var c := CardData.new()
 	c.card_type = type
 	c.effect = CardEffectFactory.create(effect)
-	c.gem_cost = cost
+	c.gold_cost = cost
 	return c
 
 # ── Group 2: Event-triggered passives ────────────────────────────────────────
 
-func test_gold_on_kill_awards_3_gold_on_elimination() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_ON_KILL)
+func test_gems_on_kill_awards_3_gems_on_elimination() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_ON_KILL)
 	PlayerManager.add_card_to_hand(0, card)
 	PlayerManager.apply_damage(1, 10)
 	assert_eq(PlayerManager.players[1].is_eliminated, true)
-	assert_eq(PlayerManager.players[0].gold, 3)
+	assert_eq(PlayerManager.players[0].gems, 3)
 
-func test_gold_2_enter_vault_awards_on_entry() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_2_ENTER_VAULT)
+func test_gems_2_enter_vault_awards_on_entry() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_2_ENTER_VAULT)
 	PlayerManager.add_card_to_hand(0, card)
 	PlayerManager.set_position(0, PlayerData.PlayerPosition.AT_VAULT)
-	assert_eq(PlayerManager.players[0].gold, 2)
+	assert_eq(PlayerManager.players[0].gems, 2)
 
-func test_gold_2_enter_vault_no_gold_on_leave() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_2_ENTER_VAULT)
+func test_gems_2_enter_vault_no_gems_on_leave() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_2_ENTER_VAULT)
 	PlayerManager.add_card_to_hand(0, card)
 	PlayerManager.set_position(0, PlayerData.PlayerPosition.AT_VAULT)
 	PlayerManager.set_position(0, PlayerData.PlayerPosition.OUTSIDE)
-	assert_eq(PlayerManager.players[0].gold, 2)  # Only the entry gold
+	assert_eq(PlayerManager.players[0].gems, 2)  # Only the entry gems
 
-func test_gem_on_heavy_damage_awards_gem_on_2plus_hit() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_ON_HEAVY_DAMAGE)
+func test_gold_on_heavy_damage_awards_gold_on_2plus_hit() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_ON_HEAVY_DAMAGE)
 	PlayerManager.add_card_to_hand(0, card)
 	PlayerManager.apply_damage(0, 2, 1)
-	assert_eq(PlayerManager.players[0].gems, 1)
+	assert_eq(PlayerManager.players[0].gold, 1)
 
-func test_gem_on_heavy_damage_no_gem_on_1_damage() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_ON_HEAVY_DAMAGE)
+func test_gold_on_heavy_damage_no_gold_on_1_damage() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_ON_HEAVY_DAMAGE)
 	PlayerManager.add_card_to_hand(0, card)
 	PlayerManager.apply_damage(0, 1, 1)
-	assert_eq(PlayerManager.players[0].gems, 0)
+	assert_eq(PlayerManager.players[0].gold, 0)
 
-func test_gold_if_no_damage_awards_gold_when_idle() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_IF_NO_DAMAGE)
+func test_gems_if_no_damage_awards_gems_when_idle() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_IF_NO_DAMAGE)
 	PlayerManager.add_card_to_hand(0, card)
 	TurnManager.turn_started.emit(0)
 	TurnManager.turn_ended.emit(0)
-	assert_eq(PlayerManager.players[0].gold, 1)
+	assert_eq(PlayerManager.players[0].gems, 1)
 
-func test_gold_if_no_damage_no_gold_after_dealing_damage() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_IF_NO_DAMAGE)
+func test_gems_if_no_damage_no_gems_after_dealing_damage() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_IF_NO_DAMAGE)
 	PlayerManager.add_card_to_hand(0, card)
 	TurnManager.turn_started.emit(0)
 	PlayerManager.apply_damage(1, 2, 0)
 	TurnManager.turn_ended.emit(0)
-	assert_eq(PlayerManager.players[0].gold, 0)
+	assert_eq(PlayerManager.players[0].gems, 0)
 
-func test_heavy_strike_gold_awards_2_gold_on_3plus_damage() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.HEAVY_STRIKE_GOLD)
+func test_heavy_strike_gems_awards_2_gems_on_3plus_damage() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.HEAVY_STRIKE_GEM)
 	PlayerManager.add_card_to_hand(0, card)
 	TurnManager.turn_started.emit(0)
 	PlayerManager.apply_damage(1, 3, 0)
 	TurnManager.turn_ended.emit(0)
-	assert_eq(PlayerManager.players[0].gold, 2)
+	assert_eq(PlayerManager.players[0].gems, 2)
 
-func test_heavy_strike_gold_no_award_below_3_damage() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.HEAVY_STRIKE_GOLD)
+func test_heavy_strike_gems_no_award_below_3_damage() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.HEAVY_STRIKE_GEM)
 	PlayerManager.add_card_to_hand(0, card)
 	TurnManager.turn_started.emit(0)
 	PlayerManager.apply_damage(1, 2, 0)
 	TurnManager.turn_ended.emit(0)
-	assert_eq(PlayerManager.players[0].gold, 0)
+	assert_eq(PlayerManager.players[0].gems, 0)
 
 func test_reflective_1_damages_attacker() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.REFLECTIVE_1)
@@ -124,15 +124,15 @@ func test_life_drain_heals_attacker_on_damage() -> void:
 	PlayerManager.apply_damage(1, 2, 0)
 	assert_eq(PlayerManager.players[0].health, 6)  # 5 + 1 drain
 
-func test_vault_dweller_gold_per_turn_in_vault() -> void:
+func test_vault_dweller_gems_per_turn_in_vault() -> void:
 	PlayerManager.set_position(0, PlayerData.PlayerPosition.AT_VAULT)
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.VAULT_DWELLER)
 	PlayerManager.add_card_to_hand(0, card)
 	TurnManager.turn_started.emit(0)
-	assert_eq(PlayerManager.players[0].gold, 1)
+	assert_eq(PlayerManager.players[0].gems, 1)
 
-func test_vault_dweller_no_gold_outside_vault() -> void:
+func test_vault_dweller_no_gems_outside_vault() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.VAULT_DWELLER)
 	PlayerManager.add_card_to_hand(0, card)
 	TurnManager.turn_started.emit(0)
-	assert_eq(PlayerManager.players[0].gold, 0)
+	assert_eq(PlayerManager.players[0].gems, 0)

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
-[ext_resource type="Script" path="res://resources/effects/turn_end/underdog_gold_effect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://resources/effects/turn_end/underdog_gem_effect.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
@@ -10,7 +10,7 @@ effect_id = 34
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Underdog's Pride"
-description = "At the end of your turn, if you have the fewest gold, gain +1 gold."
-gem_cost = 3
+description = "At the end of your turn, if you have the fewest gems, gain +1 gem."
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

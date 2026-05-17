@@ -1,18 +1,17 @@
 [gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
-[ext_resource type="Script" path="res://resources/effects/immediate/gold_and_heal_effect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://resources/effects/immediate/gain_gold_effect.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
-effect_id = 12
-gold = 2
-heal = 3
+effect_id = 6
+amount = 9
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Gem Reactor"
-description = "Gain +2 gold and restore 3 health."
-gem_cost = 6
+card_name = "Gold Cache"
+description = "Gain +9 gold immediately."
+gold_cost = 8
 card_type = 0
 effect = SubResource("effect")

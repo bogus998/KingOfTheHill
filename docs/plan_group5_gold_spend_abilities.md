@@ -1,6 +1,6 @@
-# Group 5 — Active Gem-Spend Abilities: Implementation Plan
+# Group 5 — Active Gold-Spend Abilities: Implementation Plan
 
-**Cards covered:** Healing Flask (`rapid_healing`), Nimble Dodge (`nimble_dodge`), Slow Grinder (`slow_grinder`), Thrifty Trader (`gem_discount_1`), Healer's Forge (`paid_healing`)
+**Cards covered:** Healing Flask (`rapid_healing`), Nimble Dodge (`nimble_dodge`), Slow Grinder (`slow_grinder`), Thrifty Trader (`gold_discount_1`), Healer's Forge (`paid_healing`)
 
 ---
 
@@ -9,16 +9,16 @@
 - `CardEffectHandler` is a plain `RefCounted`, instantiated once in `main_game_controller.gd`.
 - `TurnPhase` enum: `DICE_ROLL → RESOLUTION → BUY_CARDS → END_TURN`. Action bar's End Turn button only visible during `BUY_CARDS`.
 - `ActionBarController` (`scripts/ui/action_bar_controller.gd`) is an `HBoxContainer` with a single `EndTurnButton`.
-- `CardShop.purchase()` calls `PlayerManager.spend_gems(player_index, card.gem_cost)` directly — no discount hook exists.
+- `CardShop.purchase()` calls `PlayerManager.spend_gold(player_index, card.gold_cost)` directly — no discount hook exists.
 - `ResolutionController.apply_non_claw()` applies hearts as self-heal only; no mechanism to redirect hearts.
 
 ---
 
 ## 1. UI Requirements
 
-### Pattern A — "Spend gems anytime" button (`rapid_healing`, `nimble_dodge`, `slow_grinder`)
+### Pattern A — "Spend gold anytime" button (`rapid_healing`, `nimble_dodge`, `slow_grinder`)
 
-A new **ActiveAbilitiesPanel** (VBoxContainer scene) appears alongside existing UI during applicable phases. Each row shows: `[Card Name] [Cost: N gems] [USE button]`. USE button disabled when gems are insufficient or per-turn cap consumed.
+A new **ActiveAbilitiesPanel** (VBoxContainer scene) appears alongside existing UI during applicable phases. Each row shows: `[Card Name] [Cost: N gold] [USE button]`. USE button disabled when gold are insufficient or per-turn cap consumed.
 
 **Where it fits:** Embed as a VBox above the End Turn button in `ActionBarController`. `main_game_controller` drives visibility via `phase_changed`.
 
@@ -26,9 +26,9 @@ A new **ActiveAbilitiesPanel** (VBoxContainer scene) appears alongside existing 
 - `nimble_dodge`: available in RESOLUTION + BUY_CARDS.
 - `slow_grinder`: available in BUY_CARDS only.
 
-Panel rebuilds at each turn start from active player's `cards_in_hand` filtered to gem-spend effect IDs.
+Panel rebuilds at each turn start from active player's `cards_in_hand` filtered to gold-spend effect IDs.
 
-### Pattern B — `gem_discount_1`
+### Pattern B — `gold_discount_1`
 
 No button. Discount applied silently inside `CardShop.purchase()`. Cost labels update via `card_shop_controller._refresh_display()` to show discounted cost.
 
@@ -54,25 +54,25 @@ No new flag for `rapid_healing` or `slow_grinder` (both are uncapped).
 
 ---
 
-## 3. How `gem_discount_1` Hooks into the Card Shop
+## 3. How `gold_discount_1` Hooks into the Card Shop
 
 ### Stateless discount computation (preferred)
 
 Add helper to `CardShop` autoload:
 ```gdscript
-func _gem_discount_for(player_index: int) -> int:
+func _gold_discount_for(player_index: int) -> int:
     var count := 0
     for c in PlayerManager.players[player_index].cards_in_hand:
-        if c.effect_id == "gem_discount_1":
+        if c.effect_id == "gold_discount_1":
             count += 1
     return count
 ```
 
 Modify `purchase()`:
 ```gdscript
-var discount := _gem_discount_for(player_index)
-var effective_cost := max(0, card.gem_cost - discount)
-if not PlayerManager.spend_gems(player_index, effective_cost):
+var discount := _gold_discount_for(player_index)
+var effective_cost := max(0, card.gold_cost - discount)
+if not PlayerManager.spend_gold(player_index, effective_cost):
     return false
 ```
 
@@ -89,7 +89,7 @@ Modify `card_display_controller.refresh()` to accept optional `display_cost: int
 New method `CardEffectHandler.apply_active_ability(effect_id, player_index)`:
 ```gdscript
 "rapid_healing":
-    if PlayerManager.spend_gems(player_index, 2):
+    if PlayerManager.spend_gold(player_index, 2):
         PlayerManager.apply_heal(player_index, 1)
 ```
 
@@ -105,7 +105,7 @@ In `apply_active_ability`:
 "nimble_dodge":
     var p := PlayerManager.players[player_index]
     if not p.nimble_dodge_used_this_turn:
-        if PlayerManager.spend_gems(player_index, 1):
+        if PlayerManager.spend_gold(player_index, 1):
             p.nimble_dodge_active = true
             p.nimble_dodge_used_this_turn = true
 ```
@@ -127,14 +127,14 @@ Reset both flags in `CardEffectHandler._on_turn_started`.
 In `apply_active_ability`:
 ```gdscript
 "slow_grinder":
-    if PlayerManager.spend_gems(player_index, 3):
-        PlayerManager.add_gold(player_index, 1)
+    if PlayerManager.spend_gold(player_index, 3):
+        PlayerManager.add_gems(player_index, 1)
 ```
 
 - Available in BUY_CARDS only.
-- No per-turn cap; USE button disabled when gems < 3.
+- No per-turn cap; USE button disabled when gold < 3.
 
-### `gem_discount_1` — Thrifty Trader (PERMANENT)
+### `gold_discount_1` — Thrifty Trader (PERMANENT)
 
 - No USE button, no `_apply_effect` case.
 - Stateless computation in `CardShop.purchase()` + visual update in `CardShopController`.
@@ -148,7 +148,7 @@ In `apply_active_ability`:
   2. `main_game_controller` catches it, shows targeting dialog.
   3. Healer selects target + amount.
   4. Pass device to target for consent.
-  5. On consent: `spend_gems(target, amount * 2)`, `apply_heal(target, amount)`.
+  5. On consent: `spend_gold(target, amount * 2)`, `apply_heal(target, amount)`.
   6. Phase continues normally.
 - Defer until after all other Group 5 effects are implemented.
 
@@ -160,14 +160,14 @@ In `apply_active_ability`:
 |---|---|---|
 | `ability_used(effect_id, player_index)` | `ActiveAbilitiesPanelController` | Routes USE button presses to `CardEffectHandler` |
 | `paid_healing_offered(healer_index, hearts)` | `ResolutionController` | Triggers paid-heal targeting dialog |
-| `apply_active_ability(effect_id, player_index)` | `CardEffectHandler` (new public method) | Executes gem-spend effect |
+| `apply_active_ability(effect_id, player_index)` | `CardEffectHandler` (new public method) | Executes gold-spend effect |
 
 ---
 
 ## 6. Implementation Order
 
 1. `PlayerData` flags — add `nimble_dodge_used_this_turn` and `nimble_dodge_active`.
-2. `gem_discount_1` — stateless hook in `CardShop.purchase()` + visual update. Self-contained.
+2. `gold_discount_1` — stateless hook in `CardShop.purchase()` + visual update. Self-contained.
 3. `slow_grinder` — implement `apply_active_ability` stub + `ActiveAbilitiesPanelController` skeleton.
 4. `rapid_healing` — extend panel and `apply_active_ability`. Validate RESOLUTION visibility.
 5. `nimble_dodge` — add damage intercept to `PlayerManager.apply_damage()`. Extend panel.
@@ -182,26 +182,26 @@ In `apply_active_ability`:
 | Q1 | ActiveAbilitiesPanel layout space (third column vs. above End Turn) | Decide before Step 3; prefer embedding above End Turn button |
 | Q2 | `rapid_healing` "anytime" — allow during DICE_ROLL? | Restrict to RESOLUTION + BUY_CARDS to avoid disrupting dice UX |
 | Q3 | `nimble_dodge` blocking passive damage from other players' turns | Correct behavior — flag is consumed by next `apply_damage` regardless of whose turn |
-| Q4 | Bot support for active abilities | Defer; add simple heuristics (heal if HP < 5, convert gems if gems > 6) as follow-up |
+| Q4 | Bot support for active abilities | Defer; add simple heuristics (heal if HP < 5, convert gold if gold > 6) as follow-up |
 | Q5 | `paid_healing` on shared device requires mid-RESOLUTION device pass | Extend `PassDeviceScreen` to support mid-phase; design first |
-| Q6 | `gem_discount_1` and shop refresh cost | Discount does NOT apply to 2-gem refresh cost |
+| Q6 | `gold_discount_1` and shop refresh cost | Discount does NOT apply to 2-gold refresh cost |
 | Q7 | Multiple Thrifty Trader copies: stack or cap? | Stack by default; clamp with `min(count, 1)` if undesired |
 
 ---
 
 ## Tests
 
-**Test file:** `tests/unit/test_m5_group5_gems.gd` (create when implementing this group)
+**Test file:** `tests/unit/test_m5_group5_gold.gd` (create when implementing this group)
 
-Active gem-spend effects are triggered by `CardEffectHandler.apply_active_ability` — test through that method, not through UI signals. UI wiring (`ActionAbilitiesPanel`, `PassDeviceScreen`) must be verified manually.
+Active gold-spend effects are triggered by `CardEffectHandler.apply_active_ability` — test through that method, not through UI signals. UI wiring (`ActionAbilitiesPanel`, `PassDeviceScreen`) must be verified manually.
 
 | Effect | Scenarios to cover |
 |---|---|
-| `gem_discount_1` | `CardShop.purchase` succeeds with 1 fewer gem; card is still not buyable when gems < (cost - discount); two copies stack the discount |
-| `rapid_healing` | `apply_active_ability` deducts the gem cost and applies heal; no heal when gems insufficient |
+| `gold_discount_1` | `CardShop.purchase` succeeds with 1 fewer gold; card is still not buyable when gold < (cost - discount); two copies stack the discount |
+| `rapid_healing` | `apply_active_ability` deducts the gold cost and applies heal; no heal when gold insufficient |
 | `nimble_dodge` | `nimble_dodge_active` flag set by `apply_active_ability`; next `apply_damage` call blocked; flag cleared after first blocked hit; second hit in same turn lands |
-| `slow_grinder` | `apply_active_ability` converts gems to gold at the correct rate; no conversion when gems = 0 |
-| `paid_healing` | Heal applied when `resolution_controller` emits `paid_healing_offered` and player accepts; gems deducted; no effect if declined |
+| `slow_grinder` | `apply_active_ability` converts gold to gems at the correct rate; no conversion when gold = 0 |
+| `paid_healing` | Heal applied when `resolution_controller` emits `paid_healing_offered` and player accepts; gold deducted; no effect if declined |
 
 ---
 
@@ -211,7 +211,7 @@ Active gem-spend effects are triggered by `CardEffectHandler.apply_active_abilit
 |---|---|
 | `resources/player_data.gd` | `nimble_dodge_used_this_turn`, `nimble_dodge_active` flags |
 | `autoloads/player_manager.gd` | Nimble dodge intercept in `apply_damage` |
-| `autoloads/card_shop.gd` | `_gem_discount_for` helper, discount in `purchase()` |
+| `autoloads/card_shop.gd` | `_gold_discount_for` helper, discount in `purchase()` |
 | `scripts/cards/card_effect_handler.gd` | `apply_active_ability` method |
 | `scripts/cards/card_shop_controller.gd` | Display discounted cost |
 | `scripts/ui/action_bar_controller.gd` | Add ActiveAbilitiesPanel |

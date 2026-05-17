@@ -12,6 +12,6 @@ amount = 3
 script = ExtResource("1_carddata")
 card_name = "Healing Brew"
 description = "Restore 3 HP immediately."
-gem_cost = 2
+gold_cost = 2
 card_type = 0
 effect = SubResource("effect")

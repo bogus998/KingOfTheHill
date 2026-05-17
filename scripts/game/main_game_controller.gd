@@ -10,7 +10,7 @@ extends Node
 @onready var _active_player_panel = $UILayer/SafeArea/UIRoot/ActivePlayerPanel
 @onready var _card_detail_screen = $UILayer/SafeArea/UIRoot/CardDetailScreen
 
-var _last_roll_result: Dictionary = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
+var _last_roll_result: Dictionary = { "gems": 0, "gold": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
 var _resolution_controller := ResolutionController.new()
 var _card_effect_handler := CardEffectHandler.new()
@@ -68,7 +68,7 @@ func _apply_safe_area() -> void:
 	_safe_area.add_theme_constant_override("margin_right", int((screen.x - safe.end.x) * scale.x))
 
 func _on_turn_started(player_index: int) -> void:
-	_last_roll_result = { "gold": 0, "gems": 0, "claws": 0, "hearts": 0 }
+	_last_roll_result = { "gems": 0, "gold": 0, "claws": 0, "hearts": 0 }
 	if PlayerManager.players[player_index].is_bot:
 		_run_bot_turn.call_deferred()
 	else:
@@ -188,7 +188,7 @@ func _run_bot_turn() -> void:
 	if not TurnManager.is_game_active or TurnManager.current_phase != TurnManager.TurnPhase.BUY_CARDS:
 		return
 	await get_tree().create_timer(_bot_brain.get_thinking_delay()).timeout
-	var buy_idx: int = _bot_brain.decide_buy(CardShop.visible_cards, PlayerManager.players[bot_index].gems)
+	var buy_idx: int = _bot_brain.decide_buy(CardShop.visible_cards, PlayerManager.players[bot_index].gold)
 	if buy_idx >= 0:
 		CardShop.purchase(buy_idx, bot_index)
 	_on_end_turn()

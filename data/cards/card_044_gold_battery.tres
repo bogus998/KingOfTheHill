@@ -1,17 +1,16 @@
 [gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
-[ext_resource type="Script" path="res://resources/effects/turn_end/gold_per_gems_effect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://resources/effects/card_effect.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
-effect_id = 36
-per = 6
+effect_id = 56
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Gem Counter"
-description = "At end of turn gain 1 gold for every 6 gems you have."
-gem_cost = 3
+card_name = "Gold Battery"
+description = "Loaded with gold on purchase. Dispenses 2 gold per turn; discarded when empty."
+gold_cost = 2
 card_type = 1
 effect = SubResource("effect")

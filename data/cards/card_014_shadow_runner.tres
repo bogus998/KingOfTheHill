@@ -11,6 +11,6 @@ effect_id = 26
 script = ExtResource("1_carddata")
 card_name = "Shadow Runner"
 description = "You may always reroll any die showing THREE."
-gem_cost = 4
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

@@ -11,6 +11,6 @@ effect_id = 69
 script = ExtResource("1_carddata")
 card_name = "Forge Master"
 description = "When buying cards, you may look at and buy the top card of the deck."
-gem_cost = 2
+gold_cost = 2
 card_type = 1
 effect = SubResource("effect")

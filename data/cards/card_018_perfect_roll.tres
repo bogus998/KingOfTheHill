@@ -6,12 +6,12 @@
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
 effect_id = 39
-gold = 9
+gems = 9
 
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Perfect Roll"
-description = "If you roll ONE TWO THREE HEART CLAW GEM in a single turn, gain 9 bonus gold."
-gem_cost = 3
+description = "If you roll ONE TWO THREE HEART CLAW GOLD in a single turn, gain 9 bonus gems."
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

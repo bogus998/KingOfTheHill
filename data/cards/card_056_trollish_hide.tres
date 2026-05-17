@@ -12,6 +12,6 @@ amount = 1
 script = ExtResource("1_carddata")
 card_name = "Trollish Hide"
 description = "When you heal, restore 1 extra health."
-gem_cost = 4
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

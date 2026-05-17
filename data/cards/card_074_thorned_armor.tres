@@ -12,6 +12,6 @@ amount = 1
 script = ExtResource("1_carddata")
 card_name = "Thorned Armor"
 description = "When you take damage, the attacker takes 1 damage."
-gem_cost = 6
+gold_cost = 6
 card_type = 1
 effect = SubResource("effect")

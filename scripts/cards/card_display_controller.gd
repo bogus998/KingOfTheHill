@@ -10,7 +10,7 @@ signal buy_pressed(slot_index: int)
 @onready var _desc_label: Label = $VBox/DescLabel
 @onready var _buy_button: Button = $VBox/BuyButton
 
-func refresh(card: CardData, player_gems: int) -> void:
+func refresh(card: CardData, player_gold: int) -> void:
 	if card == null:
 		visible = false
 		return
@@ -18,9 +18,9 @@ func refresh(card: CardData, player_gems: int) -> void:
 	_icon.texture = card.card_icon
 	_icon.visible = card.card_icon != null
 	_name_label.text = card.card_name
-	_cost_label.text = "💎 %d" % card.gem_cost
+	_cost_label.text = "🪙 %d" % card.gold_cost
 	_desc_label.text = card.description
-	_buy_button.disabled = player_gems < card.gem_cost
+	_buy_button.disabled = player_gold < card.gold_cost
 
 func set_buy_visible(value: bool) -> void:
 	_buy_button.visible = value

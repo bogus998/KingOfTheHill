@@ -10,7 +10,7 @@ effect_id = 51
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Merchant's Touch"
-description = "You may buy PERMANENT cards from other dwarfs at their gem cost."
-gem_cost = 4
+description = "You may buy PERMANENT cards from other dwarfs at their gold cost."
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

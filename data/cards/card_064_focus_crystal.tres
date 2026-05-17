@@ -10,7 +10,7 @@ effect_id = 60
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Focus Crystal"
-description = "Spend 1 gem to gain 1 extra reroll."
-gem_cost = 4
+description = "Spend 1 gold to gain 1 extra reroll."
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

@@ -1,10 +1,10 @@
 class_name WarDrumsEffect
 extends CardEffect
-## Rolling 4+ dice-gold arms War Drums; at turn end every other living player
+## Rolling 4+ dice-gems arms War Drums; at turn end every other living player
 ## takes a -1 die penalty next turn.
 
 func on_roll_finalized(owner_index: int, final_faces: Array) -> void:
-	if DiceResolver.resolve(final_faces)["gold"] >= 4:
+	if DiceResolver.resolve(final_faces)["gems"] >= 4:
 		PlayerManager.players[owner_index].war_drums_triggered = true
 
 func on_turn_ended(owner_index: int) -> void:

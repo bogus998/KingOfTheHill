@@ -42,13 +42,13 @@ vertical_alignment = 1
 text = "10 / 10"
 mouse_filter = 2
 
-[node name="GoldLabel" type="Label" parent="VBoxContainer"]
-horizontal_alignment = 1
-text = "0/20"
-
 [node name="GemsLabel" type="Label" parent="VBoxContainer"]
 horizontal_alignment = 1
-text = "💎 0"
+text = "💎 0/20"
+
+[node name="GoldLabel" type="Label" parent="VBoxContainer"]
+horizontal_alignment = 1
+text = "🪙 0"
 
 [node name="ViewCardsButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2

@@ -1,18 +1,18 @@
 [gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
-[ext_resource type="Script" path="res://resources/effects/event/gem_on_heavy_damage_effect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://resources/effects/event/gold_on_heavy_damage_effect.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
 effect_id = 48
 threshold = 2
-gems = 1
+gold = 1
 
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Stubborn Fighter"
-description = "When you lose 2 or more health in a single hit, gain 1 gem."
-gem_cost = 3
+description = "When you lose 2 or more health in a single hit, gain 1 gold."
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

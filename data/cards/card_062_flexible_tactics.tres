@@ -10,7 +10,7 @@ effect_id = 57
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Flexible Tactics"
-description = "Spend 2 gems to change one of your dice to any result."
-gem_cost = 3
+description = "Spend 2 gold to change one of your dice to any result."
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

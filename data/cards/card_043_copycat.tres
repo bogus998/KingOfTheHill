@@ -11,6 +11,6 @@ effect_id = 63
 script = ExtResource("1_carddata")
 card_name = "Copycat"
 description = "Copy the effect of a PERMANENT card held by any dwarf."
-gem_cost = 8
+gold_cost = 8
 card_type = 1
 effect = SubResource("effect")

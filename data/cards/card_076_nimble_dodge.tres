@@ -10,7 +10,7 @@ effect_id = 64
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Nimble Dodge"
-description = "Once per turn, spend 1 gem to negate 1 damage."
-gem_cost = 4
+description = "Once per turn, spend 1 gold to negate 1 damage."
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

@@ -11,6 +11,6 @@ effect_id = 19
 script = ExtResource("1_carddata")
 card_name = "Wildcard"
 description = "Change one of your dice to any result. Discard when used."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

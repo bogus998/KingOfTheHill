@@ -10,7 +10,7 @@ effect_id = 61
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Vault Champion"
-description = "Gain 1 gold each time you roll a Claw result."
-gem_cost = 5
+description = "Gain 1 gem each time you roll a Claw result."
+gold_cost = 5
 card_type = 1
 effect = SubResource("effect")

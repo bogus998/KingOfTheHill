@@ -12,6 +12,6 @@ amount = 1
 script = ExtResource("1_carddata")
 card_name = "Corroding Blade"
 description = "Deal 1 damage to all other dwarfs at the start of each turn."
-gem_cost = 6
+gold_cost = 6
 card_type = 1
 effect = SubResource("effect")

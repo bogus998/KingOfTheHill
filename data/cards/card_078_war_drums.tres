@@ -10,7 +10,7 @@ effect_id = 44
 [resource]
 script = ExtResource("1_carddata")
 card_name = "War Drums"
-description = "When you score 4 or more gold in a single turn, all other dwarfs roll one fewer die next turn."
-gem_cost = 3
+description = "When you score 4 or more gems in a single turn, all other dwarfs roll one fewer die next turn."
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

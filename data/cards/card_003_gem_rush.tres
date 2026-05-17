@@ -5,13 +5,13 @@
 
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
-effect_id = 6
-amount = 9
+effect_id = 3
+amount = 3
 
 [resource]
 script = ExtResource("1_carddata")
-card_name = "Gem Cache"
-description = "Gain +9 gems immediately."
-gem_cost = 8
+card_name = "Gem Rush"
+description = "Gain +3 gems immediately."
+gold_cost = 4
 card_type = 0
 effect = SubResource("effect")

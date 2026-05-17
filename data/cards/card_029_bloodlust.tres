@@ -11,6 +11,6 @@ effect_id = 55
 script = ExtResource("1_carddata")
 card_name = "Bloodlust"
 description = "Take another full turn immediately after this one."
-gem_cost = 7
+gold_cost = 7
 card_type = 0
 effect = SubResource("effect")

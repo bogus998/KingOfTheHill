@@ -11,11 +11,11 @@ func before_each() -> void:
 func test_initial_health_is_10() -> void:
 	assert_eq(PlayerManager.players[0].health, 10)
 
-func test_initial_gold_is_0() -> void:
-	assert_eq(PlayerManager.players[0].gold, 0)
-
 func test_initial_gems_is_0() -> void:
 	assert_eq(PlayerManager.players[0].gems, 0)
+
+func test_initial_gold_is_0() -> void:
+	assert_eq(PlayerManager.players[0].gold, 0)
 
 func test_initial_position_is_outside() -> void:
 	assert_eq(PlayerManager.players[0].position, PlayerData.PlayerPosition.OUTSIDE)
@@ -64,20 +64,20 @@ func test_heal_ignored_at_vault() -> void:
 	PlayerManager.apply_heal(0, 4)
 	assert_eq(PlayerManager.players[0].health, 6)
 
-# ── add_gold / win condition ──────────────────────────────────────────────────
+# ── add_gems / win condition ──────────────────────────────────────────────────
 
-func test_add_gold_updates_balance() -> void:
-	PlayerManager.add_gold(0, 5)
-	assert_eq(PlayerManager.players[0].gold, 5)
+func test_add_gems_updates_balance() -> void:
+	PlayerManager.add_gems(0, 5)
+	assert_eq(PlayerManager.players[0].gems, 5)
 
-func test_add_gold_emits_gold_changed() -> void:
+func test_add_gems_emits_gem_changed() -> void:
 	watch_signals(PlayerManager)
-	PlayerManager.add_gold(0, 5)
-	assert_signal_emitted(PlayerManager, "gold_changed")
+	PlayerManager.add_gems(0, 5)
+	assert_signal_emitted(PlayerManager, "gem_changed")
 
-func test_20_gold_emits_win_condition() -> void:
+func test_20_gems_emits_win_condition() -> void:
 	watch_signals(PlayerManager)
-	PlayerManager.add_gold(0, 20)
+	PlayerManager.add_gems(0, 20)
 	assert_signal_emitted(PlayerManager, "win_condition_met")
 
 func test_last_standing_emits_win_condition() -> void:
@@ -85,20 +85,20 @@ func test_last_standing_emits_win_condition() -> void:
 	PlayerManager.apply_damage(1, 10)
 	assert_signal_emitted(PlayerManager, "win_condition_met")
 
-# ── gems ─────────────────────────────────────────────────────────────────────
+# ── gold ─────────────────────────────────────────────────────────────────────
 
-func test_spend_gems_deducts_correctly() -> void:
-	PlayerManager.add_gems(0, 5)
-	PlayerManager.spend_gems(0, 3)
-	assert_eq(PlayerManager.players[0].gems, 2)
+func test_spend_gold_deducts_correctly() -> void:
+	PlayerManager.add_gold(0, 5)
+	PlayerManager.spend_gold(0, 3)
+	assert_eq(PlayerManager.players[0].gold, 2)
 
-func test_spend_gems_returns_true_on_success() -> void:
-	PlayerManager.add_gems(0, 5)
-	assert_true(PlayerManager.spend_gems(0, 5))
+func test_spend_gold_returns_true_on_success() -> void:
+	PlayerManager.add_gold(0, 5)
+	assert_true(PlayerManager.spend_gold(0, 5))
 
-func test_spend_gems_returns_false_when_insufficient() -> void:
-	assert_false(PlayerManager.spend_gems(0, 1))
+func test_spend_gold_returns_false_when_insufficient() -> void:
+	assert_false(PlayerManager.spend_gold(0, 1))
 
-func test_spend_gems_does_not_deduct_on_failure() -> void:
-	PlayerManager.spend_gems(0, 1)
-	assert_eq(PlayerManager.players[0].gems, 0)
+func test_spend_gold_does_not_deduct_on_failure() -> void:
+	PlayerManager.spend_gold(0, 1)
+	assert_eq(PlayerManager.players[0].gold, 0)

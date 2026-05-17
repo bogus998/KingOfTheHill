@@ -12,6 +12,6 @@ amount = 2
 script = ExtResource("1_carddata")
 card_name = "Iron Constitution"
 description = "Increase your maximum health by 2 and restore 2 health now."
-gem_cost = 4
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

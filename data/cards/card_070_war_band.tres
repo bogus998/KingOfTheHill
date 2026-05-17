@@ -10,7 +10,7 @@ effect_id = 17
 [resource]
 script = ExtResource("1_carddata")
 card_name = "War Band"
-description = "For each card in your hand: gain +1 gold and take 1 damage."
-gem_cost = 2
+description = "For each card in your hand: gain +1 gem and take 1 damage."
+gold_cost = 2
 card_type = 0
 effect = SubResource("effect")

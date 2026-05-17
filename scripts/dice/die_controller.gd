@@ -63,7 +63,7 @@ func _face_to_text(f: DiceResolver.DieFace) -> String:
 		DiceResolver.DieFace.ONE:   return "1"
 		DiceResolver.DieFace.TWO:   return "2"
 		DiceResolver.DieFace.THREE: return "3"
-		DiceResolver.DieFace.GEM:   return "⚡"
+		DiceResolver.DieFace.GOLD:  return "⚡"
 		DiceResolver.DieFace.CLAW:  return "🐾"
 		DiceResolver.DieFace.HEART: return "❤️"
 	return "?"

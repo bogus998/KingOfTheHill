@@ -1,6 +1,6 @@
-class_name VaultGoldEffect
+class_name VaultGemEffect
 extends CardEffect
-## Grants gold each turn start while the owner is at the vault.
+## Grants gems each turn start while the owner is at the vault.
 
 @export var amount: int = 0
 
@@ -9,7 +9,7 @@ func _init(p_amount: int = 0) -> void:
 
 func on_turn_started(owner_index: int) -> void:
 	if PlayerManager.players[owner_index].position == PlayerData.PlayerPosition.AT_VAULT:
-		PlayerManager.add_gold(owner_index, amount)
+		PlayerManager.add_gems(owner_index, amount)
 
 func is_income_passive() -> bool:
 	return true

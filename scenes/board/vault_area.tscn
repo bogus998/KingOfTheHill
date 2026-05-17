@@ -19,7 +19,7 @@ text = "Empty"
 
 [node name="BonusLabel" type="Label" parent="VBoxContainer"]
 horizontal_alignment = 1
-text = "+2 gold/turn in vault"
+text = "+2 gems/turn in vault"
 
 [node name="RoundLabel" type="Label" parent="VBoxContainer"]
 horizontal_alignment = 1

@@ -6,12 +6,12 @@
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
 effect_id = 40
-gold = 2
+gems = 2
 
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Combo Master"
-description = "Once per turn, count ONE TWO THREE as a combo worth 2 gold."
-gem_cost = 4
+description = "Once per turn, count ONE TWO THREE as a combo worth 2 gems."
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

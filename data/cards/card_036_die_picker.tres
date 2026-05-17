@@ -11,6 +11,6 @@ effect_id = 27
 script = ExtResource("1_carddata")
 card_name = "Die Picker"
 description = "Once per turn, change any of your dice to ONE before rolling."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

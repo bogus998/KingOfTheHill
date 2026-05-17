@@ -11,6 +11,6 @@ effect_id = 52
 script = ExtResource("1_carddata")
 card_name = "Stone Skin"
 description = "When you take damage, roll a die per damage — on a Heart result that damage is negated."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

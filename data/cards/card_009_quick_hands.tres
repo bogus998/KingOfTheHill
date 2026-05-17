@@ -11,6 +11,6 @@ effect_id = 25
 script = ExtResource("1_carddata")
 card_name = "Quick Hands"
 description = "Once per turn, reroll one die for free after your 3rd roll."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

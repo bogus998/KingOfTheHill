@@ -35,7 +35,7 @@ func _make_card(type: CardData.CardType, effect: CardEffectId.Id, cost: int = 1)
 	var c := CardData.new()
 	c.card_type = type
 	c.effect = CardEffectFactory.create(effect)
-	c.gem_cost = cost
+	c.gold_cost = cost
 	return c
 
 # ── Group 3: Per-turn modifier flags ─────────────────────────────────────────
@@ -116,63 +116,63 @@ func test_smoke_bomb_removes_from_hand_when_charges_depleted() -> void:
 
 # ── Group 3: on_roll_finalized — Perfect Roll ─────────────────────────────────
 
-func test_all_faces_bonus_awards_9_gold_on_all_six_faces() -> void:
+func test_all_faces_bonus_awards_9_gems_on_all_six_faces() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.ALL_FACES_BONUS)
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.TWO,  DiceResolver.DieFace.THREE,
-		DiceResolver.DieFace.GEM,  DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.GOLD,  DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
 	])
-	assert_eq(PlayerManager.players[0].gold, 9)
+	assert_eq(PlayerManager.players[0].gems, 9)
 
-func test_all_faces_bonus_no_gold_when_missing_a_face() -> void:
+func test_all_faces_bonus_no_gems_when_missing_a_face() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.ALL_FACES_BONUS)
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.ONE,  DiceResolver.DieFace.THREE,
-		DiceResolver.DieFace.GEM,  DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.GOLD,  DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
 	])
-	assert_eq(PlayerManager.players[0].gold, 0)
+	assert_eq(PlayerManager.players[0].gems, 0)
 
 # ── Group 3: on_roll_finalized — Combo Master ─────────────────────────────────
 
-func test_combo_master_awards_2_gold_on_one_two_three() -> void:
+func test_combo_master_awards_2_gems_on_one_two_three() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.COMBO_MASTER)
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.TWO,  DiceResolver.DieFace.THREE,
-		DiceResolver.DieFace.GEM,  DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.GOLD,  DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
 	])
-	assert_eq(PlayerManager.players[0].gold, 2)
+	assert_eq(PlayerManager.players[0].gems, 2)
 
-func test_combo_master_no_gold_without_all_three_numbers() -> void:
+func test_combo_master_no_gems_without_all_three_numbers() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.COMBO_MASTER)
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.ONE,  DiceResolver.DieFace.THREE,
-		DiceResolver.DieFace.GEM,  DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.GOLD,  DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
 	])
-	assert_eq(PlayerManager.players[0].gold, 0)
+	assert_eq(PlayerManager.players[0].gems, 0)
 
 # ── Group 3: on_roll_finalized — Treasure Seeker ─────────────────────────────
 
-func test_triple_one_gold_bonus_2_awards_extra_gold() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.TRIPLE_ONE_GOLD_BONUS_2)
+func test_triple_one_gems_bonus_2_awards_extra_gems() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.TRIPLE_ONE_GEM_BONUS_2)
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.ONE,  DiceResolver.DieFace.ONE,
-		DiceResolver.DieFace.TWO,  DiceResolver.DieFace.GEM,  DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.TWO,  DiceResolver.DieFace.GOLD,  DiceResolver.DieFace.HEART,
 	])
-	assert_eq(PlayerManager.players[0].gold, 2)
+	assert_eq(PlayerManager.players[0].gems, 2)
 
-func test_triple_one_gold_bonus_2_no_gold_with_only_two_ones() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.TRIPLE_ONE_GOLD_BONUS_2)
+func test_triple_one_gems_bonus_2_no_gems_with_only_two_ones() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.TRIPLE_ONE_GEM_BONUS_2)
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.ONE,  DiceResolver.DieFace.TWO,
-		DiceResolver.DieFace.THREE, DiceResolver.DieFace.GEM, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.THREE, DiceResolver.DieFace.GOLD, DiceResolver.DieFace.HEART,
 	])
-	assert_eq(PlayerManager.players[0].gold, 0)
+	assert_eq(PlayerManager.players[0].gems, 0)
 
 # ── Group 3: on_roll_finalized — Time Stopper ────────────────────────────────
 
@@ -181,7 +181,7 @@ func test_triple_one_extra_turn_sets_repeat_pending_and_guard() -> void:
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE,
-		DiceResolver.DieFace.TWO, DiceResolver.DieFace.GEM, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.TWO, DiceResolver.DieFace.GOLD, DiceResolver.DieFace.HEART,
 	])
 	assert_true(PlayerManager.players[0].repeat_turn_used)
 	assert_true(TurnManager._repeat_turn_pending)
@@ -192,7 +192,7 @@ func test_triple_one_extra_turn_blocked_when_repeat_already_used() -> void:
 	PlayerManager.players[0].repeat_turn_used = true
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE,
-		DiceResolver.DieFace.TWO, DiceResolver.DieFace.GEM, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.TWO, DiceResolver.DieFace.GOLD, DiceResolver.DieFace.HEART,
 	])
 	assert_false(TurnManager._repeat_turn_pending)
 
@@ -215,7 +215,7 @@ func test_triple_two_damage_2_damages_others() -> void:
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.TWO, DiceResolver.DieFace.TWO, DiceResolver.DieFace.TWO,
-		DiceResolver.DieFace.ONE, DiceResolver.DieFace.GEM, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.ONE, DiceResolver.DieFace.GOLD, DiceResolver.DieFace.HEART,
 	])
 	assert_eq(PlayerManager.players[1].health, 8)
 
@@ -224,29 +224,29 @@ func test_triple_two_damage_2_no_damage_without_triple() -> void:
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.TWO, DiceResolver.DieFace.TWO, DiceResolver.DieFace.ONE,
-		DiceResolver.DieFace.ONE, DiceResolver.DieFace.GEM, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.ONE, DiceResolver.DieFace.GOLD, DiceResolver.DieFace.HEART,
 	])
 	assert_eq(PlayerManager.players[1].health, 10)
 
 # ── Group 3: on_roll_finalized + turn_ended — War Drums ──────────────────────
 
-func test_war_drums_triggers_on_4_or_more_dice_gold() -> void:
+func test_war_drums_triggers_on_4_or_more_dice_gems() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.WAR_DRUMS)
 	PlayerManager.add_card_to_hand(0, card)
-	# 4x THREE → 3 + (4-3) = 4 gold
+	# 4x THREE → 3 + (4-3) = 4 gems
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.THREE, DiceResolver.DieFace.THREE, DiceResolver.DieFace.THREE,
-		DiceResolver.DieFace.THREE, DiceResolver.DieFace.GEM,   DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.THREE, DiceResolver.DieFace.GOLD,   DiceResolver.DieFace.HEART,
 	])
 	assert_true(PlayerManager.players[0].war_drums_triggered)
 
-func test_war_drums_no_trigger_below_4_gold() -> void:
+func test_war_drums_no_trigger_below_4_gems() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.WAR_DRUMS)
 	PlayerManager.add_card_to_hand(0, card)
-	# triple THREE → 3 gold
+	# triple THREE → 3 gems
 	_handler.on_roll_finalized(0, [
 		DiceResolver.DieFace.THREE, DiceResolver.DieFace.THREE, DiceResolver.DieFace.THREE,
-		DiceResolver.DieFace.ONE,   DiceResolver.DieFace.GEM,   DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.ONE,   DiceResolver.DieFace.GOLD,   DiceResolver.DieFace.HEART,
 	])
 	assert_false(PlayerManager.players[0].war_drums_triggered)
 
@@ -267,12 +267,12 @@ func test_war_drums_no_debuff_when_not_triggered() -> void:
 # ── Group 3: Repeated turn — income passives skipped ─────────────────────────
 
 func test_income_passive_skipped_on_repeated_turn() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GEM_PER_TURN_1)
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.GOLD_PER_TURN_1)
 	PlayerManager.add_card_to_hand(0, card)
 	TurnManager.is_repeated_turn = true
 	_handler._on_turn_started(0)
 	TurnManager.is_repeated_turn = false
-	assert_eq(PlayerManager.players[0].gems, 0)
+	assert_eq(PlayerManager.players[0].gold, 0)
 
 func test_damage_passive_skipped_on_repeated_turn() -> void:
 	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.PASSIVE_DAMAGE_1_PER_TURN)

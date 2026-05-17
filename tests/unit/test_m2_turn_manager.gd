@@ -81,19 +81,19 @@ func test_turn_ended_emitted_on_advance_from_buy_cards() -> void:
 
 # ── Vault bonus ───────────────────────────────────────────────────────────────
 
-func test_vault_player_gets_2_gold_at_turn_start() -> void:
+func test_vault_player_gets_2_gems_at_turn_start() -> void:
 	PlayerManager.set_position(0, PlayerData.PlayerPosition.AT_VAULT)
-	assert_eq(PlayerManager.players[0].gold, 0)
+	assert_eq(PlayerManager.players[0].gems, 0)
 	_complete_turn()                                   # player 0 ends → player 1 starts
-	var gold_before := PlayerManager.players[0].gold
+	var gems_before := PlayerManager.players[0].gems
 	_complete_turn()                                   # player 1 ends → player 0 starts → bonus fires
-	assert_eq(PlayerManager.players[0].gold, gold_before + 2)
+	assert_eq(PlayerManager.players[0].gems, gems_before + 2)
 
 func test_outside_player_gets_no_vault_bonus() -> void:
-	var gold_before := PlayerManager.players[0].gold
+	var gems_before := PlayerManager.players[0].gems
 	_complete_turn()
 	_complete_turn()
-	assert_eq(PlayerManager.players[0].gold, gold_before)
+	assert_eq(PlayerManager.players[0].gems, gems_before)
 
 # ── Elimination skip ──────────────────────────────────────────────────────────
 

@@ -10,7 +10,7 @@ effect_id = 72
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Recycle"
-description = "At end of turn, discard any PERMANENT cards to recover their gem cost."
-gem_cost = 3
+description = "At end of turn, discard any PERMANENT cards to recover their gold cost."
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

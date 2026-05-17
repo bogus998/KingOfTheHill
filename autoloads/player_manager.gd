@@ -4,8 +4,8 @@ signal players_setup()
 signal player_damaged(player_index: int, new_hp: int)
 signal player_healed(player_index: int, new_hp: int)
 signal player_eliminated(player_index: int)
-signal gold_changed(player_index: int, new_gold: int)
 signal gem_changed(player_index: int, new_gems: int)
+signal gold_changed(player_index: int, new_gold: int)
 signal position_changed(player_index: int, new_position: PlayerData.PlayerPosition)
 signal card_hand_changed(player_index: int)
 signal win_condition_met(winner_index: int, reason: String)
@@ -43,23 +43,23 @@ func apply_heal(player_index: int, amount: int) -> void:
 	p.health = min(p.max_health, p.health + amount + p.heal_bonus)
 	player_healed.emit(player_index, p.health)
 
-func add_gold(player_index: int, amount: int) -> void:
-	var p := players[player_index]
-	p.gold += amount
-	gold_changed.emit(player_index, p.gold)
-	check_win_conditions()
-
 func add_gems(player_index: int, amount: int) -> void:
 	var p := players[player_index]
-	p.gems += amount + p.gem_gain_bonus
+	p.gems += amount
 	gem_changed.emit(player_index, p.gems)
+	check_win_conditions()
 
-func spend_gems(player_index: int, amount: int) -> bool:
+func add_gold(player_index: int, amount: int) -> void:
 	var p := players[player_index]
-	if p.gems < amount:
+	p.gold += amount + p.gold_gain_bonus
+	gold_changed.emit(player_index, p.gold)
+
+func spend_gold(player_index: int, amount: int) -> bool:
+	var p := players[player_index]
+	if p.gold < amount:
 		return false
-	p.gems -= amount
-	gem_changed.emit(player_index, p.gems)
+	p.gold -= amount
+	gold_changed.emit(player_index, p.gold)
 	return true
 
 func set_position(player_index: int, pos: PlayerData.PlayerPosition) -> void:
@@ -86,10 +86,10 @@ func remove_card_from_hand(player_index: int, card: CardData) -> void:
 func check_win_conditions() -> void:
 	var alive := _alive_players()
 
-	# Gold victory
+	# Gem victory
 	for i in players.size():
-		if not players[i].is_eliminated and players[i].gold >= 20:
-			win_condition_met.emit(i, "gold")
+		if not players[i].is_eliminated and players[i].gems >= 20:
+			win_condition_met.emit(i, "gems")
 			return
 
 	# Last standing

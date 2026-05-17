@@ -12,6 +12,6 @@ charges = 3
 script = ExtResource("1_carddata")
 card_name = "Smoke Bomb"
 description = "3 charges. Spend a charge for one extra reroll. Discard when all charges spent."
-gem_cost = 4
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

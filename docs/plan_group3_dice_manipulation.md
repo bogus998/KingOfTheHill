@@ -1,6 +1,6 @@
 # Group 3 — Dice Manipulation: Implementation Plan
 
-**Cards covered:** Extra Axe (`extra_die`), Quick Hands (`bonus_reroll_1`), Shadow Runner (`free_reroll_threes`), Die Picker (`set_die_to_one`), Flexible Tactics (`gem_die_change`), Focus Crystal (`gem_extra_reroll`), Wildcard (`wildcard_die`), Smoke Bomb (`smoke_bomb`), Perfect Roll (`all_faces_bonus`), Combo Master (`combo_master`), Treasure Seeker (`triple_one_gold_bonus_2`), Time Stopper (`triple_one_extra_turn`), Toxic Blade (`triple_two_damage_2`), War Drums (`war_drums`)
+**Cards covered:** Extra Axe (`extra_die`), Quick Hands (`bonus_reroll_1`), Shadow Runner (`free_reroll_threes`), Die Picker (`set_die_to_one`), Flexible Tactics (`gold_die_change`), Focus Crystal (`gold_extra_reroll`), Wildcard (`wildcard_die`), Smoke Bomb (`smoke_bomb`), Perfect Roll (`all_faces_bonus`), Combo Master (`combo_master`), Treasure Seeker (`triple_one_gems_bonus_2`), Time Stopper (`triple_one_extra_turn`), Toxic Blade (`triple_two_damage_2`), War Drums (`war_drums`)
 
 ---
 
@@ -35,13 +35,13 @@ New transient fields (all reset at turn start unless noted):
 | Field | Type | Reset | Purpose |
 |---|---|---|---|
 | `die_count_modifier` | `int` | turn start | Net extra/fewer dice (stacks) |
-| `extra_rerolls_available` | `int` | turn start | Gem/charge-funded bonus rolls |
+| `extra_rerolls_available` | `int` | turn start | Gold/charge-funded bonus rolls |
 | `has_free_reroll_after_max` | `bool` | after first use or turn end | Quick Hands |
 | `free_reroll_threes` | `bool` | turn end (set each turn start) | Shadow Runner always-active |
 | `can_set_die_before_roll` | `bool` | after first use or turn end | Die Picker |
 | `pending_die_penalty` | `int` | consumed at next turn start | Time Stopper repeated-turn penalty |
 | `repeat_turn_used` | `bool` | turn start | Prevents Time Stopper infinite loop |
-| `war_drums_triggered` | `bool` | turn end | Did dice score >= 4 gold |
+| `war_drums_triggered` | `bool` | turn end | Did dice score >= 4 gems |
 
 Card-level charge counters (`smoke_bomb_charges`) go in `CardEffectHandler._card_charges: Dictionary` keyed by `CardData` object reference, NOT in `PlayerData`.
 
@@ -81,20 +81,20 @@ static func count_face(faces: Array, face: DieFace) -> int
 ### `free_reroll_threes` — Shadow Runner (PERMANENT)
 - `_on_turn_started`: set `free_reroll_threes = true`
 - `DicePoolController`: after each roll, un-hold any THREE-face dice. Don't disable Roll button while un-held THREE-face dice remain, even after roll 3.
-- Edge case: player cannot hold a THREE to score triple-THREE gold.
+- Edge case: player cannot hold a THREE to score triple-THREE gems.
 
 ### `set_die_to_one` — Die Picker (PERMANENT)
 - `_on_turn_started`: set `can_set_die_before_roll = true`. Show "Set to ONE" button only while `_roll_count == 0`.
 - Player taps a die → `die.set_face(DieFace.ONE)`. Clear flag after one use.
 
-### `gem_die_change` — Flexible Tactics (PERMANENT)
-- "Set Die (2 gems)" button visible when player has card AND `gems >= 2`.
-- Button press → die-selection mode → face-picker popup → `set_face(chosen)` + `spend_gems(player_index, 2)`.
-- Can be used multiple times per turn (gems are the limiter).
+### `gold_die_change` — Flexible Tactics (PERMANENT)
+- "Set Die (2 gold)" button visible when player has card AND `gold >= 2`.
+- Button press → die-selection mode → face-picker popup → `set_face(chosen)` + `spend_gold(player_index, 2)`.
+- Can be used multiple times per turn (gold are the limiter).
 
-### `gem_extra_reroll` — Focus Crystal (PERMANENT)
-- "Extra Roll (1 gem)" button visible when `_roll_count >= effective_max_rolls` AND `gems >= 1`.
-- `spend_gems(player_index, 1)` → `extra_rerolls_available += 1` → re-enable Roll button.
+### `gold_extra_reroll` — Focus Crystal (PERMANENT)
+- "Extra Roll (1 gold)" button visible when `_roll_count >= effective_max_rolls` AND `gold >= 1`.
+- `spend_gold(player_index, 1)` → `extra_rerolls_available += 1` → re-enable Roll button.
 
 ### `wildcard_die` — Wildcard (ONE_TIME)
 - `apply_immediate` sets `wildcard_pending = true`. During next DICE_ROLL turn start, face-picker flow fires → `set_face(chosen)` → clear flag. Card already discarded by ONE_TIME path.
@@ -106,16 +106,16 @@ static func count_face(faces: Array, face: DieFace) -> int
 - When `_card_charges[card] == 0`: `remove_card_from_hand` and append to `spent_one_time_cards`.
 
 ### `all_faces_bonus` — Perfect Roll (PERMANENT)
-- `on_roll_finalized()`: check `DiceResolver.has_all_six_faces(final_faces)` → `add_gold(player_index, 9)`.
+- `on_roll_finalized()`: check `DiceResolver.has_all_six_faces(final_faces)` → `add_gems(player_index, 9)`.
 - With 7+ dice, only need all six distinct faces present at least once.
 
 ### `combo_master` — Combo Master (PERMANENT)
-- `on_roll_finalized()`: check `DiceResolver.has_combo_one_two_three(final_faces)` → `add_gold(player_index, 2)`.
-- Fires independently from triple-ONE gold scoring; both are additive.
+- `on_roll_finalized()`: check `DiceResolver.has_combo_one_two_three(final_faces)` → `add_gems(player_index, 2)`.
+- Fires independently from triple-ONE gems scoring; both are additive.
 
-### `triple_one_gold_bonus_2` — Treasure Seeker (PERMANENT)
-- `on_roll_finalized()`: `DiceResolver.count_face(final_faces, DieFace.ONE) >= 3` → `add_gold(player_index, 2)`.
-- Standard resolver already awards 1 gold for triple-ONE; this adds 2 more (total: 3).
+### `triple_one_gems_bonus_2` — Treasure Seeker (PERMANENT)
+- `on_roll_finalized()`: `DiceResolver.count_face(final_faces, DieFace.ONE) >= 3` → `add_gems(player_index, 2)`.
+- Standard resolver already awards 1 gems for triple-ONE; this adds 2 more (total: 3).
 
 ### `triple_one_extra_turn` — Time Stopper (PERMANENT)
 - `on_roll_finalized()`: count ONEs >= 3 → `TurnManager.request_repeat_turn(player_index, 1)`.
@@ -127,10 +127,10 @@ static func count_face(faces: Array, face: DieFace) -> int
 - `on_roll_finalized()`: `DiceResolver.count_face(final_faces, DieFace.TWO) >= 3` → `_damage_others(player_index, 2)`.
 
 ### `war_drums` — War Drums (PERMANENT)
-- `on_roll_finalized()`: if dice gold result >= 4, set `war_drums_triggered = true`.
+- `on_roll_finalized()`: if dice gems result >= 4, set `war_drums_triggered = true`.
 - `_on_turn_ended()`: if `war_drums_triggered`, apply `die_count_modifier -= 1` to all other living players. Clear flag.
 - Cap opponents' `die_count_modifier` floor so players always roll at least 1 die.
-- Only dice gold (`_last_roll_result["gold"]`) counts, not card-granted gold.
+- Only dice gems (`_last_roll_result["gems"]`) counts, not card-granted gems.
 
 ---
 
@@ -141,7 +141,7 @@ static func count_face(faces: Array, face: DieFace) -> int
 3. `DicePoolController`: variable roll count (`_get_max_rolls()`)
 4. `CardEffectHandler.on_roll_finalized` hook + `DiceResolver` helpers → unlocks all pattern-check effects
 5. `TurnManager.request_repeat_turn` → unlocks `triple_one_extra_turn`
-6. Die mutation UI (`enter_die_selection_mode` + face picker) → unlocks `set_die_to_one`, `gem_die_change`, `wildcard_die`
+6. Die mutation UI (`enter_die_selection_mode` + face picker) → unlocks `set_die_to_one`, `gold_die_change`, `wildcard_die`
 7. Shadow Runner passive (THREE-unhold pass in `roll_active_dice`)
 8. Quick Hands free reroll (conditional re-enable after roll 3)
 
@@ -154,10 +154,10 @@ static func count_face(faces: Array, face: DieFace) -> int
 | R1 | Variable die count requires scene editing (pre-place hidden nodes) | Pre-place 2 extra `DieController` nodes in `DiceContainer`; cap at 7 |
 | R2 | Signal ordering: `DicePoolController._on_turn_started` fires before `CardEffectHandler` sets `die_count_modifier` | Use `_update_die_visibility.call_deferred()` in `DicePoolController._on_turn_started` |
 | R3 | Hidden dice in `_dice` array are rolled and included in `get_all_faces()` | Filter by `die.visible` in `roll_active_dice()` and `get_all_faces()` |
-| R4 | Repeated turn double-fires income/damage passives (`gem_per_turn_1`, `passive_damage_1_per_turn`, etc.) | Add `is_repeated_turn: bool` to `TurnManager`; skip income/damage passives in `CardEffectHandler._on_turn_started` when set |
+| R4 | Repeated turn double-fires income/damage passives (`gold_per_turn_1`, `passive_damage_1_per_turn`, etc.) | Add `is_repeated_turn: bool` to `TurnManager`; skip income/damage passives in `CardEffectHandler._on_turn_started` when set |
 | R5 | Bot roll loop hardcoded to `range(3)` — won't use bonus rolls | Replace with a loop checking `_dice_pool.roll_count < _dice_pool.get_max_rolls()` |
 | R6 | `TurnManager._start_turn()` must reset everything correctly on repeat | Verify PERMANENT card passives fire correctly on repeated turn |
-| R7 | War Drums threshold: dice gold vs all gold sources | Default to dice-only gold (`DiceResolver.resolve(final_faces)["gold"]`) |
+| R7 | War Drums threshold: dice gems vs all gems sources | Default to dice-only gems (`DiceResolver.resolve(final_faces)["gems"]`) |
 | R8 | Wildcard timing (ONE_TIME bought in BUY_CARDS, effect deferred to next turn) | Document in card description |
 | R9 | Time Stopper recursion (triple-ONE again on repeated turn) | Add `repeat_turn_used: bool` guard to `PlayerData`; reset at turn start |
 | R10 | Combo Master vs. triple scoring interaction | Both fire independently and are additive — intentional |
@@ -180,13 +180,13 @@ All Group 3 effects are already covered. When adding new effects to this group, 
 | modifier reset | All flags cleared at turn start |
 | `wildcard_die` | `wildcard_pending` set; card removed (ONE_TIME) |
 | `smoke_bomb` | Extra reroll on use; card removed when charges depleted |
-| `all_faces_bonus` | 9 gold on all six faces; 0 gold when a face is missing |
-| `combo_master` | 2 gold on 1-2-3 combo; 0 gold without all three |
-| `triple_one_gold_bonus_2` | 2 gold on triple ONE; 0 gold with only two ONEs |
+| `all_faces_bonus` | 9 gems on all six faces; 0 gems when a face is missing |
+| `combo_master` | 2 gems on 1-2-3 combo; 0 gems without all three |
+| `triple_one_gems_bonus_2` | 2 gems on triple ONE; 0 gems with only two ONEs |
 | `triple_one_extra_turn` | `repeat_turn_pending` set; blocked when guard already used |
 | `repeat_turn_used` | Persists through repeated turn; resets on normal turn start |
 | `triple_two_damage_2` | 2 damage to others on triple TWO; no damage without triple |
-| `war_drums` | Triggered on 4+ gold roll; debuffs others on `turn_ended`; no debuff when not triggered |
+| `war_drums` | Triggered on 4+ gems roll; debuffs others on `turn_ended`; no debuff when not triggered |
 | repeated-turn income | Passives skipped; die modifiers still apply |
 
 ---

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
-[ext_resource type="Script" path="res://resources/effects/passive/vault_gold_effect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://resources/effects/passive/vault_gem_effect.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
@@ -11,7 +11,7 @@ amount = 2
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Vault Claim"
-description = "Gain +2 gold for every turn you spend in the Vault."
-gem_cost = 4
+description = "Gain +2 gems for every turn you spend in the Vault."
+gold_cost = 4
 card_type = 1
 effect = SubResource("effect")

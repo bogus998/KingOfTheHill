@@ -1,6 +1,6 @@
 # Group 6 — Special/Complex Card Mechanics: Implementation Plan
 
-**Cards covered:** Second Wind (`respawn`), Shield Bearer (`shield_bearer`), Bloodlust (`extra_turn`), Gem Battery (`gem_battery`), Recycle (`recycle_cards`), Copycat (`mimic`), Forge Master (`peek_deck`), Merchant's Touch (`buy_from_others`), Sharp Eye (`opportunist`)
+**Cards covered:** Second Wind (`respawn`), Shield Bearer (`shield_bearer`), Bloodlust (`extra_turn`), Gold Battery (`gold_battery`), Recycle (`recycle_cards`), Copycat (`mimic`), Forge Master (`peek_deck`), Merchant's Touch (`buy_from_others`), Sharp Eye (`opportunist`)
 
 ---
 
@@ -24,8 +24,8 @@ func _check_revival(player_index: int) -> bool:
     for card in players[player_index].cards_in_hand:
         if card.effect_id == "shield_bearer":
             remove_card_from_hand(player_index, card)
-            players[player_index].gold = 0
-            gold_changed.emit(player_index, 0)
+            players[player_index].gems = 0
+            gem_changed.emit(player_index, 0)
             players[player_index].health = players[player_index].max_health
             player_healed.emit(player_index, players[player_index].health)
             player_respawned.emit(player_index)
@@ -35,8 +35,8 @@ func _check_revival(player_index: int) -> bool:
         if card.effect_id == "respawn":
             players[player_index].cards_in_hand.clear()
             card_hand_changed.emit(player_index)
-            players[player_index].gold = 0
-            gold_changed.emit(player_index, 0)
+            players[player_index].gems = 0
+            gem_changed.emit(player_index, 0)
             players[player_index].health = players[player_index].max_health
             player_healed.emit(player_index, players[player_index].health)
             player_respawned.emit(player_index)
@@ -63,9 +63,9 @@ if pending_extra_turn:
 
 `extra_turn` is ONE_TIME; `apply_immediate` sets `TurnManager.pending_extra_turn = true` during BUY_CARDS phase. `next_player()` fires at END_TURN.
 
-### 1c. Gem Battery Auto-Discard
+### 1c. Gold Battery Auto-Discard
 
-`gem_battery` is PERMANENT; `_on_turn_started` fires `_apply_effect("gem_battery", idx)` each turn. The handler decrements a per-card charge counter and removes the card at zero. Requires per-instance mutable state on `CardData` (see Section 2a).
+`gold_battery` is PERMANENT; `_on_turn_started` fires `_apply_effect("gold_battery", idx)` each turn. The handler decrements a per-card charge counter and removes the card at zero. Requires per-instance mutable state on `CardData` (see Section 2a).
 
 ### 1d. Opportunist — Shop Interrupt
 
@@ -82,7 +82,7 @@ Add to `resources/card_data.gd`:
 @export var charges: int = 0
 ```
 
-Used only by `gem_battery`. Set to 6 in `CardEffectHandler._on_card_purchased` when `card.effect_id == "gem_battery"`. Decremented each turn. Auto-discards at zero.
+Used only by `gold_battery`. Set to 6 in `CardEffectHandler._on_card_purchased` when `card.effect_id == "gold_battery"`. Decremented each turn. Auto-discards at zero.
 
 **Risk:** `ResourceLoader` may cache `.tres` files and two players could share the same `CardData` object, sharing `charges`. Fix: call `card.duplicate()` inside `PlayerManager.add_card_to_hand()`.
 
@@ -105,12 +105,12 @@ New signal emitted by `_check_revival` for UI feedback (flash HP bar, show messa
 New scene: `scenes/ui/card_picker_dialog.tscn`
 - Scrollable list of all PERMANENT cards held by alive opponents (name, description, owner name).
 - Emits `card_selected(card: CardData)` or `cancelled` (no-op).
-- Exclude: other `mimic` cards (infinite recursion), `gem_battery` (no charge tracking for mimicked copy).
-- Bot: picks card with highest `gem_cost`.
+- Exclude: other `mimic` cards (infinite recursion), `gold_battery` (no charge tracking for mimicked copy).
+- Bot: picks card with highest `gold_cost`.
 
 ### `recycle_cards` (Recycle) — discard-for-refund picker
 
-Reuse or extend `card_picker_dialog.tscn`. Filter to active player's own PERMANENT cards, excluding Recycle itself. Multi-select. Shows gem refund per card.
+Reuse or extend `card_picker_dialog.tscn`. Filter to active player's own PERMANENT cards, excluding Recycle itself. Multi-select. Shows gold refund per card.
 
 Appears during `_apply_turn_end_effect("recycle_cards")` — requires async pattern (see Section 5).
 
@@ -120,7 +120,7 @@ Add "Peek Deck" button to shop UI, visible during BUY_CARDS when active player h
 
 ### `buy_from_others` (Merchant's Touch) — buy-from-player picker
 
-"Buy from Dwarfs" button in shop UI, visible when active player holds `buy_from_others`. Opens list of PERMANENT cards from other alive players. On selection: `spend_gems(buyer, card.gem_cost)` + `remove_card_from_hand(owner)` + `add_card_to_hand(buyer)`.
+"Buy from Dwarfs" button in shop UI, visible when active player holds `buy_from_others`. Opens list of PERMANENT cards from other alive players. On selection: `spend_gold(buyer, card.gold_cost)` + `remove_card_from_hand(owner)` + `add_card_to_hand(buyer)`.
 
 ### `opportunist` (Sharp Eye) — interrupt prompt
 
@@ -134,12 +134,12 @@ Minimal modal (based on `escape_dialog.tscn`): shows newly revealed card's name,
 
 - Fix `card_038_second_wind.tres`: change `card_type = 0` to `card_type = 1`.
 - Handled in `PlayerManager._check_revival()` (see Section 1a).
-- Clears ALL cards and gold, restores to `max_health`.
+- Clears ALL cards and gems, restores to `max_health`.
 
 ### `shield_bearer` — Shield Bearer
 
 - Handled in `_check_revival()`, checked BEFORE `respawn` (keeps cards, only removes shield_bearer card).
-- Sets gold = 0, health = max_health.
+- Sets gems = 0, health = max_health.
 
 ### `extra_turn` — Bloodlust (ONE_TIME)
 
@@ -149,20 +149,20 @@ In `_apply_effect`:
     TurnManager.pending_extra_turn = true
 ```
 
-### `gem_battery` — Gem Battery (PERMANENT)
+### `gold_battery` — Gold Battery (PERMANENT)
 
 In `_on_card_purchased`:
 ```gdscript
-if card.effect_id == "gem_battery":
+if card.effect_id == "gold_battery":
     card.charges = 6
 ```
 
 In `_apply_effect`:
 ```gdscript
-"gem_battery":
+"gold_battery":
     for card in PlayerManager.players[player_index].cards_in_hand:
-        if card.effect_id == "gem_battery" and card.charges > 0:
-            PlayerManager.add_gems(player_index, 2)
+        if card.effect_id == "gold_battery" and card.charges > 0:
+            PlayerManager.add_gold(player_index, 2)
             card.charges -= 1
             if card.charges <= 0:
                 PlayerManager.remove_card_from_hand(player_index, card)
@@ -183,7 +183,7 @@ In `_apply_turn_end_effect`:
         # Await continuation via signal bridge (see Section 5)
 ```
 
-Continuation: `complete_recycle(player_index, chosen_cards: Array[CardData])` — for each: `remove_card_from_hand` + `add_gems(card.gem_cost)`.
+Continuation: `complete_recycle(player_index, chosen_cards: Array[CardData])` — for each: `remove_card_from_hand` + `add_gold(card.gold_cost)`.
 
 ### `mimic` — Copycat (PERMANENT)
 
@@ -196,7 +196,7 @@ In `_apply_effect` (fires each turn start):
     #   → _apply_effect(chosen_card.effect_id, player_index)
 ```
 
-Exclude `mimic` and `gem_battery` from eligible cards.
+Exclude `mimic` and `gold_battery` from eligible cards.
 
 ### `peek_deck` — Forge Master (PERMANENT)
 
@@ -210,7 +210,7 @@ Detected in `main_game_controller._on_phase_changed(BUY_CARDS)` — show "Peek D
 
 Detected in `main_game_controller._on_phase_changed(BUY_CARDS)` — show "Buy from Dwarfs" button.
 
-Transfer logic: `spend_gems(buyer, card.gem_cost)` → `remove_card_from_hand(owner, card)` → `add_card_to_hand(buyer, card)`.
+Transfer logic: `spend_gold(buyer, card.gold_cost)` → `remove_card_from_hand(owner, card)` → `add_card_to_hand(buyer, card)`.
 
 ### `opportunist` — Sharp Eye (PERMANENT)
 
@@ -234,7 +234,7 @@ This avoids making `_on_turn_started` / `_on_turn_ended` async.
 
 ### Phase 1 — Pure logic, no UI
 
-1. **`gem_battery`** — Add `charges` to `CardData`. Set to 6 on purchase. Decrement/discard. Also add `card.duplicate()` to `add_card_to_hand`.
+1. **`gold_battery`** — Add `charges` to `CardData`. Set to 6 on purchase. Decrement/discard. Also add `card.duplicate()` to `add_card_to_hand`.
 2. **`extra_turn`** — Add `pending_extra_turn` to `TurnManager`. One-line change in `next_player()`.
 3. **`respawn` + `shield_bearer`** — Fix `card_038_second_wind.tres` card_type. Add `_check_revival` in `_eliminate`. Emit `player_respawned` signal.
 
@@ -262,10 +262,10 @@ This avoids making `_on_turn_started` / `_on_turn_ended` async.
 | R1 | Shared `CardData` instances across players | Call `card.duplicate()` in `PlayerManager.add_card_to_hand()` |
 | R2 | `second_wind` card_type data bug (= 0, should be 1) | Fix `card_038_second_wind.tres` first — do NOT test without this fix |
 | R3 | Async architecture: signal bridge vs. full async | Decide before Phase 2; document in code comments |
-| R4 | `mimic` + `gem_battery` interaction | Exclude `gem_battery` from mimic targets explicitly |
+| R4 | `mimic` + `gold_battery` interaction | Exclude `gold_battery` from mimic targets explicitly |
 | R5 | Multiple revival cards in one hand | Check `shield_bearer` first (keeps cards); consume only one per death |
 | R6 | Opportunist with bot as Sharp Eye holder | Defer bot+opportunist after human+opportunist is proven |
-| Q1 | Merchant's Touch buying a Gem Battery with remaining charges | Charges transfer naturally with the card object — confirm this is intended |
+| Q1 | Merchant's Touch buying a Gold Battery with remaining charges | Charges transfer naturally with the card object — confirm this is intended |
 | Q2 | Sharp Eye when active player causes the replenish | No interrupt needed — active player is already in BUY_CARDS and sees new card normally |
 | Q3 | Forge Master: peek and buy visible cards independently? | Yes, both are independent BUY_CARDS phase actions |
 
@@ -282,8 +282,8 @@ Group 6 has the most UI-coupled effects. Focus unit tests on pure logic paths th
 | `respawn` | Player HP reaches 0 → `player_respawned` emitted at 1 HP; card consumed; second elimination (no `respawn` in hand) is permanent | No |
 | `shield_bearer` | Ally reaches 0 HP → shield holder takes the killing blow instead; shield card consumed; holder's own death does not trigger shield | No |
 | `extra_turn` | `TurnManager.pending_extra_turn` set to true after `apply_immediate`; card removed from hand | No |
-| `gem_battery` | Gems granted while card is in hand decrement charge counter; card auto-removed from hand at 0 charges | No |
-| `recycle_cards` | Gems awarded per card discarded; hand size decreases | Yes — picker dialog |
+| `gold_battery` | Gold granted while card is in hand decrement charge counter; card auto-removed from hand at 0 charges | No |
+| `recycle_cards` | Gold awarded per card discarded; hand size decreases | Yes — picker dialog |
 | `mimic` | Effect of chosen card applied to caster; `mimic` itself excluded from picker options | Yes — picker dialog |
 | `peek_deck` | Top N cards of deck inspected without purchasing; deck order unchanged | Yes — peek overlay |
 | `buy_from_others` | Purchase succeeds using target player's visible card; card removed from target's shop slot | Yes — buy picker |

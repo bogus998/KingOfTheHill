@@ -3,7 +3,7 @@ extends Node
 const _STREAM_PATHS: Dictionary = {
 	"dice_roll":   "res://assets/audio/sfx/dice_roll.ogg",
 	"die_hold":    "res://assets/audio/sfx/die_hold.ogg",
-	"gold_gain":   "res://assets/audio/sfx/gold_gain.ogg",
+	"gem_gain":    "res://assets/audio/sfx/gem_gain.ogg",
 	"damage":      "res://assets/audio/sfx/damage.ogg",
 	"heal":        "res://assets/audio/sfx/heal.ogg",
 	"card_buy":    "res://assets/audio/sfx/card_buy.ogg",
@@ -27,7 +27,7 @@ func _ready() -> void:
 	_preload_streams()
 	PlayerManager.player_damaged.connect(_on_player_damaged)
 	PlayerManager.player_healed.connect(_on_player_healed)
-	PlayerManager.gold_changed.connect(_on_gold_changed)
+	PlayerManager.gem_changed.connect(_on_gem_changed)
 	CardShop.card_purchased.connect(_on_card_purchased)
 	GameManager.game_started.connect(_on_game_started)
 	GameManager.game_ended.connect(_on_game_ended)
@@ -62,7 +62,7 @@ func _preload_streams() -> void:
 
 func _on_player_damaged(_idx: int, _hp: int) -> void:       play_sfx("damage")
 func _on_player_healed(_idx: int, _hp: int) -> void:        play_sfx("heal")
-func _on_gold_changed(_idx: int, _gold: int) -> void:       play_sfx("gold_gain")
+func _on_gem_changed(_idx: int, _gems: int) -> void:        play_sfx("gem_gain")
 func _on_card_purchased(_idx: int, _card: CardData) -> void: play_sfx("card_buy")
 func _on_game_started() -> void:                             play_music("music_main")
 func _on_game_ended(_winner: int, _reason: String) -> void:

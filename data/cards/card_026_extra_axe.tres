@@ -11,6 +11,6 @@ effect_id = 24
 script = ExtResource("1_carddata")
 card_name = "Extra Axe"
 description = "Roll one additional die each turn."
-gem_cost = 7
+gold_cost = 7
 card_type = 1
 effect = SubResource("effect")

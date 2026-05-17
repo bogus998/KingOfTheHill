@@ -1,4 +1,4 @@
-class_name GoldOnEnterVaultEffect
+class_name GemOnEnterVaultEffect
 extends CardEffect
 
 @export var amount: int = 0
@@ -8,4 +8,4 @@ func _init(p_amount: int = 0) -> void:
 
 func on_position_changed(owner_index: int, new_pos: PlayerData.PlayerPosition) -> void:
 	if new_pos == PlayerData.PlayerPosition.AT_VAULT:
-		PlayerManager.add_gold(owner_index, amount)
+		PlayerManager.add_gems(owner_index, amount)

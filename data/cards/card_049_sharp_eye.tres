@@ -11,6 +11,6 @@ effect_id = 67
 script = ExtResource("1_carddata")
 card_name = "Sharp Eye"
 description = "Whenever a new card is revealed, you may buy it before others."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

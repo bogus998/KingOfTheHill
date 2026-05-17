@@ -11,6 +11,6 @@ effect_id = 54
 script = ExtResource("1_carddata")
 card_name = "Die Jacker"
 description = "Once per turn, reroll one die of each other dwarf."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

@@ -22,7 +22,7 @@ func purchase(slot_index: int, player_index: int) -> bool:
 	if slot_index >= visible_cards.size():
 		return false
 	var card := visible_cards[slot_index]
-	if not PlayerManager.spend_gems(player_index, card.gem_cost):
+	if not PlayerManager.spend_gold(player_index, card.gold_cost):
 		return false
 	visible_cards.remove_at(slot_index)
 	if card.card_type == CardData.CardType.PERMANENT:
@@ -34,7 +34,7 @@ func purchase(slot_index: int, player_index: int) -> bool:
 	return true
 
 func refresh_pool(player_index: int) -> bool:
-	if not PlayerManager.spend_gems(player_index, REFRESH_COST):
+	if not PlayerManager.spend_gold(player_index, REFRESH_COST):
 		return false
 	visible_cards.clear()
 	_replenish()

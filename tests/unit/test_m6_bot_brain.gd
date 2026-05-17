@@ -9,11 +9,11 @@ func before_each() -> void:
 	]})
 	_brain = BotBrain.new()
 
-func _make_player(hp: int, pos: PlayerData.PlayerPosition, gold: int = 0) -> PlayerData:
+func _make_player(hp: int, pos: PlayerData.PlayerPosition, gems: int = 0) -> PlayerData:
 	var p := PlayerData.new()
 	p.health = hp
 	p.position = pos
-	p.gold = gold
+	p.gems = gems
 	return p
 
 # ── decide_holds ──────────────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ func test_holds_hearts_when_low_hp_outside() -> void:
 	var player := _make_player(5, PlayerData.PlayerPosition.OUTSIDE)
 	var faces := [DiceResolver.DieFace.HEART, DiceResolver.DieFace.ONE,
 			DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE,
-			DiceResolver.DieFace.GEM, DiceResolver.DieFace.CLAW]
+			DiceResolver.DieFace.GOLD, DiceResolver.DieFace.CLAW]
 	var holds: Array[bool] = _brain.decide_holds(faces, player)
 	assert_true(holds[0])
 
@@ -30,7 +30,7 @@ func test_does_not_hold_hearts_at_vault() -> void:
 	var player := _make_player(5, PlayerData.PlayerPosition.AT_VAULT)
 	var faces := [DiceResolver.DieFace.HEART, DiceResolver.DieFace.ONE,
 			DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE,
-			DiceResolver.DieFace.GEM, DiceResolver.DieFace.CLAW]
+			DiceResolver.DieFace.GOLD, DiceResolver.DieFace.CLAW]
 	var holds: Array[bool] = _brain.decide_holds(faces, player)
 	assert_false(holds[0])
 
@@ -38,14 +38,14 @@ func test_holds_claws_at_vault_when_hp_low() -> void:
 	var player := _make_player(4, PlayerData.PlayerPosition.AT_VAULT)
 	var faces := [DiceResolver.DieFace.CLAW, DiceResolver.DieFace.ONE,
 			DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE,
-			DiceResolver.DieFace.GEM, DiceResolver.DieFace.HEART]
+			DiceResolver.DieFace.GOLD, DiceResolver.DieFace.HEART]
 	var holds: Array[bool] = _brain.decide_holds(faces, player)
 	assert_true(holds[0])
 
-func test_holds_matching_numbers_when_gold_needed() -> void:
+func test_holds_matching_numbers_when_gems_needed() -> void:
 	var player := _make_player(10, PlayerData.PlayerPosition.OUTSIDE, 3)
 	var faces := [DiceResolver.DieFace.TWO, DiceResolver.DieFace.TWO,
-			DiceResolver.DieFace.THREE, DiceResolver.DieFace.GEM,
+			DiceResolver.DieFace.THREE, DiceResolver.DieFace.GOLD,
 			DiceResolver.DieFace.HEART, DiceResolver.DieFace.CLAW]
 	var holds: Array[bool] = _brain.decide_holds(faces, player)
 	assert_true(holds[0])
@@ -55,14 +55,14 @@ func test_holds_matching_numbers_when_gold_needed() -> void:
 
 func test_decide_buy_returns_cheapest_affordable() -> void:
 	var cards: Array = []
-	var c1 := CardData.new(); c1.gem_cost = 3; cards.append(c1)
-	var c2 := CardData.new(); c2.gem_cost = 1; cards.append(c2)
-	var c3 := CardData.new(); c3.gem_cost = 2; cards.append(c3)
+	var c1 := CardData.new(); c1.gold_cost = 3; cards.append(c1)
+	var c2 := CardData.new(); c2.gold_cost = 1; cards.append(c2)
+	var c3 := CardData.new(); c3.gold_cost = 2; cards.append(c3)
 	assert_eq(_brain.decide_buy(cards, 2), 1)
 
 func test_decide_buy_returns_minus1_when_unaffordable() -> void:
 	var cards: Array = []
-	var c1 := CardData.new(); c1.gem_cost = 5; cards.append(c1)
+	var c1 := CardData.new(); c1.gold_cost = 5; cards.append(c1)
 	assert_eq(_brain.decide_buy(cards, 2), -1)
 
 # ── decide_flee ───────────────────────────────────────────────────────────────
@@ -86,26 +86,26 @@ func test_thinking_delay_in_range() -> void:
 
 func test_decide_die_to_set_picks_lowest_value_die() -> void:
 	# ONE=1, THREE=3, GEM=4 — lowest is ONE at index 2
-	var faces := [DiceResolver.DieFace.THREE, DiceResolver.DieFace.GEM, DiceResolver.DieFace.ONE]
+	var faces := [DiceResolver.DieFace.THREE, DiceResolver.DieFace.GOLD, DiceResolver.DieFace.ONE]
 	assert_eq(_brain.decide_die_to_set(faces), 2)
 
 func test_decide_die_to_set_picks_first_when_tied() -> void:
-	var faces := [DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE, DiceResolver.DieFace.GEM]
+	var faces := [DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE, DiceResolver.DieFace.GOLD]
 	assert_eq(_brain.decide_die_to_set(faces), 0)
 
 # ── decide_flexible_tactics_face ─────────────────────────────────────────────
 
 func test_decide_flexible_tactics_picks_most_frequent_face() -> void:
 	var faces := [
-		DiceResolver.DieFace.GEM, DiceResolver.DieFace.GEM, DiceResolver.DieFace.ONE,
+		DiceResolver.DieFace.GOLD, DiceResolver.DieFace.GOLD, DiceResolver.DieFace.ONE,
 		DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE, DiceResolver.DieFace.HEART,
 	]
-	assert_eq(_brain.decide_flexible_tactics_face(faces), DiceResolver.DieFace.GEM)
+	assert_eq(_brain.decide_flexible_tactics_face(faces), DiceResolver.DieFace.GOLD)
 
 func test_decide_flexible_tactics_returns_a_valid_face() -> void:
 	var faces := [
 		DiceResolver.DieFace.ONE, DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE,
-		DiceResolver.DieFace.GEM, DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
+		DiceResolver.DieFace.GOLD, DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
 	]
 	var result := _brain.decide_flexible_tactics_face(faces)
 	assert_true(result in DiceResolver.DieFace.values())

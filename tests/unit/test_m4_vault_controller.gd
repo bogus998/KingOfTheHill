@@ -15,9 +15,9 @@ func test_enter_empty_vault_sets_position() -> void:
 	_vault.handle_claws(0, 1)
 	assert_eq(PlayerManager.players[0].position, PlayerData.PlayerPosition.AT_VAULT)
 
-func test_enter_empty_vault_awards_1_gold() -> void:
+func test_enter_empty_vault_awards_1_gems() -> void:
 	_vault.handle_claws(0, 1)
-	assert_eq(PlayerManager.players[0].gold, 1)
+	assert_eq(PlayerManager.players[0].gems, 1)
 
 func test_enter_empty_vault_emits_vault_entered() -> void:
 	watch_signals(_vault)

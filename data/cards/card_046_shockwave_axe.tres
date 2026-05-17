@@ -11,6 +11,6 @@ effect_id = 66
 script = ExtResource("1_carddata")
 card_name = "Shockwave Axe"
 description = "Your Claw results deal damage to ALL other dwarfs."
-gem_cost = 7
+gold_cost = 7
 card_type = 1
 effect = SubResource("effect")

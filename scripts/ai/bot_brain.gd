@@ -17,21 +17,21 @@ func decide_holds(faces: Array, player_data: PlayerData) -> Array[bool]:
 						and player_data.health < 6
 			DiceResolver.DieFace.CLAW:
 				holds[i] = player_data.position == PlayerData.PlayerPosition.AT_VAULT
-			DiceResolver.DieFace.GEM:
+			DiceResolver.DieFace.GOLD:
 				holds[i] = true
 			_:
 				var count: int = counts.get(f, 0)
-				holds[i] = count >= 3 or (count >= 2 and player_data.gold < 10)
+				holds[i] = count >= 3 or (count >= 2 and player_data.gems < 10)
 
 	return holds
 
-func decide_buy(visible_cards: Array, gems: int) -> int:
+func decide_buy(visible_cards: Array, gold: int) -> int:
 	var best_idx := -1
 	var best_cost := 999
 	for i in visible_cards.size():
 		var card: CardData = visible_cards[i]
-		if card.gem_cost <= gems and card.gem_cost < best_cost:
-			best_cost = card.gem_cost
+		if card.gold_cost <= gold and card.gold_cost < best_cost:
+			best_cost = card.gold_cost
 			best_idx = i
 	return best_idx
 
@@ -57,7 +57,7 @@ func decide_flexible_tactics_face(faces: Array) -> DiceResolver.DieFace:
 	var counts := {}
 	for f in faces:
 		counts[f] = counts.get(f, 0) + 1
-	var best_face: DiceResolver.DieFace = DiceResolver.DieFace.GEM
+	var best_face: DiceResolver.DieFace = DiceResolver.DieFace.GOLD
 	var best_count := 0
 	for f in counts:
 		if counts[f] > best_count:

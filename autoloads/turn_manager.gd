@@ -61,7 +61,7 @@ func _start_turn() -> void:
 	roll_count = 0
 	# Award vault survival bonus before dice roll
 	if PlayerManager.players[current_player_index].position == PlayerData.PlayerPosition.AT_VAULT:
-		PlayerManager.add_gold(current_player_index, 2)
+		PlayerManager.add_gems(current_player_index, 2)
 	turn_started.emit(current_player_index)
 	_set_phase(TurnPhase.DICE_ROLL)
 

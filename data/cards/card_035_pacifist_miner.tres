@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/card_data.gd" id="1_carddata"]
-[ext_resource type="Script" path="res://resources/effects/turn_end/gold_if_no_damage_effect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://resources/effects/turn_end/gem_if_no_damage_effect.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="effect"]
 script = ExtResource("2_effect")
@@ -10,7 +10,7 @@ effect_id = 37
 [resource]
 script = ExtResource("1_carddata")
 card_name = "Pacifist Miner"
-description = "Gain 1 gold at the end of your turn if you dealt no damage this turn."
-gem_cost = 5
+description = "Gain 1 gem at the end of your turn if you dealt no damage this turn."
+gold_cost = 5
 card_type = 1
 effect = SubResource("effect")

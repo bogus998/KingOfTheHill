@@ -12,6 +12,6 @@ amount = 1
 script = ExtResource("1_carddata")
 card_name = "Iron Hide"
 description = "Permanently take 1 less damage from attacks."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

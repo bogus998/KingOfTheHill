@@ -12,6 +12,6 @@ damage = 2
 script = ExtResource("1_carddata")
 card_name = "Toxic Blade"
 description = "When you score TWO TWO TWO, deal 2 bonus damage."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")

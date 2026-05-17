@@ -11,6 +11,6 @@ effect_id = 77
 script = ExtResource("1_carddata")
 card_name = "Trickster's Bargain"
 description = "When you flee the Vault, take one PERMANENT card from the dwarf claiming it."
-gem_cost = 3
+gold_cost = 3
 card_type = 1
 effect = SubResource("effect")
