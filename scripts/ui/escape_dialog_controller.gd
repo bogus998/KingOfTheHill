@@ -4,9 +4,9 @@ extends Panel
 signal flee_pressed
 signal stay_pressed
 
-@onready var _message: Label = $VBoxContainer/MessageLabel
-@onready var _flee_btn: Button = $VBoxContainer/Buttons/FleeButton
-@onready var _stay_btn: Button = $VBoxContainer/Buttons/StayButton
+@onready var _message: Label = $CenterContainer/DialogBox/VBoxContainer/MessageLabel
+@onready var _flee_btn: Button = $CenterContainer/DialogBox/VBoxContainer/Buttons/FleeButton
+@onready var _stay_btn: Button = $CenterContainer/DialogBox/VBoxContainer/Buttons/StayButton
 
 func _ready() -> void:
 	_flee_btn.pressed.connect(func(): flee_pressed.emit())

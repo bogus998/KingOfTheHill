@@ -1,7 +1,7 @@
 extends Control
 
-@onready var _result_label: Label = $VBox/ResultLabel
-@onready var _reason_label: Label = $VBox/ReasonLabel
+@onready var _result_label: Label = $CenterContainer/VBox/ResultLabel
+@onready var _reason_label: Label = $CenterContainer/VBox/ReasonLabel
 
 func _ready() -> void:
 	var wi := GameManager.last_winner_index
@@ -10,8 +10,8 @@ func _ready() -> void:
 	else:
 		_result_label.text = "It's a draw!"
 	_reason_label.text = "(%s)" % GameManager.last_winner_reason
-	$VBox/PlayAgainButton.pressed.connect(_on_play_again)
-	$VBox/MainMenuButton.pressed.connect(_on_main_menu)
+	$CenterContainer/VBox/PlayAgainButton.pressed.connect(_on_play_again)
+	$CenterContainer/VBox/MainMenuButton.pressed.connect(_on_main_menu)
 
 func _on_play_again() -> void:
 	get_tree().change_scene_to_file("res://scenes/menus/setup_game.tscn")

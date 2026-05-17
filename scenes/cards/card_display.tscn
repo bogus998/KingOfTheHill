@@ -19,7 +19,7 @@ visible = false
 text = "Card Name"
 
 [node name="CostLabel" type="Label" parent="VBox"]
-text = "💎 1"
+text = "🪙 1"
 
 [node name="DescLabel" type="Label" parent="VBox"]
 text = "Description"
@@ -27,5 +27,6 @@ autowrap_mode = 3
 
 [node name="BuyButton" type="Button" parent="VBox"]
 text = "Buy"
+custom_minimum_size = Vector2(0, 56)
 
 [connection signal="pressed" from="VBox/BuyButton" to="." method="_on_buy_button_pressed"]

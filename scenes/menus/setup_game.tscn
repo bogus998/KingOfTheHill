@@ -10,33 +10,36 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_setup")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -200.0
-offset_right = 300.0
-offset_bottom = 200.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TitleLabel" type="Label" parent="VBox"]
+[node name="VBox" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(600, 0)
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBox"]
 text = "Setup Game"
+horizontal_alignment = 1
 
-[node name="PlayersContainer" type="VBoxContainer" parent="VBox"]
+[node name="PlayersContainer" type="VBoxContainer" parent="CenterContainer/VBox"]
 
-[node name="AddPlayerButton" type="Button" parent="VBox"]
+[node name="AddPlayerButton" type="Button" parent="CenterContainer/VBox"]
 text = "Add Player"
+custom_minimum_size = Vector2(0, 56)
 
-[node name="HintLabel" type="Label" parent="VBox"]
+[node name="HintLabel" type="Label" parent="CenterContainer/VBox"]
 text = "2-4 players"
+horizontal_alignment = 1
 
-[node name="StartButton" type="Button" parent="VBox"]
+[node name="StartButton" type="Button" parent="CenterContainer/VBox"]
 text = "Start Game"
+custom_minimum_size = Vector2(0, 56)
 
-[node name="BackButton" type="Button" parent="VBox"]
+[node name="BackButton" type="Button" parent="CenterContainer/VBox"]
 text = "Back"
+custom_minimum_size = Vector2(0, 56)

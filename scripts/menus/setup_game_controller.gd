@@ -3,9 +3,9 @@ extends Control
 const MIN_PLAYERS := 2
 const MAX_PLAYERS := 4
 
-@onready var _players_container: VBoxContainer = $VBox/PlayersContainer
-@onready var _add_button: Button = $VBox/AddPlayerButton
-@onready var _start_button: Button = $VBox/StartButton
+@onready var _players_container: VBoxContainer = $CenterContainer/VBox/PlayersContainer
+@onready var _add_button: Button = $CenterContainer/VBox/AddPlayerButton
+@onready var _start_button: Button = $CenterContainer/VBox/StartButton
 
 # Each entry: { row, index_label, name_field, type_option, remove_button, name_is_custom }
 var _rows: Array[Dictionary] = []
@@ -13,7 +13,7 @@ var _rows: Array[Dictionary] = []
 func _ready() -> void:
 	_add_button.pressed.connect(add_player)
 	_start_button.pressed.connect(_on_start)
-	$VBox/BackButton.pressed.connect(_on_back)
+	$CenterContainer/VBox/BackButton.pressed.connect(_on_back)
 	add_player()  # start with a single Human row
 
 func add_player() -> void:

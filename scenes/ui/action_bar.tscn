@@ -6,6 +6,6 @@
 script = ExtResource("1_action")
 
 [node name="EndTurnButton" type="Button" parent="."]
-custom_minimum_size = Vector2(200, 0)
+custom_minimum_size = Vector2(200, 56)
 text = "End Turn"
 visible = false

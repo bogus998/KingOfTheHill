@@ -26,4 +26,5 @@ slot_index = 1
 slot_index = 2
 
 [node name="RefreshButton" type="Button" parent="VBox"]
-text = "Refresh (💎2)"
+text = "Refresh (🪙2)"
+custom_minimum_size = Vector2(0, 56)

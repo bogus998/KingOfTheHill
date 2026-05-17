@@ -10,31 +10,34 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_over")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -175.0
-offset_right = 200.0
-offset_bottom = 175.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TitleLabel" type="Label" parent="VBox"]
+[node name="VBox" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(400, 0)
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBox"]
 text = "Game Over"
+horizontal_alignment = 1
 
-[node name="ResultLabel" type="Label" parent="VBox"]
+[node name="ResultLabel" type="Label" parent="CenterContainer/VBox"]
 text = ""
+horizontal_alignment = 1
 
-[node name="ReasonLabel" type="Label" parent="VBox"]
+[node name="ReasonLabel" type="Label" parent="CenterContainer/VBox"]
 text = ""
+horizontal_alignment = 1
 
-[node name="PlayAgainButton" type="Button" parent="VBox"]
+[node name="PlayAgainButton" type="Button" parent="CenterContainer/VBox"]
 text = "Play Again"
+custom_minimum_size = Vector2(0, 56)
 
-[node name="MainMenuButton" type="Button" parent="VBox"]
+[node name="MainMenuButton" type="Button" parent="CenterContainer/VBox"]
 text = "Main Menu"
+custom_minimum_size = Vector2(0, 56)
