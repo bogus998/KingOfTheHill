@@ -149,12 +149,13 @@ func test_steal_gold_5_all_limited_to_5() -> void:
 	_handler.apply_immediate(card, 0)
 	assert_eq(PlayerManager.players[1].gold, 3)
 
-func test_steal_gold_does_not_affect_source() -> void:
+func test_steal_gold_credits_source() -> void:
 	PlayerManager.add_gold(0, 10)
 	PlayerManager.add_gold(1, 8)
 	var card := _make_card(CardData.CardType.ONE_TIME, "steal_gold_5_all")
 	_handler.apply_immediate(card, 0)
-	assert_eq(PlayerManager.players[0].gold, 10)
+	assert_eq(PlayerManager.players[0].gold, 15)
+	assert_eq(PlayerManager.players[1].gold, 3)
 
 # ── War band ──────────────────────────────────────────────────────────────────
 
@@ -179,12 +180,14 @@ func test_gold_2_steal_gems() -> void:
 	var card := _make_card(CardData.CardType.ONE_TIME, "gold_2_steal_gems")
 	_handler.apply_immediate(card, 0)
 	assert_eq(PlayerManager.players[0].gold, 2)
+	assert_eq(PlayerManager.players[0].gems, 3)  # source receives stolen gems
 	assert_eq(PlayerManager.players[1].gems, 3)  # 6 / 2 = 3 lost
 
 func test_gold_2_steal_gems_rounds_down() -> void:
 	PlayerManager.add_gems(1, 5)
 	var card := _make_card(CardData.CardType.ONE_TIME, "gold_2_steal_gems")
 	_handler.apply_immediate(card, 0)
+	assert_eq(PlayerManager.players[0].gems, 2)  # source receives 2 stolen gems
 	assert_eq(PlayerManager.players[1].gems, 3)  # 5 / 2 = 2 lost → 3 remain
 
 # ── Permanent turn-start passives ─────────────────────────────────────────────

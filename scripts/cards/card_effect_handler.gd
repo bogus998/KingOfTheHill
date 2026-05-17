@@ -127,6 +127,7 @@ func _steal_gold_from_others(source_index: int, amount: int) -> void:
 			if stolen > 0:
 				p.gold -= stolen
 				PlayerManager.gold_changed.emit(i, p.gold)
+				PlayerManager.add_gold(source_index, stolen)
 
 func _steal_half_gems_from_others(source_index: int) -> void:
 	for i in PlayerManager.players.size():
@@ -134,6 +135,7 @@ func _steal_half_gems_from_others(source_index: int) -> void:
 			var lose: int = PlayerManager.players[i].gems / 2
 			if lose > 0:
 				PlayerManager.spend_gems(i, lose)
+				PlayerManager.add_gems(source_index, lose)
 
 func _apply_war_band(player_index: int) -> void:
 	var card_count: int = PlayerManager.players[player_index].cards_in_hand.size()

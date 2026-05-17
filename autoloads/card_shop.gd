@@ -28,8 +28,7 @@ func purchase(slot_index: int, player_index: int) -> bool:
 	if card.card_type == CardData.CardType.PERMANENT:
 		PlayerManager.add_card_to_hand(player_index, card)
 	else:
-		# ONE_TIME cards go directly to an effect queue — handled by caller
-		pass
+		pass  # effect applied by CardEffectHandler via card_purchased signal
 	card_purchased.emit(player_index, card)
 	_replenish()
 	return true
