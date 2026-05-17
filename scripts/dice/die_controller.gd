@@ -11,6 +11,7 @@ var _holdable: bool = false
 
 signal face_changed(new_face: DiceResolver.DieFace)
 signal hold_changed(is_held: bool)
+signal pressed
 
 func _ready() -> void:
 	_face_label.text = _face_to_text(face)
@@ -20,10 +21,10 @@ func set_holdable(value: bool) -> void:
 	_holdable = value
 
 func _gui_input(event: InputEvent) -> void:
-	if not _holdable:
-		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		toggle_hold()
+		if _holdable:
+			toggle_hold()
+		pressed.emit()
 		accept_event()
 
 func roll() -> void:

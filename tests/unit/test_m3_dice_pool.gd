@@ -3,6 +3,10 @@ extends GutTest
 var _pool: Node = null
 
 func before_each() -> void:
+	GameManager.start_game({"players": [
+		{"name": "Thorin", "is_bot": false},
+		{"name": "Gimli",  "is_bot": false},
+	]})
 	_pool = add_child_autofree(preload("res://scenes/dice/dice_pool.tscn").instantiate())
 
 # ── Initial state ─────────────────────────────────────────────────────────────

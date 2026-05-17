@@ -82,6 +82,7 @@ func _on_roll_completed(faces: Array) -> void:
 	_last_roll_result = DiceResolver.resolve(faces)
 
 func _on_end_roll() -> void:
+	_card_effect_handler.on_roll_finalized(TurnManager.current_player_index, _dice_pool.get_all_faces())
 	TurnManager.advance_phase()  # DICE_ROLL → RESOLUTION
 	_resolution_picker.show_result(_last_roll_result)
 
@@ -148,16 +149,15 @@ func _on_game_ended(winner_index: int, reason: String) -> void:
 func _run_bot_turn() -> void:
 	var bot_index := TurnManager.current_player_index
 
-	# === DICE ROLL — up to 3 rolls ===
-	for roll_num in range(3):
-		if not TurnManager.is_game_active or TurnManager.current_phase != TurnManager.TurnPhase.DICE_ROLL:
-			return
+	# === DICE ROLL ===
+	while TurnManager.is_game_active and TurnManager.current_phase == TurnManager.TurnPhase.DICE_ROLL \
+			and TurnManager.roll_count < _dice_pool.get_max_rolls():
 		await get_tree().create_timer(_bot_brain.get_thinking_delay()).timeout
 		if not TurnManager.is_game_active or TurnManager.current_phase != TurnManager.TurnPhase.DICE_ROLL:
 			return
 		_dice_pool.roll_active_dice()
 
-		if roll_num < 2:
+		if TurnManager.roll_count < _dice_pool.get_max_rolls():
 			var holds: Array[bool] = _bot_brain.decide_holds(
 					_dice_pool.get_all_faces(), PlayerManager.players[bot_index])
 			for i in holds.size():

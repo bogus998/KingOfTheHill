@@ -81,3 +81,31 @@ func test_thinking_delay_in_range() -> void:
 	for _i in 20:
 		var delay: float = _brain.get_thinking_delay()
 		assert_true(delay >= 0.8 and delay <= 1.5)
+
+# ── decide_die_to_set ─────────────────────────────────────────────────────────
+
+func test_decide_die_to_set_picks_lowest_value_die() -> void:
+	# ONE=1, THREE=3, GEM=4 — lowest is ONE at index 2
+	var faces := [DiceResolver.DieFace.THREE, DiceResolver.DieFace.GEM, DiceResolver.DieFace.ONE]
+	assert_eq(_brain.decide_die_to_set(faces), 2)
+
+func test_decide_die_to_set_picks_first_when_tied() -> void:
+	var faces := [DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE, DiceResolver.DieFace.GEM]
+	assert_eq(_brain.decide_die_to_set(faces), 0)
+
+# ── decide_flexible_tactics_face ─────────────────────────────────────────────
+
+func test_decide_flexible_tactics_picks_most_frequent_face() -> void:
+	var faces := [
+		DiceResolver.DieFace.GEM, DiceResolver.DieFace.GEM, DiceResolver.DieFace.ONE,
+		DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE, DiceResolver.DieFace.HEART,
+	]
+	assert_eq(_brain.decide_flexible_tactics_face(faces), DiceResolver.DieFace.GEM)
+
+func test_decide_flexible_tactics_returns_a_valid_face() -> void:
+	var faces := [
+		DiceResolver.DieFace.ONE, DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE,
+		DiceResolver.DieFace.GEM, DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
+	]
+	var result := _brain.decide_flexible_tactics_face(faces)
+	assert_true(result in DiceResolver.DieFace.values())

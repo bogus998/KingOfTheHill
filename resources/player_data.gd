@@ -21,3 +21,12 @@ enum PlayerPosition { OUTSIDE, AT_VAULT }
 
 # Per-turn tracking (reset at turn start)
 var damage_dealt_this_turn: int = 0
+var die_count_modifier: int = 0
+var extra_rerolls_available: int = 0
+var has_free_reroll_after_max: bool = false
+var free_reroll_threes: bool = false
+var can_set_die_before_roll: bool = false
+var wildcard_pending: bool = false
+var pending_die_penalty: int = 0
+var repeat_turn_used: bool = false
+var war_drums_triggered: bool = false

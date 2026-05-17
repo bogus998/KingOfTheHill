@@ -1,6 +1,6 @@
 # Group 3 — Dice Manipulation: Implementation Plan
 
-**Cards covered:** Extra Axe (`extra_die`), Quick Hands (`bonus_reroll_1`), Shadow Runner (`free_reroll_threes`), Die Picker (`set_die_to_one`), Flexible Tactics (`gem_die_change`), Focus Crystal (`gem_extra_reroll`), Wildcard (`wildcard_die`), Die Jacker (`die_jacker`), Smoke Bomb (`smoke_bomb`), Perfect Roll (`all_faces_bonus`), Combo Master (`combo_master`), Treasure Seeker (`triple_one_gold_bonus_2`), Time Stopper (`triple_one_extra_turn`), Toxic Blade (`triple_two_damage_2`), War Drums (`war_drums`)
+**Cards covered:** Extra Axe (`extra_die`), Quick Hands (`bonus_reroll_1`), Shadow Runner (`free_reroll_threes`), Die Picker (`set_die_to_one`), Flexible Tactics (`gem_die_change`), Focus Crystal (`gem_extra_reroll`), Wildcard (`wildcard_die`), Smoke Bomb (`smoke_bomb`), Perfect Roll (`all_faces_bonus`), Combo Master (`combo_master`), Treasure Seeker (`triple_one_gold_bonus_2`), Time Stopper (`triple_one_extra_turn`), Toxic Blade (`triple_two_damage_2`), War Drums (`war_drums`)
 
 ---
 
@@ -10,7 +10,6 @@
 
 - `const MAX_ROLLS := 3` — replace with `func _get_max_rolls() -> int` that reads `PlayerData.extra_rerolls_available + 3`.
 - `_dice` is populated from scene children at `_ready()` — die count is structurally fixed. Add hidden extra-die nodes in the scene (e.g. 2 extras, `visible = false`). In `_on_turn_started`, show/hide based on `PlayerData.die_count_modifier`.
-- Add `force_reroll_die_at(index: int)` — rolls a specific die ignoring held state.
 - Add `enter_die_selection_mode(callback: Callable)` — makes each die tappable, fires callback with chosen index.
 - After each roll, if active player has `free_reroll_threes`, un-hold all THREE-face dice without consuming roll count.
 - Add signal `extra_roll_available(remaining: int)` for UI.
@@ -40,8 +39,8 @@ New transient fields (all reset at turn start unless noted):
 | `has_free_reroll_after_max` | `bool` | after first use or turn end | Quick Hands |
 | `free_reroll_threes` | `bool` | turn end (set each turn start) | Shadow Runner always-active |
 | `can_set_die_before_roll` | `bool` | after first use or turn end | Die Picker |
-| `die_jacker_used` | `bool` | Jacker holder's own turn start | Die Jacker once-per-turn guard |
 | `pending_die_penalty` | `int` | consumed at next turn start | Time Stopper repeated-turn penalty |
+| `repeat_turn_used` | `bool` | turn start | Prevents Time Stopper infinite loop |
 | `war_drums_triggered` | `bool` | turn end | Did dice score >= 4 gold |
 
 Card-level charge counters (`smoke_bomb_charges`) go in `CardEffectHandler._card_charges: Dictionary` keyed by `CardData` object reference, NOT in `PlayerData`.
@@ -101,17 +100,10 @@ static func count_face(faces: Array, face: DieFace) -> int
 - `apply_immediate` sets `wildcard_pending = true`. During next DICE_ROLL turn start, face-picker flow fires → `set_face(chosen)` → clear flag. Card already discarded by ONE_TIME path.
 - Effect fires next turn's DICE_ROLL phase (card bought in BUY_CARDS). Document in card description.
 
-### `die_jacker` — Die Jacker (PERMANENT)
-- Acts on **opponents' turns**. During DICE_ROLL phase, if a different alive player holds Die Jacker and `die_jacker_used == false`, show "Jack a Die" button.
-- Jacker taps an opponent die → `force_reroll_die_at(index)` on the active pool → set `die_jacker_used = true`.
-- `die_jacker_used` resets at start of the Jacker holder's **own** turn.
-- Bot: `BotBrain.decide_jacker_target(faces) -> int` returns index of lowest-value die.
-
 ### `smoke_bomb` — Smoke Bomb (PERMANENT, charge-based)
 - `_on_card_purchased`: `_card_charges[card] = 3`
 - During DICE_ROLL: "Smoke Bomb" button visible when charges > 0 AND `_roll_count >= effective_max_rolls`. Press: `_card_charges[card] -= 1`, `extra_rerolls_available += 1`.
 - When `_card_charges[card] == 0`: `remove_card_from_hand` and append to `spent_one_time_cards`.
-- Risk: Verify card object identity is stable per player (see Risk R6).
 
 ### `all_faces_bonus` — Perfect Roll (PERMANENT)
 - `on_roll_finalized()`: check `DiceResolver.has_all_six_faces(final_faces)` → `add_gold(player_index, 9)`.
@@ -152,7 +144,6 @@ static func count_face(faces: Array, face: DieFace) -> int
 6. Die mutation UI (`enter_die_selection_mode` + face picker) → unlocks `set_die_to_one`, `gem_die_change`, `wildcard_die`
 7. Shadow Runner passive (THREE-unhold pass in `roll_active_dice`)
 8. Quick Hands free reroll (conditional re-enable after roll 3)
-9. Die Jacker (most complex: non-active player UI, cross-turn interaction)
 
 ---
 
@@ -161,14 +152,16 @@ static func count_face(faces: Array, face: DieFace) -> int
 | # | Risk | Recommendation |
 |---|---|---|
 | R1 | Variable die count requires scene editing (pre-place hidden nodes) | Pre-place 2 extra `DieController` nodes in `DiceContainer`; cap at 7 |
-| R2 | `TurnManager._start_turn()` must reset everything correctly on repeat | Verify PERMANENT card passive fires correctly on repeated turn |
-| R3 | Die Jacker requires non-active player input | Decide: auto-jacking (simplest) vs. manual (needs new UI) |
-| R4 | War Drums threshold: dice gold vs all gold sources | Default to dice-only gold |
-| R5 | Wildcard timing (ONE_TIME bought in BUY_CARDS, effect deferred) | Document in card description |
-| R6 | Smoke Bomb card object identity: shared `.tres` cache | Call `card.duplicate()` in `add_card_to_hand` |
-| R7 | Time Stopper recursion (triple-ONE again on repeated turn) | Add `_repeat_turn_used` guard flag on `PlayerData` |
-| R8 | Combo Master vs. triple scoring interaction | Both fire independently and are additive — intentional |
-| R9 | Bot support for interactive effects | Add stubs to `BotBrain`: Die Picker/Wildcard → pick ONE; Flexible Tactics → match most frequent face |
+| R2 | Signal ordering: `DicePoolController._on_turn_started` fires before `CardEffectHandler` sets `die_count_modifier` | Use `_update_die_visibility.call_deferred()` in `DicePoolController._on_turn_started` |
+| R3 | Hidden dice in `_dice` array are rolled and included in `get_all_faces()` | Filter by `die.visible` in `roll_active_dice()` and `get_all_faces()` |
+| R4 | Repeated turn double-fires income/damage passives (`gem_per_turn_1`, `passive_damage_1_per_turn`, etc.) | Add `is_repeated_turn: bool` to `TurnManager`; skip income/damage passives in `CardEffectHandler._on_turn_started` when set |
+| R5 | Bot roll loop hardcoded to `range(3)` — won't use bonus rolls | Replace with a loop checking `_dice_pool.roll_count < _dice_pool.get_max_rolls()` |
+| R6 | `TurnManager._start_turn()` must reset everything correctly on repeat | Verify PERMANENT card passives fire correctly on repeated turn |
+| R7 | War Drums threshold: dice gold vs all gold sources | Default to dice-only gold (`DiceResolver.resolve(final_faces)["gold"]`) |
+| R8 | Wildcard timing (ONE_TIME bought in BUY_CARDS, effect deferred to next turn) | Document in card description |
+| R9 | Time Stopper recursion (triple-ONE again on repeated turn) | Add `repeat_turn_used: bool` guard to `PlayerData`; reset at turn start |
+| R10 | Combo Master vs. triple scoring interaction | Both fire independently and are additive — intentional |
+| R11 | Bot support for interactive effects | Add stubs to `BotBrain`: Die Picker/Wildcard → pick ONE; Flexible Tactics → match most frequent face |
 
 ---
 

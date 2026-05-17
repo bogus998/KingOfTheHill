@@ -68,3 +68,61 @@ func test_six_gems_score_6_gems() -> void:
 	])
 	assert_eq(r["gems"], 6)
 	assert_eq(r["gold"], 0)
+
+# ── has_all_six_faces ─────────────────────────────────────────────────────────
+
+func test_has_all_six_faces_true_with_exactly_one_each() -> void:
+	assert_true(DiceResolver.has_all_six_faces([
+		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.TWO,   DiceResolver.DieFace.THREE,
+		DiceResolver.DieFace.GEM,  DiceResolver.DieFace.CLAW,  DiceResolver.DieFace.HEART,
+	]))
+
+func test_has_all_six_faces_false_when_missing_a_face() -> void:
+	assert_false(DiceResolver.has_all_six_faces([
+		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.TWO,   DiceResolver.DieFace.THREE,
+		DiceResolver.DieFace.GEM,  DiceResolver.DieFace.GEM,   DiceResolver.DieFace.HEART,
+	]))
+
+func test_has_all_six_faces_true_with_duplicates_in_7_dice() -> void:
+	assert_true(DiceResolver.has_all_six_faces([
+		DiceResolver.DieFace.ONE,  DiceResolver.DieFace.ONE,   DiceResolver.DieFace.TWO,
+		DiceResolver.DieFace.THREE, DiceResolver.DieFace.GEM,  DiceResolver.DieFace.CLAW,
+		DiceResolver.DieFace.HEART,
+	]))
+
+# ── has_combo_one_two_three ───────────────────────────────────────────────────
+
+func test_has_combo_one_two_three_true() -> void:
+	assert_true(DiceResolver.has_combo_one_two_three([
+		DiceResolver.DieFace.ONE, DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE,
+		DiceResolver.DieFace.GEM, DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
+	]))
+
+func test_has_combo_one_two_three_false_missing_two() -> void:
+	assert_false(DiceResolver.has_combo_one_two_three([
+		DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE, DiceResolver.DieFace.THREE,
+		DiceResolver.DieFace.GEM, DiceResolver.DieFace.CLAW, DiceResolver.DieFace.HEART,
+	]))
+
+func test_has_combo_one_two_three_false_all_same() -> void:
+	assert_false(DiceResolver.has_combo_one_two_three([
+		DiceResolver.DieFace.GEM, DiceResolver.DieFace.GEM, DiceResolver.DieFace.GEM,
+		DiceResolver.DieFace.GEM, DiceResolver.DieFace.GEM, DiceResolver.DieFace.GEM,
+	]))
+
+# ── count_face ────────────────────────────────────────────────────────────────
+
+func test_count_face_returns_correct_count() -> void:
+	var faces := [
+		DiceResolver.DieFace.ONE, DiceResolver.DieFace.ONE, DiceResolver.DieFace.TWO,
+		DiceResolver.DieFace.THREE, DiceResolver.DieFace.GEM, DiceResolver.DieFace.HEART,
+	]
+	assert_eq(DiceResolver.count_face(faces, DiceResolver.DieFace.ONE), 2)
+	assert_eq(DiceResolver.count_face(faces, DiceResolver.DieFace.TWO), 1)
+
+func test_count_face_returns_zero_when_absent() -> void:
+	var faces := [
+		DiceResolver.DieFace.ONE, DiceResolver.DieFace.TWO, DiceResolver.DieFace.THREE,
+		DiceResolver.DieFace.GEM, DiceResolver.DieFace.GEM, DiceResolver.DieFace.HEART,
+	]
+	assert_eq(DiceResolver.count_face(faces, DiceResolver.DieFace.CLAW), 0)

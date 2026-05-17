@@ -1,14 +1,52 @@
 class_name CardEffectHandler
 extends RefCounted
 
+var _card_charges: Dictionary = {}
+
 func apply_immediate(card: CardData, player_index: int) -> void:
 	_apply_effect(card.effect_id, player_index)
 	if card.card_type == CardData.CardType.ONE_TIME:
 		PlayerManager.players[player_index].spent_one_time_cards.append(card)
 		PlayerManager.remove_card_from_hand(player_index, card)
 
+func on_roll_finalized(player_index: int, final_faces: Array) -> void:
+	var p := PlayerManager.players[player_index]
+	for card in p.cards_in_hand.duplicate():
+		if card.card_type != CardData.CardType.PERMANENT:
+			continue
+		match card.effect_id:
+			"all_faces_bonus":
+				if DiceResolver.has_all_six_faces(final_faces):
+					PlayerManager.add_gold(player_index, 9)
+			"combo_master":
+				if DiceResolver.has_combo_one_two_three(final_faces):
+					PlayerManager.add_gold(player_index, 2)
+			"triple_one_gold_bonus_2":
+				if DiceResolver.count_face(final_faces, DiceResolver.DieFace.ONE) >= 3:
+					PlayerManager.add_gold(player_index, 2)
+			"triple_one_extra_turn":
+				if DiceResolver.count_face(final_faces, DiceResolver.DieFace.ONE) >= 3 \
+						and not p.repeat_turn_used:
+					p.repeat_turn_used = true
+					TurnManager.request_repeat_turn(player_index, 1)
+			"triple_two_damage_2":
+				if DiceResolver.count_face(final_faces, DiceResolver.DieFace.TWO) >= 3:
+					_damage_others(player_index, 2)
+			"war_drums":
+				if DiceResolver.resolve(final_faces)["gold"] >= 4:
+					p.war_drums_triggered = true
+
+func use_smoke_bomb_charge(card: CardData, player_index: int) -> void:
+	if not _card_charges.has(card) or _card_charges[card] <= 0:
+		return
+	_card_charges[card] -= 1
+	PlayerManager.players[player_index].extra_rerolls_available += 1
+	if _card_charges[card] == 0:
+		_card_charges.erase(card)
+		PlayerManager.players[player_index].spent_one_time_cards.append(card)
+		PlayerManager.remove_card_from_hand(player_index, card)
+
 func _on_card_purchased(player_index: int, card: CardData) -> void:
-	# Apply static modifiers for permanent cards on purchase
 	if card.card_type == CardData.CardType.PERMANENT:
 		match card.effect_id:
 			"damage_reduction_1":
@@ -20,6 +58,8 @@ func _on_card_purchased(player_index: int, card: CardData) -> void:
 				PlayerManager.players[player_index].heal_bonus += 1
 			"gem_bonus_on_gain":
 				PlayerManager.players[player_index].gem_gain_bonus += 1
+			"smoke_bomb":
+				_card_charges[card] = 3
 	if card.card_type == CardData.CardType.ONE_TIME:
 		apply_immediate(card, player_index)
 	# Fire gold_on_purchase for any permanent in hand (including the just-bought card)
@@ -30,9 +70,23 @@ func _on_card_purchased(player_index: int, card: CardData) -> void:
 func _on_turn_started(player_index: int) -> void:
 	if player_index >= PlayerManager.players.size():
 		return
-	PlayerManager.players[player_index].damage_dealt_this_turn = 0
-	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
+	var p := PlayerManager.players[player_index]
+	# Reset per-turn modifier flags
+	p.damage_dealt_this_turn = 0
+	p.die_count_modifier = 0
+	p.extra_rerolls_available = 0
+	p.has_free_reroll_after_max = false
+	p.free_reroll_threes = false
+	p.can_set_die_before_roll = false
+	p.war_drums_triggered = false
+	# repeat_turn_used stays true through a repeated turn to block re-triggering
+	if not TurnManager.is_repeated_turn:
+		p.repeat_turn_used = false
+	# Apply PERMANENT card passives; skip income/damage passives on repeated turns
+	for card in p.cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT:
+			if TurnManager.is_repeated_turn and _is_income_passive(card.effect_id):
+				continue
 			_apply_effect(card.effect_id, player_index)
 
 func _on_turn_ended(player_index: int) -> void:
@@ -41,6 +95,12 @@ func _on_turn_ended(player_index: int) -> void:
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT:
 			_apply_turn_end_effect(card.effect_id, player_index)
+	# War Drums: debuff all other living players by -1 die next turn
+	if PlayerManager.players[player_index].war_drums_triggered:
+		PlayerManager.players[player_index].war_drums_triggered = false
+		for i in PlayerManager.players.size():
+			if i != player_index and not PlayerManager.players[i].is_eliminated:
+				PlayerManager.players[i].pending_die_penalty += 1
 
 func _apply_effect(effect_id: String, player_index: int) -> void:
 	match effect_id:
@@ -80,7 +140,7 @@ func _apply_effect(effect_id: String, player_index: int) -> void:
 		"gold_2_steal_gems":
 			PlayerManager.add_gold(player_index, 2)
 			_steal_half_gems_from_others(player_index)
-		# ── Permanent turn-start passives ────────────────────────────────────
+		# ── Permanent turn-start income passives ─────────────────────────────
 		"gem_per_turn_1": PlayerManager.add_gems(player_index, 1)
 		"passive_damage_1_per_turn": _damage_others(player_index, 1)
 		"vault_bonus_gold_2":
@@ -89,6 +149,18 @@ func _apply_effect(effect_id: String, player_index: int) -> void:
 		"vault_dweller":
 			if PlayerManager.players[player_index].position == PlayerData.PlayerPosition.AT_VAULT:
 				PlayerManager.add_gold(player_index, 1)
+		# ── Permanent dice modifier passives (set per turn) ───────────────────
+		"extra_die":
+			PlayerManager.players[player_index].die_count_modifier += 1
+		"bonus_reroll_1":
+			PlayerManager.players[player_index].has_free_reroll_after_max = true
+		"free_reroll_threes":
+			PlayerManager.players[player_index].free_reroll_threes = true
+		"set_die_to_one":
+			PlayerManager.players[player_index].can_set_die_before_roll = true
+		# ── ONE_TIME deferred effects ─────────────────────────────────────────
+		"wildcard_die":
+			PlayerManager.players[player_index].wildcard_pending = true
 
 func _apply_turn_end_effect(effect_id: String, player_index: int) -> void:
 	match effect_id:
@@ -108,6 +180,12 @@ func _apply_turn_end_effect(effect_id: String, player_index: int) -> void:
 				PlayerManager.add_gold(player_index, 2)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
+func _is_income_passive(effect_id: String) -> bool:
+	return effect_id in [
+		"gem_per_turn_1", "passive_damage_1_per_turn",
+		"vault_bonus_gold_2", "vault_dweller",
+	]
 
 func _damage_others(source_index: int, amount: int) -> void:
 	for i in PlayerManager.players.size():

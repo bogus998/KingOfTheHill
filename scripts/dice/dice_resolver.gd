@@ -15,3 +15,26 @@ static func resolve(faces: Array) -> Dictionary:
 	result["claws"] = counts.get(DieFace.CLAW, 0)
 	result["hearts"] = counts.get(DieFace.HEART, 0)
 	return result
+
+static func has_all_six_faces(faces: Array) -> bool:
+	var found := {}
+	for f in faces:
+		found[f] = true
+	return found.size() == 6
+
+static func has_combo_one_two_three(faces: Array) -> bool:
+	var has_one := false
+	var has_two := false
+	var has_three := false
+	for f in faces:
+		if f == DieFace.ONE: has_one = true
+		elif f == DieFace.TWO: has_two = true
+		elif f == DieFace.THREE: has_three = true
+	return has_one and has_two and has_three
+
+static func count_face(faces: Array, face: DieFace) -> int:
+	var count := 0
+	for f in faces:
+		if f == face:
+			count += 1
+	return count

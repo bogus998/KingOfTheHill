@@ -40,3 +40,27 @@ func decide_flee(player_data: PlayerData) -> bool:
 
 func get_thinking_delay() -> float:
 	return randf_range(0.8, 1.5)
+
+# Returns the die index to set to ONE for Die Picker / Wildcard (lowest-value die)
+func decide_die_to_set(faces: Array) -> int:
+	var lowest_idx := 0
+	var lowest_val := 999
+	for i in faces.size():
+		var v: int = faces[i] as int
+		if v < lowest_val:
+			lowest_val = v
+			lowest_idx = i
+	return lowest_idx
+
+# Returns the face to pick for Flexible Tactics (match the most frequent face)
+func decide_flexible_tactics_face(faces: Array) -> DiceResolver.DieFace:
+	var counts := {}
+	for f in faces:
+		counts[f] = counts.get(f, 0) + 1
+	var best_face: DiceResolver.DieFace = DiceResolver.DieFace.GEM
+	var best_count := 0
+	for f in counts:
+		if counts[f] > best_count:
+			best_count = counts[f]
+			best_face = f
+	return best_face
