@@ -148,7 +148,8 @@ func _info_text(card: CardData) -> String:
 
 func _on_item_pressed(card: CardData) -> void:
 	if _mode == Mode.SINGLE_SELECT:
-		_selected = [card]
+		_selected.clear()
+		_selected.append(card)
 		for c in _item_buttons:
 			(_item_buttons[c] as Button).text = "Select"
 		(_item_buttons[card] as Button).text = "✓"
@@ -163,7 +164,10 @@ func _on_item_pressed(card: CardData) -> void:
 
 func _on_confirm() -> void:
 	if _mode == Mode.PEEK:
-		confirmed.emit([_peek_card] if _peek_card != null else [])
+		var result: Array[CardData] = []
+		if _peek_card != null:
+			result.append(_peek_card)
+		confirmed.emit(result)
 	else:
 		confirmed.emit(_selected.duplicate())
 	_selected = []
