@@ -12,3 +12,4 @@ func _init(p_threshold: int = 2, p_gold: int = 1) -> void:
 func on_damage_applied(owner_index: int, _attacker_index: int, target_index: int, amount: int) -> void:
 	if owner_index == target_index and amount >= threshold:
 		PlayerManager.add_gold(target_index, gold)
+		triggered.emit("on_damage_applied")

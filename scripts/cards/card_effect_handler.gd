@@ -7,6 +7,7 @@ extends RefCounted
 ## one exception: charges are cross-cutting state consumed by the dice UI.
 
 signal mimic_ui_needed(player_index: int)
+signal effect_hook_called(card_name: String, hook: String, holder_name: String)
 
 var _card_charges: Dictionary = {}
 
@@ -30,6 +31,7 @@ func on_roll_finalized(player_index: int, final_faces: Array) -> void:
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			card.effect.on_roll_finalized(player_index, final_faces)
+			effect_hook_called.emit(card.card_name, "on_roll_finalized", PlayerManager.players[player_index].player_name)
 
 func use_smoke_bomb_charge(card: CardData, player_index: int) -> void:
 	if not _card_charges.has(card) or _card_charges[card] <= 0:
@@ -96,6 +98,7 @@ func _on_turn_started(player_index: int) -> void:
 			if card.effect.effect_id == CardEffectId.Id.MIMIC:
 				continue  # handled separately below (needs UI or bot decision)
 			card.effect.on_turn_started(player_index)
+			effect_hook_called.emit(card.card_name, "on_turn_started", p.player_name)
 	# Gold Battery: dispense gold and decrement charge counter (skip on repeated turns)
 	if not TurnManager.is_repeated_turn:
 		for card in p.cards_in_hand.duplicate():
@@ -124,6 +127,7 @@ func _on_turn_ended(player_index: int) -> void:
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			card.effect.on_turn_ended(player_index)
+			effect_hook_called.emit(card.card_name, "on_turn_ended", PlayerManager.players[player_index].player_name)
 	var p := PlayerManager.players[player_index]
 	if p.shrink_stacks > 0:
 		p.shrink_stacks -= 1

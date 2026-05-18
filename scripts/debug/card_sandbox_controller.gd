@@ -23,6 +23,7 @@ var _card_browser: Control
 var _table_container: VBoxContainer
 var _search_field: LineEdit
 var _filter_current: int = -1  # -1 = all, 0 = ONE_TIME, 1 = PERMANENT
+var _triggered_connections: Array = []
 
 
 func _ready() -> void:
@@ -45,12 +46,14 @@ func _connect_autoload_signals() -> void:
 	PlayerManager.player_eliminated.connect(_effect_handler._on_player_eliminated)
 	PlayerManager.position_changed.connect(_effect_handler._on_position_changed)
 	_effect_handler.mimic_ui_needed.connect(func(_idx): _log_line("Mimic auto-resolved"))
+	_effect_handler.effect_hook_called.connect(func(cname: String, hook: String, pname: String):
+		_log_line("  %s [%s]: %s" % [cname, pname, hook]))
 
 	PlayerManager.player_damaged.connect(func(_i, _hp): _refresh_states())
 	PlayerManager.player_healed.connect(func(_i, _hp): _refresh_states())
 	PlayerManager.gem_changed.connect(func(_i, _g): _refresh_states())
 	PlayerManager.gold_changed.connect(func(_i, _g): _refresh_states())
-	PlayerManager.card_hand_changed.connect(func(_i): _refresh_states())
+	PlayerManager.card_hand_changed.connect(_on_hand_changed)
 	PlayerManager.players_setup.connect(_refresh_states)
 	PlayerManager.damage_applied.connect(func(_att, _tgt, _amt): _refresh_states())
 
@@ -484,9 +487,34 @@ func _make_label(text: String) -> Label:
 	return lbl
 
 
+func _on_hand_changed(_i: int) -> void:
+	_refresh_states()
+	_reconnect_triggered()
+
+
+func _reconnect_triggered() -> void:
+	for conn in _triggered_connections:
+		if conn.effect.triggered.is_connected(conn.cb):
+			conn.effect.triggered.disconnect(conn.cb)
+	_triggered_connections.clear()
+	for i in PlayerManager.players.size():
+		var pname := PlayerManager.players[i].player_name
+		for card in PlayerManager.players[i].cards_in_hand:
+			if card.effect == null:
+				continue
+			var cname := card.card_name
+			var cb := func(hook: String): _log_line("  %s [%s]: %s" % [cname, pname, hook])
+			card.effect.triggered.connect(cb)
+			_triggered_connections.append({"effect": card.effect, "cb": cb})
+
+
 func _exit_tree() -> void:
 	TurnManager.turn_started.disconnect(_effect_handler._on_turn_started)
 	TurnManager.turn_ended.disconnect(_effect_handler._on_turn_ended)
 	PlayerManager.damage_applied.disconnect(_effect_handler._on_damage_applied)
 	PlayerManager.player_eliminated.disconnect(_effect_handler._on_player_eliminated)
 	PlayerManager.position_changed.disconnect(_effect_handler._on_position_changed)
+	for conn in _triggered_connections:
+		if conn.effect.triggered.is_connected(conn.cb):
+			conn.effect.triggered.disconnect(conn.cb)
+	_triggered_connections.clear()

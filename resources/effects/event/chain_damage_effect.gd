@@ -13,3 +13,4 @@ func on_damage_applied(owner_index: int, attacker_index: int, target_index: int,
 	for i in PlayerManager.players.size():
 		if i != attacker_index and i != target_index and not PlayerManager.players[i].is_eliminated:
 			PlayerManager.apply_damage(i, amount)
+	triggered.emit("on_damage_applied")

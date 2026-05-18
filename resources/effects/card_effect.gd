@@ -11,6 +11,8 @@ extends Resource
 
 @export var effect_id: CardEffectId.Id = CardEffectId.Id.NONE
 
+signal triggered(hook: String)
+
 ## ONE_TIME card played / immediate effect.
 func apply_immediate(_owner_index: int) -> void:
 	pass
