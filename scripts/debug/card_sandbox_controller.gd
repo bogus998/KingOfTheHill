@@ -198,12 +198,14 @@ func _build_ui() -> void:
 	log_box.add_child(log_header)
 
 	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	log_box.add_child(scroll)
 
 	_log = RichTextLabel.new()
 	_log.bbcode_enabled = true
 	_log.fit_content = true
+	_log.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_log.custom_minimum_size.x = 200
 	scroll.add_child(_log)
 
@@ -344,7 +346,9 @@ func _on_trigger_card(card: CardData) -> void:
 	if card.card_type == CardData.CardType.PERMANENT:
 		PlayerManager.add_card_to_hand(idx, card)
 	_effect_handler._on_card_purchased(idx, card)
-	_log_line("Applied [%s] to %s" % [card.card_name, PlayerManager.players[idx].player_name])
+	var type_str := "ONE_TIME" if card.card_type == CardData.CardType.ONE_TIME else "PERMANENT"
+	_log_line("Card triggered: %s (%s) on %s" % [card.card_name, type_str, PlayerManager.players[idx].player_name])
+	_log_line("  %s" % card.description)
 
 
 func _load_cards() -> void:
