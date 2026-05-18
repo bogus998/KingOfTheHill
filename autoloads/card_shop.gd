@@ -27,10 +27,9 @@ func purchase(slot_index: int, player_index: int) -> bool:
 	if not PlayerManager.spend_gold(player_index, effective_cost):
 		return false
 	visible_cards.remove_at(slot_index)
-	if card.card_type == CardData.CardType.PERMANENT:
+	if card.card_type == CardData.CardType.PERMANENT \
+			or card.card_type == CardData.CardType.ACTIONABLE:
 		PlayerManager.add_card_to_hand(player_index, card)
-	else:
-		pass  # effect applied by CardEffectHandler via card_purchased signal
 	card_purchased.emit(player_index, card)
 	_replenish()
 	return true
@@ -60,7 +59,8 @@ func purchase_top(player_index: int) -> bool:
 	if not PlayerManager.spend_gold(player_index, effective_cost):
 		_deck.push_back(card)
 		return false
-	if card.card_type == CardData.CardType.PERMANENT:
+	if card.card_type == CardData.CardType.PERMANENT \
+			or card.card_type == CardData.CardType.ACTIONABLE:
 		PlayerManager.add_card_to_hand(player_index, card)
 	card_purchased.emit(player_index, card)
 	_replenish()

@@ -1,7 +1,7 @@
 class_name CardData
 extends Resource
 
-enum CardType { ONE_TIME, PERMANENT }
+enum CardType { ONE_TIME, PERMANENT, ACTIONABLE }
 
 @export var card_name: String = ""
 @export var description: String = ""

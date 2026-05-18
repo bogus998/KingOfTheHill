@@ -16,7 +16,8 @@ func apply_immediate(card: CardData, player_index: int) -> void:
 		card.effect.apply_immediate(player_index)
 		if card.effect.effect_id == CardEffectId.Id.EXTRA_TURN:
 			TurnManager.pending_extra_turn = true
-	if card.card_type == CardData.CardType.ONE_TIME:
+	if card.card_type == CardData.CardType.ONE_TIME \
+			or card.card_type == CardData.CardType.ACTIONABLE:
 		PlayerManager.players[player_index].spent_one_time_cards.append(card)
 		var hand := PlayerManager.players[player_index].cards_in_hand
 		if hand.has(card):
@@ -52,7 +53,8 @@ func use_smoke_bomb_charge(card: CardData, player_index: int) -> void:
 			PlayerManager.remove_card_from_hand(player_index, to_remove)
 
 func _on_card_purchased(player_index: int, card: CardData) -> void:
-	if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
+	if (card.card_type == CardData.CardType.PERMANENT \
+			or card.card_type == CardData.CardType.ACTIONABLE) and card.effect != null:
 		card.effect.on_acquired(player_index)
 		if card.effect.effect_id == CardEffectId.Id.SMOKE_BOMB:
 			_card_charges[card] = (card.effect as SmokeBombEffect).charges
@@ -154,6 +156,11 @@ func _on_player_eliminated(eliminated_index: int) -> void:
 
 func apply_active_ability(effect_id: CardEffectId.Id, player_index: int) -> void:
 	match effect_id:
+		CardEffectId.Id.WILDCARD_DIE:
+			for c in PlayerManager.players[player_index].cards_in_hand.duplicate():
+				if c.effect != null and c.effect.effect_id == CardEffectId.Id.WILDCARD_DIE:
+					apply_immediate(c, player_index)
+					break
 		CardEffectId.Id.RAPID_HEALING:
 			if PlayerManager.spend_gold(player_index, 2):
 				PlayerManager.apply_heal(player_index, 1)

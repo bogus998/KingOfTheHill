@@ -22,7 +22,7 @@ var _die_options_container: GridContainer
 var _card_browser: Control
 var _table_container: VBoxContainer
 var _search_field: LineEdit
-var _filter_current: int = -1  # -1 = all, 0 = ONE_TIME, 1 = PERMANENT
+var _filter_current: int = -1  # -1 = all, 0 = ONE_TIME, 1 = PERMANENT, 2 = ACTIONABLE
 var _triggered_connections: Array = []
 
 
@@ -241,7 +241,7 @@ func _build_card_browser() -> void:
 	filter_lbl.text = "Filter:"
 	filter_lbl.custom_minimum_size.x = 55
 	filter_box.add_child(filter_lbl)
-	for entry in [["All", -1], ["ONE_TIME", 0], ["PERMANENT", 1]]:
+	for entry in [["All", -1], ["ONE_TIME", 0], ["PERMANENT", 1], ["ACTIONABLE", 2]]:
 		var btn := Button.new()
 		btn.text = entry[0]
 		btn.custom_minimum_size = Vector2(90, 28)
@@ -323,7 +323,10 @@ func _rebuild_card_table() -> void:
 		row.add_child(name_lbl)
 
 		var type_lbl := Label.new()
-		type_lbl.text = "ONE_TIME" if card.card_type == CardData.CardType.ONE_TIME else "PERMANENT"
+		match card.card_type:
+			CardData.CardType.ONE_TIME: type_lbl.text = "ONE_TIME"
+			CardData.CardType.PERMANENT: type_lbl.text = "PERMANENT"
+			CardData.CardType.ACTIONABLE: type_lbl.text = "ACTIONABLE"
 		type_lbl.custom_minimum_size.x = 110
 		row.add_child(type_lbl)
 
@@ -346,10 +349,15 @@ func _rebuild_card_table() -> void:
 func _on_trigger_card(card: CardData) -> void:
 	_card_browser.visible = false
 	var idx := _selected_player_index()
-	if card.card_type == CardData.CardType.PERMANENT:
+	if card.card_type == CardData.CardType.PERMANENT \
+			or card.card_type == CardData.CardType.ACTIONABLE:
 		PlayerManager.add_card_to_hand(idx, card)
 	_effect_handler._on_card_purchased(idx, card)
-	var type_str := "ONE_TIME" if card.card_type == CardData.CardType.ONE_TIME else "PERMANENT"
+	var type_str: String
+	match card.card_type:
+		CardData.CardType.ONE_TIME: type_str = "ONE_TIME"
+		CardData.CardType.PERMANENT: type_str = "PERMANENT"
+		CardData.CardType.ACTIONABLE: type_str = "ACTIONABLE"
 	_log_line("Card triggered: %s (%s) on %s" % [card.card_name, type_str, PlayerManager.players[idx].player_name])
 	_log_line("  %s" % card.description)
 
@@ -380,6 +388,18 @@ func _refresh_states(_arg1 = null, _arg2 = null) -> void:
 		if not p.cards_in_hand.is_empty():
 			var card_names := p.cards_in_hand.map(func(c): return c.card_name)
 			vbox.add_child(_make_label("Cards: " + ", ".join(card_names)))
+			for card in p.cards_in_hand:
+				if card.card_type == CardData.CardType.ACTIONABLE and card.effect != null:
+					var act_row := HBoxContainer.new()
+					var act_lbl := Label.new()
+					act_lbl.text = card.card_name
+					act_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+					var act_btn := Button.new()
+					act_btn.text = "Activate"
+					act_btn.pressed.connect(_on_activate_card.bind(card.effect.effect_id, i))
+					act_row.add_child(act_lbl)
+					act_row.add_child(act_btn)
+					vbox.add_child(act_row)
 
 		var statuses: Array[String] = []
 		if p.poison_stacks > 0:
@@ -464,6 +484,11 @@ func _on_roll() -> void:
 	_effect_handler.on_roll_finalized(idx, faces)
 	var face_strs := faces.map(func(f): return FACE_NAMES.get(f, str(f)))
 	_log_line("Roll (%s): [%s]" % [PlayerManager.players[idx].player_name, ", ".join(face_strs)])
+
+
+func _on_activate_card(effect_id: CardEffectId.Id, player_idx: int) -> void:
+	_effect_handler.apply_active_ability(effect_id, player_idx)
+	_log_line("Activated %s on %s" % [CardEffectId.Id.keys()[effect_id], PlayerManager.players[player_idx].player_name])
 
 
 func _on_reset() -> void:
