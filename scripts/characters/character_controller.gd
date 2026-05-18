@@ -19,6 +19,7 @@ static var _shared_frames: SpriteFrames
 @export var player_index: int = 0
 
 @onready var _name_label: Label = $NameLabel
+@onready var _stats_label: Label = $StatsLabel
 
 var _base_position: Vector2
 var _tween: Tween
@@ -30,11 +31,16 @@ func _ready() -> void:
 	PlayerManager.players_setup.connect(_on_players_setup)
 	PlayerManager.position_changed.connect(_on_position_changed)
 	PlayerManager.player_eliminated.connect(_on_player_eliminated)
+	PlayerManager.player_damaged.connect(_on_stat_changed_2)
+	PlayerManager.player_healed.connect(_on_stat_changed_2)
+	PlayerManager.gold_changed.connect(_on_stat_changed_2)
+	PlayerManager.player_respawned.connect(_on_stat_changed_1)
 	_refresh_visibility()
 	if visible:
 		_update_facing()
 	_base_position = position
 	_update_name_label()
+	_update_stats_label()
 
 
 func _exit_tree() -> void:
@@ -44,6 +50,14 @@ func _exit_tree() -> void:
 		PlayerManager.position_changed.disconnect(_on_position_changed)
 	if PlayerManager.player_eliminated.is_connected(_on_player_eliminated):
 		PlayerManager.player_eliminated.disconnect(_on_player_eliminated)
+	if PlayerManager.player_damaged.is_connected(_on_stat_changed_2):
+		PlayerManager.player_damaged.disconnect(_on_stat_changed_2)
+	if PlayerManager.player_healed.is_connected(_on_stat_changed_2):
+		PlayerManager.player_healed.disconnect(_on_stat_changed_2)
+	if PlayerManager.gold_changed.is_connected(_on_stat_changed_2):
+		PlayerManager.gold_changed.disconnect(_on_stat_changed_2)
+	if PlayerManager.player_respawned.is_connected(_on_stat_changed_1):
+		PlayerManager.player_respawned.disconnect(_on_stat_changed_1)
 
 
 static func _ensure_frames() -> void:
@@ -114,6 +128,7 @@ func _on_players_setup() -> void:
 	if visible:
 		_update_facing()
 	_update_name_label()
+	_update_stats_label()
 
 
 func _update_name_label() -> void:
@@ -122,6 +137,25 @@ func _update_name_label() -> void:
 		_name_label.visible = true
 	else:
 		_name_label.visible = false
+
+
+func _update_stats_label() -> void:
+	if player_index >= PlayerManager.players.size():
+		_stats_label.visible = false
+		return
+	var data: PlayerData = PlayerManager.players[player_index]
+	_stats_label.text = "♥%d/%d  💎%d  🪙%d" % [data.health, data.max_health, data.gems, data.gold]
+	_stats_label.visible = true
+
+
+func _on_stat_changed_2(idx: int, _val: int) -> void:
+	if idx == player_index:
+		_update_stats_label()
+
+
+func _on_stat_changed_1(idx: int) -> void:
+	if idx == player_index:
+		_update_stats_label()
 
 
 func _on_player_eliminated(idx: int) -> void:
