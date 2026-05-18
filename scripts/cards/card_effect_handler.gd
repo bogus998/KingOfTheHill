@@ -73,12 +73,6 @@ func _on_turn_started(player_index: int) -> void:
 	if player_index >= PlayerManager.players.size():
 		return
 	var p := PlayerManager.players[player_index]
-	# Poison tick before per-turn reset
-	if p.poison_stacks > 0:
-		PlayerManager.apply_damage(player_index, p.poison_stacks)
-		p.poison_stacks -= 1
-		if p.is_eliminated:
-			return
 	# Reset per-turn modifier flags
 	p.damage_dealt_this_turn = 0
 	p.die_count_modifier = 0
@@ -135,6 +129,10 @@ func _on_turn_ended(player_index: int) -> void:
 		p.shrink_stacks -= 1
 	p.camouflage_active = false
 	p.gold_dodge_active = false
+	if p.poison_stacks > 0:
+		PlayerManager.apply_damage(player_index, p.poison_stacks)
+		if p.is_eliminated:
+			return
 
 func _on_damage_applied(attacker_index: int, target_index: int, amount: int) -> void:
 	if amount <= 0 or attacker_index < 0 or attacker_index == target_index:

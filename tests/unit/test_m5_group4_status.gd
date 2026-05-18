@@ -40,41 +40,47 @@ func _make_card(type: CardData.CardType, effect: CardEffectId.Id, cost: int = 1)
 
 # ── Poison ─────────────────────────────────────────────────────────────────────
 
-func test_poison_apply_immediate_increments_opponent_stacks() -> void:
-	var card := _make_card(CardData.CardType.ONE_TIME, CardEffectId.Id.POISON)
+func test_plague_blade_gives_target_poison_on_damage() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.POISON)
 	PlayerManager.add_card_to_hand(0, card)
-	_handler.apply_immediate(card, 0)
+	_handler._on_damage_applied(0, 1, 1)
 	assert_eq(PlayerManager.players[1].poison_stacks, 1)
 
-func test_poison_does_not_affect_self() -> void:
-	var card := _make_card(CardData.CardType.ONE_TIME, CardEffectId.Id.POISON)
+func test_plague_blade_does_not_poison_self() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.POISON)
 	PlayerManager.add_card_to_hand(0, card)
-	_handler.apply_immediate(card, 0)
+	# attacker == target, handler early-returns
+	_handler._on_damage_applied(0, 0, 1)
 	assert_eq(PlayerManager.players[0].poison_stacks, 0)
 
-func test_poison_tick_damages_on_turn_start() -> void:
-	PlayerManager.players[1].poison_stacks = 2
-	var hp_before: int = PlayerManager.players[1].health
-	_handler._on_turn_started(1)
-	assert_eq(PlayerManager.players[1].health, hp_before - 2)
-
-func test_poison_stacks_decrement_after_tick() -> void:
-	PlayerManager.players[1].poison_stacks = 3
-	_handler._on_turn_started(1)
+func test_plague_blade_stacks_across_multiple_attacks() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.POISON)
+	PlayerManager.add_card_to_hand(0, card)
+	_handler._on_damage_applied(0, 1, 1)
+	_handler._on_damage_applied(0, 1, 1)
 	assert_eq(PlayerManager.players[1].poison_stacks, 2)
 
-func test_poison_stops_ticking_at_zero() -> void:
-	PlayerManager.players[1].poison_stacks = 1
-	_handler._on_turn_started(1)
-	assert_eq(PlayerManager.players[1].poison_stacks, 0)
-	var hp_after_first: int = PlayerManager.players[1].health
-	_handler._on_turn_started(1)
-	assert_eq(PlayerManager.players[1].health, hp_after_first)
+func test_poison_tick_damages_on_turn_end() -> void:
+	PlayerManager.players[1].poison_stacks = 2
+	var hp_before: int = PlayerManager.players[1].health
+	_handler._on_turn_ended(1)
+	assert_eq(PlayerManager.players[1].health, hp_before - 2)
+
+func test_poison_stacks_persist_after_tick() -> void:
+	PlayerManager.players[1].poison_stacks = 3
+	_handler._on_turn_ended(1)
+	assert_eq(PlayerManager.players[1].poison_stacks, 3)
+
+func test_poison_zero_stacks_deals_no_damage() -> void:
+	PlayerManager.players[1].poison_stacks = 0
+	var hp_before: int = PlayerManager.players[1].health
+	_handler._on_turn_ended(1)
+	assert_eq(PlayerManager.players[1].health, hp_before)
 
 func test_poison_can_eliminate_player() -> void:
 	PlayerManager.players[1].health = 2
 	PlayerManager.players[1].poison_stacks = 3
-	_handler._on_turn_started(1)
+	_handler._on_turn_ended(1)
 	assert_true(PlayerManager.players[1].is_eliminated)
 
 # ── Gold Dodge ─────────────────────────────────────────────────────────────────
@@ -106,16 +112,14 @@ func test_gold_dodge_flag_cleared_on_turn_end() -> void:
 	_handler._on_turn_ended(0)
 	assert_false(PlayerManager.players[0].gold_dodge_active)
 
-func test_gold_dodge_does_not_block_next_turn_poison() -> void:
+func test_gold_dodge_does_not_block_poison_on_turn_end() -> void:
 	PlayerManager.players[0].gold = 5
 	PlayerManager.players[0].poison_stacks = 2
 	PlayerManager.players[0].gold_dodge_active = true
-	# End current turn — clears dodge
+	var hp_before: int = PlayerManager.players[0].health
+	# Turn end — dodge clears AND poison ticks (dodge does not block poison)
 	_handler._on_turn_ended(0)
 	assert_false(PlayerManager.players[0].gold_dodge_active)
-	# Next turn start — poison ticks (dodge is gone)
-	var hp_before: int = PlayerManager.players[0].health
-	_handler._on_turn_started(0)
 	assert_lt(PlayerManager.players[0].health, hp_before)
 
 # ── Shrink ─────────────────────────────────────────────────────────────────────

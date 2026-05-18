@@ -8,4 +8,10 @@ func apply_non_claw(player_index: int, result: Dictionary) -> void:
 		PlayerManager.add_gold(player_index, result["gold"])
 	if result["hearts"] > 0:
 		if PlayerManager.players[player_index].position != PlayerData.PlayerPosition.AT_VAULT:
-			PlayerManager.apply_heal(player_index, result["hearts"])
+			var p := PlayerManager.players[player_index]
+			var hearts: int = result["hearts"]
+			var removed: int = mini(hearts, p.poison_stacks)
+			p.poison_stacks -= removed
+			hearts -= removed
+			if hearts > 0:
+				PlayerManager.apply_heal(player_index, hearts)
