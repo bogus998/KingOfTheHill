@@ -16,6 +16,9 @@ var _states_container: VBoxContainer
 var _damage_spin: SpinBox
 var _heal_spin: SpinBox
 var _roll_spin: SpinBox
+var _fixed_check: CheckBox
+var _die_face_options: Array[OptionButton] = []
+var _die_options_container: GridContainer
 var _card_browser: Control
 var _table_container: VBoxContainer
 var _search_field: LineEdit
@@ -142,6 +145,25 @@ func _build_ui() -> void:
 	roll_hbox.add_child(_roll_spin)
 	roll_hbox.add_child(roll_btn)
 	controls.add_child(roll_hbox)
+
+	_fixed_check = CheckBox.new()
+	_fixed_check.text = "Fixed values"
+	_fixed_check.toggled.connect(func(on: bool): _die_options_container.visible = on)
+	controls.add_child(_fixed_check)
+
+	_die_options_container = GridContainer.new()
+	_die_options_container.columns = 3
+	_die_options_container.visible = false
+	var face_labels: Array[String] = ["1", "2", "3", "GOLD", "CLAW", "HEART"]
+	for _i in 6:
+		var opt := OptionButton.new()
+		for fname in face_labels:
+			opt.add_item(fname)
+		_die_face_options.append(opt)
+		_die_options_container.add_child(opt)
+	controls.add_child(_die_options_container)
+	_roll_spin.value_changed.connect(func(_v: float): _update_die_options_visibility())
+	_update_die_options_visibility()
 
 	hbox.add_child(VSeparator.new())
 
@@ -415,12 +437,23 @@ func _on_heal() -> void:
 	_log_line("Healed %d HP on %s" % [amount, PlayerManager.players[idx].player_name])
 
 
+func _update_die_options_visibility() -> void:
+	var count: int = int(_roll_spin.value)
+	for i in _die_face_options.size():
+		_die_face_options[i].visible = i < count
+
+
 func _on_roll() -> void:
 	var idx := _selected_player_index()
-	var count := int(_roll_spin.value)
+	var count: int = int(_roll_spin.value)
 	var faces: Array = []
-	for _i in count:
-		faces.append(randi_range(1, 6) as DiceResolver.DieFace)
+	if _fixed_check.button_pressed:
+		for i in count:
+			# OptionButton index 0–5 maps directly to DieFace enum values 1–6
+			faces.append((_die_face_options[i].selected + 1) as DiceResolver.DieFace)
+	else:
+		for _i in count:
+			faces.append(randi_range(1, 6) as DiceResolver.DieFace)
 	_effect_handler.on_roll_finalized(idx, faces)
 	var face_strs := faces.map(func(f): return FACE_NAMES.get(f, str(f)))
 	_log_line("Roll (%s): [%s]" % [PlayerManager.players[idx].player_name, ", ".join(face_strs)])
