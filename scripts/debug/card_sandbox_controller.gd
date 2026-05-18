@@ -10,6 +10,7 @@ const FACE_NAMES: Dictionary = {
 var _effect_handler: CardEffectHandler
 var _cards: Array[CardData] = []
 var _player_option: OptionButton
+var _attacker_option: OptionButton
 var _log: RichTextLabel
 var _states_container: VBoxContainer
 var _damage_spin: SpinBox
@@ -50,6 +51,7 @@ func _connect_autoload_signals() -> void:
 	PlayerManager.gold_changed.connect(func(_i, _g): _refresh_states())
 	PlayerManager.card_hand_changed.connect(func(_i): _refresh_states())
 	PlayerManager.players_setup.connect(_refresh_states)
+	PlayerManager.damage_applied.connect(func(_att, _tgt, _amt): _refresh_states())
 
 
 func _build_ui() -> void:
@@ -66,8 +68,15 @@ func _build_ui() -> void:
 	_player_option.add_item("Alice")
 	_player_option.add_item("Bob")
 
-	controls.add_child(_make_label("Target:"))
+	controls.add_child(_make_label("Target / Defender:"))
 	controls.add_child(_player_option)
+
+	_attacker_option = OptionButton.new()
+	_attacker_option.add_item("Alice")
+	_attacker_option.add_item("Bob")
+	_attacker_option.selected = 1
+	controls.add_child(_make_label("Attacker:"))
+	controls.add_child(_attacker_option)
 
 	var browse_btn := Button.new()
 	browse_btn.text = "Browse & Apply Card"
@@ -98,9 +107,13 @@ func _build_ui() -> void:
 	var dmg_btn := Button.new()
 	dmg_btn.text = "Deal Damage"
 	dmg_btn.pressed.connect(_on_deal_damage)
+	var atk_btn := Button.new()
+	atk_btn.text = "Attack"
+	atk_btn.pressed.connect(_on_attack)
 	var dmg_hbox := HBoxContainer.new()
 	dmg_hbox.add_child(_damage_spin)
 	dmg_hbox.add_child(dmg_btn)
+	dmg_hbox.add_child(atk_btn)
 	controls.add_child(dmg_hbox)
 
 	_heal_spin = SpinBox.new()
@@ -378,6 +391,21 @@ func _on_deal_damage() -> void:
 	var amount := int(_damage_spin.value)
 	PlayerManager.apply_damage(idx, amount)
 	_log_line("Dealt %d damage to %s" % [amount, PlayerManager.players[idx].player_name])
+
+
+func _on_attack() -> void:
+	var defender := _selected_player_index()
+	var attacker := _attacker_option.selected
+	if attacker == defender:
+		_log_line("[color=yellow]Attacker and defender are the same — skipped.[/color]")
+		return
+	var amount := int(_damage_spin.value)
+	PlayerManager.apply_damage(defender, amount, attacker)
+	_log_line("Attack: %s → %s (%d dmg)" % [
+		PlayerManager.players[attacker].player_name,
+		PlayerManager.players[defender].player_name,
+		amount
+	])
 
 
 func _on_heal() -> void:
