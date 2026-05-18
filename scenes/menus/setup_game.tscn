@@ -1,8 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://d08dhu0ryincf"]
 
-[ext_resource type="Script" path="res://scripts/menus/setup_game_controller.gd" id="1_setup"]
+[ext_resource type="Script" uid="uid://dnbc7lhh0n6vn" path="res://scripts/menus/setup_game_controller.gd" id="1_setup"]
 
-[node name="SetupGame" type="Control"]
+[node name="SetupGame" type="Control" unique_id=1768154560]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -10,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_setup")
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=494313320]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -18,28 +19,29 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
+[node name="VBox" type="VBoxContainer" parent="CenterContainer" unique_id=1088621544]
 custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
 
-[node name="TitleLabel" type="Label" parent="CenterContainer/VBox"]
-text = "Setup Game"
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBox" unique_id=146031984]
+layout_mode = 2
+text = "Setup Game (2-4 players)"
 horizontal_alignment = 1
 
-[node name="PlayersContainer" type="VBoxContainer" parent="CenterContainer/VBox"]
+[node name="PlayersContainer" type="VBoxContainer" parent="CenterContainer/VBox" unique_id=1886046713]
+layout_mode = 2
 
-[node name="AddPlayerButton" type="Button" parent="CenterContainer/VBox"]
+[node name="AddPlayerButton" type="Button" parent="CenterContainer/VBox" unique_id=69323228]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
 text = "Add Player"
+
+[node name="StartButton" type="Button" parent="CenterContainer/VBox" unique_id=932971062]
 custom_minimum_size = Vector2(0, 56)
-
-[node name="HintLabel" type="Label" parent="CenterContainer/VBox"]
-text = "2-4 players"
-horizontal_alignment = 1
-
-[node name="StartButton" type="Button" parent="CenterContainer/VBox"]
+layout_mode = 2
 text = "Start Game"
-custom_minimum_size = Vector2(0, 56)
 
-[node name="BackButton" type="Button" parent="CenterContainer/VBox"]
-text = "Back"
+[node name="BackButton" type="Button" parent="CenterContainer/VBox" unique_id=2109205094]
 custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "Back"
