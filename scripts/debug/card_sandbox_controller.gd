@@ -36,8 +36,6 @@ func _ready() -> void:
 
 func _setup_players() -> void:
 	PlayerManager.setup([{"name": "Alice"}, {"name": "Bob"}])
-	PlayerManager.add_gold(0, 20)
-	PlayerManager.add_gold(1, 20)
 
 
 func _connect_autoload_signals() -> void:
@@ -454,6 +452,8 @@ func _on_roll() -> void:
 	else:
 		for _i in count:
 			faces.append(randi_range(1, 6) as DiceResolver.DieFace)
+	var result := DiceResolver.resolve(faces)
+	ResolutionController.new().apply_non_claw(idx, result)
 	_effect_handler.on_roll_finalized(idx, faces)
 	var face_strs := faces.map(func(f): return FACE_NAMES.get(f, str(f)))
 	_log_line("Roll (%s): [%s]" % [PlayerManager.players[idx].player_name, ", ".join(face_strs)])
