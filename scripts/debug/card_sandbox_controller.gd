@@ -9,20 +9,22 @@ const FACE_NAMES: Dictionary = {
 
 var _effect_handler: CardEffectHandler
 var _cards: Array[CardData] = []
-var _card_option: OptionButton
 var _player_option: OptionButton
 var _log: RichTextLabel
 var _states_container: VBoxContainer
 var _damage_spin: SpinBox
 var _heal_spin: SpinBox
 var _roll_spin: SpinBox
-var _card_desc_label: Label
+var _card_browser: Control
+var _table_container: VBoxContainer
+var _search_field: LineEdit
+var _filter_current: int = -1  # -1 = all, 0 = ONE_TIME, 1 = PERMANENT
 
 
 func _ready() -> void:
 	_effect_handler = CardEffectHandler.new()
-
 	_build_ui()
+	_build_card_browser()
 	_connect_autoload_signals()
 	_setup_players()
 	_load_cards()
@@ -60,25 +62,17 @@ func _build_ui() -> void:
 	controls.custom_minimum_size.x = 300
 	hbox.add_child(controls)
 
-	_card_option = OptionButton.new()
 	_player_option = OptionButton.new()
 	_player_option.add_item("Alice")
 	_player_option.add_item("Bob")
 
-	controls.add_child(_make_label("Card:"))
-	controls.add_child(_card_option)
-	_card_desc_label = Label.new()
-	_card_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_card_desc_label.custom_minimum_size.y = 40
-	controls.add_child(_card_desc_label)
-	_card_option.item_selected.connect(_on_card_selected)
 	controls.add_child(_make_label("Target:"))
 	controls.add_child(_player_option)
 
-	var apply_btn := Button.new()
-	apply_btn.text = "Apply Card"
-	apply_btn.pressed.connect(_on_apply_card)
-	controls.add_child(apply_btn)
+	var browse_btn := Button.new()
+	browse_btn.text = "Browse & Apply Card"
+	browse_btn.pressed.connect(_on_browse_cards)
+	controls.add_child(browse_btn)
 
 	controls.add_child(HSeparator.new())
 	controls.add_child(_make_label("Turn Events:"))
@@ -183,18 +177,145 @@ func _build_ui() -> void:
 	_refresh_states()
 
 
+func _build_card_browser() -> void:
+	_card_browser = PanelContainer.new()
+	_card_browser.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_card_browser.visible = false
+	add_child(_card_browser)
+
+	var vbox := VBoxContainer.new()
+	_card_browser.add_child(vbox)
+
+	# Header row
+	var header := HBoxContainer.new()
+	var title := _make_label("Browse Cards")
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
+	var close_btn := Button.new()
+	close_btn.text = "Close"
+	close_btn.pressed.connect(func(): _card_browser.visible = false)
+	header.add_child(close_btn)
+	vbox.add_child(header)
+
+	# Filter row
+	var filter_box := HBoxContainer.new()
+	var filter_lbl := Label.new()
+	filter_lbl.text = "Filter:"
+	filter_lbl.custom_minimum_size.x = 55
+	filter_box.add_child(filter_lbl)
+	for entry in [["All", -1], ["ONE_TIME", 0], ["PERMANENT", 1]]:
+		var btn := Button.new()
+		btn.text = entry[0]
+		btn.custom_minimum_size = Vector2(90, 28)
+		btn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		btn.pressed.connect(_on_filter_changed.bind(entry[1]))
+		filter_box.add_child(btn)
+	vbox.add_child(filter_box)
+
+	# Search row
+	var search_box := HBoxContainer.new()
+	var search_lbl := Label.new()
+	search_lbl.text = "Search:"
+	search_lbl.custom_minimum_size.x = 55
+	search_box.add_child(search_lbl)
+	_search_field = LineEdit.new()
+	_search_field.placeholder_text = "Search description..."
+	_search_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_search_field.text_changed.connect(func(_t): _rebuild_card_table())
+	search_box.add_child(_search_field)
+	vbox.add_child(search_box)
+
+	vbox.add_child(HSeparator.new())
+
+	# Column headers
+	var col_header := HBoxContainer.new()
+	var h_name := _make_label("Name")
+	h_name.custom_minimum_size.x = 200
+	var h_type := _make_label("Type")
+	h_type.custom_minimum_size.x = 110
+	var h_desc := _make_label("Description")
+	h_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col_header.add_child(h_name)
+	col_header.add_child(h_type)
+	col_header.add_child(h_desc)
+	col_header.add_child(_make_label(""))  # spacer for Trigger column
+	vbox.add_child(col_header)
+
+	vbox.add_child(HSeparator.new())
+
+	# Scrollable table
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(scroll)
+
+	_table_container = VBoxContainer.new()
+	_table_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_table_container)
+
+
+func _on_browse_cards() -> void:
+	_search_field.text = ""
+	_card_browser.visible = true
+	_rebuild_card_table()
+
+
+func _on_filter_changed(filter: int) -> void:
+	_filter_current = filter
+	_rebuild_card_table()
+
+
+func _rebuild_card_table() -> void:
+	for child in _table_container.get_children():
+		child.queue_free()
+
+	var query := _search_field.text.strip_edges().to_lower()
+	for card in _cards:
+		if _filter_current != -1 and int(card.card_type) != _filter_current:
+			continue
+		if query != "" and not card.description.to_lower().contains(query):
+			continue
+
+		var row := HBoxContainer.new()
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var name_lbl := Label.new()
+		name_lbl.text = card.card_name
+		name_lbl.custom_minimum_size.x = 200
+		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(name_lbl)
+
+		var type_lbl := Label.new()
+		type_lbl.text = "ONE_TIME" if card.card_type == CardData.CardType.ONE_TIME else "PERMANENT"
+		type_lbl.custom_minimum_size.x = 110
+		row.add_child(type_lbl)
+
+		var desc_lbl := Label.new()
+		desc_lbl.text = card.description
+		desc_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(desc_lbl)
+
+		var trigger_btn := Button.new()
+		trigger_btn.text = "Trigger"
+		trigger_btn.custom_minimum_size.x = 90
+		trigger_btn.pressed.connect(_on_trigger_card.bind(card))
+		row.add_child(trigger_btn)
+
+		_table_container.add_child(row)
+		_table_container.add_child(HSeparator.new())
+
+
+func _on_trigger_card(card: CardData) -> void:
+	_card_browser.visible = false
+	var idx := _selected_player_index()
+	if card.card_type == CardData.CardType.PERMANENT:
+		PlayerManager.add_card_to_hand(idx, card)
+	_effect_handler._on_card_purchased(idx, card)
+	_log_line("Applied [%s] to %s" % [card.card_name, PlayerManager.players[idx].player_name])
+
+
 func _load_cards() -> void:
 	_cards = CardCatalog.load_all_cards()
-	_card_option.clear()
-	for card in _cards:
-		var type_str := "ONE_TIME" if card.card_type == CardData.CardType.ONE_TIME else "PERMANENT"
-		_card_option.add_item("%s [%s]" % [card.card_name, type_str])
-	if not _cards.is_empty():
-		_card_desc_label.text = _cards[0].description
-
-
-func _on_card_selected(index: int) -> void:
-	_card_desc_label.text = _cards[index].description if index < _cards.size() else ""
 
 
 func _refresh_states(_arg1 = null, _arg2 = null) -> void:
@@ -237,17 +358,6 @@ func _refresh_states(_arg1 = null, _arg2 = null) -> void:
 
 func _selected_player_index() -> int:
 	return _player_option.selected
-
-
-func _on_apply_card() -> void:
-	if _cards.is_empty() or _card_option.selected < 0:
-		return
-	var idx := _selected_player_index()
-	var card := _cards[_card_option.selected]
-	if card.card_type == CardData.CardType.PERMANENT:
-		PlayerManager.add_card_to_hand(idx, card)
-	_effect_handler._on_card_purchased(idx, card)
-	_log_line("Applied [%s] to %s" % [card.card_name, PlayerManager.players[idx].player_name])
 
 
 func _on_turn_start() -> void:
