@@ -27,6 +27,7 @@ var _bot_brain := BotBrain.new()
 
 func _ready() -> void:
 	_apply_safe_area()
+	$OverlayLayer.add_child(DragonHUD.new())
 
 	GameManager.game_ended.connect(_on_game_ended)
 	TurnManager.phase_changed.connect(_on_phase_changed)
