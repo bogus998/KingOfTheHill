@@ -23,6 +23,7 @@ PlayerManager="*res://autoloads/player_manager.gd"
 CardShop="*res://autoloads/card_shop.gd"
 TurnManager="*res://autoloads/turn_manager.gd"
 GameManager="*res://autoloads/game_manager.gd"
+DragonManager="*res://autoloads/dragon_manager.gd"
 
 [display]
 
@@ -48,4 +49,5 @@ theme/custom="res://resources/main_theme.tres"
 
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.067, 0.067, 0.118, 1)

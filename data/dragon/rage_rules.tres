@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="BuildupConfig" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://resources/systems/buildup_config.gd" id="1_cfg"]
+[ext_resource type="Script" path="res://resources/systems/accumulation_rule.gd" id="2_rule"]
+
+[sub_resource type="Resource" id="rule_vault_2nd"]
+script = ExtResource("2_rule")
+event_id = &"vault_held_2nd"
+amount = 1
+
+[sub_resource type="Resource" id="rule_vault_3rd"]
+script = ExtResource("2_rule")
+event_id = &"vault_held_3rd_plus"
+amount = 2
+
+[sub_resource type="Resource" id="rule_damage"]
+script = ExtResource("2_rule")
+event_id = &"damage_3plus_in_turn"
+amount = 1
+
+[sub_resource type="Resource" id="rule_buys"]
+script = ExtResource("2_rule")
+event_id = &"bought_2plus_cards"
+amount = 1
+
+[sub_resource type="Resource" id="rule_refresh"]
+script = ExtResource("2_rule")
+event_id = &"shop_refreshed"
+amount = 1
+
+[resource]
+script = ExtResource("1_cfg")
+rules = Array[ExtResource("2_rule")]([SubResource("rule_vault_2nd"), SubResource("rule_vault_3rd"), SubResource("rule_damage"), SubResource("rule_buys"), SubResource("rule_refresh")])

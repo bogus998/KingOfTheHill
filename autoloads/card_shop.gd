@@ -3,6 +3,7 @@ extends Node
 signal shop_updated(visible_cards: Array)
 signal card_purchased(player_index: int, card: CardData)
 signal new_card_revealed(card: CardData, slot_index: int)
+signal shop_refreshed()
 
 const VISIBLE_SLOTS := 3
 const REFRESH_COST := 2
@@ -39,6 +40,7 @@ func refresh_pool(player_index: int) -> bool:
 		return false
 	visible_cards.clear()
 	_replenish()
+	shop_refreshed.emit()
 	return true
 
 func discount_for(player_index: int) -> int:
