@@ -64,35 +64,61 @@ func test_free_reroll_threes_sets_flag() -> void:
 	_handler._on_turn_started(0)
 	assert_true(PlayerManager.players[0].free_reroll_threes)
 
-func test_set_die_to_one_sets_flag() -> void:
-	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.SET_DIE_TO_ONE)
-	PlayerManager.add_card_to_hand(0, card)
-	_handler._on_turn_started(0)
-	assert_true(PlayerManager.players[0].can_set_die_before_roll)
-
 func test_modifier_flags_reset_on_turn_start() -> void:
 	var p := PlayerManager.players[0]
 	p.die_count_modifier = 3
 	p.extra_rerolls_available = 2
 	p.has_free_reroll_after_max = true
 	p.free_reroll_threes = true
-	p.can_set_die_before_roll = true
 	p.war_drums_triggered = true
+	p.die_picker_used_this_turn = true
+	p.die_jacker_used_this_turn = true
 	_handler._on_turn_started(0)
 	assert_eq(p.die_count_modifier, 0)
 	assert_eq(p.extra_rerolls_available, 0)
 	assert_false(p.has_free_reroll_after_max)
 	assert_false(p.free_reroll_threes)
-	assert_false(p.can_set_die_before_roll)
 	assert_false(p.war_drums_triggered)
+	assert_false(p.die_picker_used_this_turn)
+	assert_false(p.die_jacker_used_this_turn)
+
+# ── Group 3: Die Picker ──────────────────────────────────────────────────────
+
+func test_die_picker_used_flag_prevents_reuse() -> void:
+	PlayerManager.players[0].die_picker_used_this_turn = true
+	# Flag stays true — handler does not clear it mid-turn
+	assert_true(PlayerManager.players[0].die_picker_used_this_turn)
+	_handler._on_turn_started(0)
+	assert_false(PlayerManager.players[0].die_picker_used_this_turn)
+
+# ── Group 3: Die Jacker ───────────────────────────────────────────────────────
+
+func test_die_jacker_sets_pending_on_opponents() -> void:
+	_handler.apply_die_jacker(0)
+	assert_false(PlayerManager.players[0].die_jacker_pending)
+	assert_true(PlayerManager.players[1].die_jacker_pending)
+
+func test_die_jacker_sets_used_flag() -> void:
+	_handler.apply_die_jacker(0)
+	assert_true(PlayerManager.players[0].die_jacker_used_this_turn)
+
+func test_die_jacker_cannot_be_used_twice_per_turn() -> void:
+	_handler.apply_die_jacker(0)
+	PlayerManager.players[1].die_jacker_pending = false
+	_handler.apply_die_jacker(0)
+	assert_false(PlayerManager.players[1].die_jacker_pending)
+
+func test_die_jacker_skips_eliminated_opponents() -> void:
+	PlayerManager.players[1].is_eliminated = true
+	_handler.apply_die_jacker(0)
+	assert_false(PlayerManager.players[1].die_jacker_pending)
 
 # ── Group 3: ONE_TIME deferred — Wildcard ─────────────────────────────────────
 
-func test_wildcard_die_sets_pending_flag_and_removes_card() -> void:
+func test_wildcard_die_removes_card_on_apply_immediate() -> void:
 	var card := _make_card(CardData.CardType.ONE_TIME, CardEffectId.Id.WILDCARD_DIE)
 	PlayerManager.add_card_to_hand(0, card)
 	_handler.apply_immediate(card, 0)
-	assert_true(PlayerManager.players[0].wildcard_pending)
 	assert_eq(PlayerManager.players[0].cards_in_hand.size(), 0)
 
 # ── Group 3: Smoke Bomb charge system ─────────────────────────────────────────

@@ -75,10 +75,10 @@ enum Id {
 	BUY_FROM_OTHERS,
 	CAMOUFLAGE,
 	CLAW_BONUS_DAMAGE_1,
-	DIE_JACKER,
+	DIE_JACKER,     # implemented — panel-triggered, handled in main_game_controller
 	EXTRA_TURN,
 	GOLD_BATTERY,
-	GOLD_DIE_CHANGE,
+	GOLD_DIE_CHANGE, # implemented — panel-triggered, handled in main_game_controller
 	GOLD_DISCOUNT_1,
 	GOLD_DODGE,
 	GOLD_EXTRA_REROLL,

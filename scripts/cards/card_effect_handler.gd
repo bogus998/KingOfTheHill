@@ -83,10 +83,11 @@ func _on_turn_started(player_index: int) -> void:
 	p.extra_rerolls_available = 0
 	p.has_free_reroll_after_max = false
 	p.free_reroll_threes = false
-	p.can_set_die_before_roll = false
 	p.war_drums_triggered = false
 	p.nimble_dodge_used_this_turn = false
 	p.nimble_dodge_active = false
+	p.die_picker_used_this_turn = false
+	p.die_jacker_used_this_turn = false
 	# repeat_turn_used stays true through a repeated turn to block re-triggering
 	if not TurnManager.is_repeated_turn:
 		p.repeat_turn_used = false
@@ -173,6 +174,15 @@ func apply_active_ability(effect_id: CardEffectId.Id, player_index: int) -> void
 		CardEffectId.Id.SLOW_GRINDER:
 			if PlayerManager.spend_gold(player_index, 3):
 				PlayerManager.add_gems(player_index, 1)
+
+func apply_die_jacker(player_index: int) -> void:
+	var p := PlayerManager.players[player_index]
+	if p.die_jacker_used_this_turn:
+		return
+	p.die_jacker_used_this_turn = true
+	for i in PlayerManager.players.size():
+		if i != player_index and not PlayerManager.players[i].is_eliminated:
+			PlayerManager.players[i].die_jacker_pending = true
 
 func _on_position_changed(player_index: int, new_pos: PlayerData.PlayerPosition) -> void:
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
