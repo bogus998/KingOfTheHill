@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="GoldFeverEffect" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/environment/effects/gold_fever_effect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Gold Fever"
+description = "Whenever a player gains gold this round, they take damage equal to the amount gained."

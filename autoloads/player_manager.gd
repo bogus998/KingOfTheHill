@@ -6,6 +6,7 @@ signal player_healed(player_index: int, new_hp: int)
 signal player_eliminated(player_index: int)
 signal gem_changed(player_index: int, new_gems: int)
 signal gold_changed(player_index: int, new_gold: int)
+signal gold_gained(player_index: int, amount: int)
 signal position_changed(player_index: int, new_position: PlayerData.PlayerPosition)
 signal card_hand_changed(player_index: int)
 signal win_condition_met(winner_index: int, reason: String)
@@ -73,8 +74,10 @@ func add_gems(player_index: int, amount: int) -> void:
 
 func add_gold(player_index: int, amount: int) -> void:
 	var p := players[player_index]
-	p.gold += amount + p.gold_gain_bonus
+	var gained := amount + p.gold_gain_bonus
+	p.gold += gained
 	gold_changed.emit(player_index, p.gold)
+	gold_gained.emit(player_index, gained)
 
 func spend_gold(player_index: int, amount: int) -> bool:
 	var p := players[player_index]

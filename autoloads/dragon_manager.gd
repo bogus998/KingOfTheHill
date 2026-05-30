@@ -159,7 +159,7 @@ func _resolve_awakening() -> void:
 	summary["hoard"] = hoard
 	if draw_environment:
 		summary["draw_environment"] = true
-		# EnvironmentManager.draw_and_queue() is wired in M-Dragon-5.
+		EnvironmentManager.draw_and_queue()
 	# Reset and escalate for the next awakening.
 	_tracker.reset()
 	awakening_count += 1

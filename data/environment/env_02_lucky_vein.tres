@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="LuckyVeinEffect" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/environment/effects/lucky_vein_effect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Lucky Vein"
+description = "Once per turn, any player may reroll one die for free."

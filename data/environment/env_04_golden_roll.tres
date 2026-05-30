@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="GoldenRollEffect" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/environment/effects/golden_roll_effect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Golden Roll"
+description = "Any player who stops at roll 1 gains 2 gems this round."

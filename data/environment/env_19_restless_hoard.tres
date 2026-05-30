@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="RestlessHoardEffect" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/environment/effects/restless_hoard_effect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Restless Hoard"
+description = "Vault holder cannot accumulate gold this round — all gold earned goes to the bank."

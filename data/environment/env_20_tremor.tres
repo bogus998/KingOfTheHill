@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="TremorEffect" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/environment/effects/tremor_effect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Tremor"
+description = "All players discard 1 card from their hand this round."
