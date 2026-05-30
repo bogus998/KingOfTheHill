@@ -124,16 +124,16 @@ func test_gold_dodge_does_not_block_poison_on_turn_end() -> void:
 
 # ── Shrink ─────────────────────────────────────────────────────────────────────
 
-func test_shrink_apply_immediate_increments_opponent_stacks() -> void:
-	var card := _make_card(CardData.CardType.ONE_TIME, CardEffectId.Id.SHRINK)
+func test_shrink_applies_on_damage_dealt_by_owner() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.SHRINK)
 	PlayerManager.add_card_to_hand(0, card)
-	_handler.apply_immediate(card, 0)
+	_handler._on_damage_applied(0, 1, 2)
 	assert_eq(PlayerManager.players[1].shrink_stacks, 1)
 
-func test_shrink_does_not_affect_self() -> void:
-	var card := _make_card(CardData.CardType.ONE_TIME, CardEffectId.Id.SHRINK)
+func test_shrink_does_not_apply_when_other_player_attacks() -> void:
+	var card := _make_card(CardData.CardType.PERMANENT, CardEffectId.Id.SHRINK)
 	PlayerManager.add_card_to_hand(0, card)
-	_handler.apply_immediate(card, 0)
+	_handler._on_damage_applied(1, 0, 2)
 	assert_eq(PlayerManager.players[0].shrink_stacks, 0)
 
 func test_shrink_reduces_die_count_modifier_on_turn_start() -> void:

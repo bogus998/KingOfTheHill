@@ -18,8 +18,7 @@ const _CARD_PATHS: Array[String] = [
 	"res://data/cards/card_013_vault_champion.tres",
 	"res://data/cards/card_014_shadow_runner.tres",
 	"res://data/cards/card_015_tunnel_fighter.tres",
-	# DISABLED (audit): camouflage_active only set on own turn — never fires on opponent attacks
-	#"res://data/cards/card_016_stone_skin.tres",
+	"res://data/cards/card_016_stone_skin.tres",
 	"res://data/cards/card_017_gold_cart.tres",
 	"res://data/cards/card_018_perfect_roll.tres",
 	"res://data/cards/card_019_guild_scribe.tres",
@@ -66,8 +65,7 @@ const _CARD_PATHS: Array[String] = [
 	"res://data/cards/card_055_healing_flask.tres",
 	"res://data/cards/card_056_trollish_hide.tres",
 	"res://data/cards/card_057_underdogs_pride.tres",
-	# DISABLED (audit): immediately AoEs shrink on all players at purchase — wrong mechanic vs. description
-	#"res://data/cards/card_058_weakening_curse.tres",
+	"res://data/cards/card_058_weakening_curse.tres",
 	"res://data/cards/card_059_great_hall.tres",
 	"res://data/cards/card_060_smoke_bomb.tres",
 	"res://data/cards/card_061_empty_purse.tres",

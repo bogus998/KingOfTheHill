@@ -1,7 +1,7 @@
 class_name WeakeningCurseEffect
 extends CardEffect
 
-func apply_immediate(owner_index: int) -> void:
-	for i in PlayerManager.players.size():
-		if i != owner_index and not PlayerManager.players[i].is_eliminated:
-			PlayerManager.players[i].shrink_stacks += 1
+func on_damage_applied(owner_index: int, attacker_index: int, target_index: int, _amount: int) -> void:
+	if owner_index == attacker_index and target_index != owner_index:
+		PlayerManager.players[target_index].shrink_stacks += 1
+		triggered.emit("on_damage_applied")

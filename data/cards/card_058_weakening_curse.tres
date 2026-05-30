@@ -12,5 +12,5 @@ script = ExtResource("1_carddata")
 card_name = "Weakening Curse"
 description = "When you deal damage, give the target a shrink counter reducing their die count."
 gold_cost = 6
-card_type = 0
+card_type = 1
 effect = SubResource("effect")

@@ -36,7 +36,7 @@ func apply_damage(player_index: int, amount: int, attacker_index: int = -1) -> v
 		if amount == 0:
 			damage_applied.emit(attacker_index, player_index, 0)
 			return
-	if p.camouflage_active:
+	if _has_camouflage(player_index):
 		amount = _resolve_camouflage(amount)
 	var actual: int = max(0, amount - p.damage_reduction)
 	p.health = max(0, p.health - actual)
@@ -47,6 +47,12 @@ func apply_damage(player_index: int, amount: int, attacker_index: int = -1) -> v
 	if p.health == 0:
 		_eliminate(player_index)
 	check_win_conditions()
+
+func _has_camouflage(player_index: int) -> bool:
+	for card in players[player_index].cards_in_hand:
+		if card.effect != null and card.effect.effect_id == CardEffectId.Id.CAMOUFLAGE:
+			return true
+	return false
 
 func _resolve_camouflage(incoming: int) -> int:
 	var remaining := incoming
