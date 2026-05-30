@@ -135,3 +135,73 @@ func test_vault_holder_evicted_on_awakening() -> void:
 func test_round_end_without_pending_does_nothing() -> void:
 	TurnManager.round_ended.emit(1)
 	assert_eq(DragonManager.awakening_count, 0)
+
+# ── Dragon dice resolution (deterministic stub dice) ──────────────────────────
+
+class _FireDice extends DragonDice:
+	func roll_action() -> Action: return Action.FIRE
+	func roll_fire() -> int: return 2
+
+class _HoardDice extends DragonDice:
+	func roll_action() -> Action: return Action.HOARD
+	func roll_hoard() -> int: return 3
+
+class _SlumberDice extends DragonDice:
+	func roll_action() -> Action: return Action.SLUMBER
+
+class _EnvDice extends DragonDice:
+	func roll_action() -> Action: return Action.ENVIRONMENT
+
+class _WrathDice extends DragonDice:
+	func roll_action() -> Action: return Action.WRATH
+	func roll_fire() -> int: return 1
+	func roll_hoard() -> int: return 2
+
+func _awaken_with(stub: DragonDice) -> Dictionary:
+	DragonManager._dice = stub
+	watch_signals(DragonManager)
+	_fill_to_threshold()
+	TurnManager.round_ended.emit(1)
+	var params = get_signal_parameters(DragonManager, "awakening_resolved")
+	return params[0] if params != null else {}
+
+func test_fire_damages_all_players() -> void:
+	var hp0 := PlayerManager.players[0].health
+	var hp1 := PlayerManager.players[1].health
+	_awaken_with(_FireDice.new())
+	assert_eq(PlayerManager.players[0].health, hp0 - 2)
+	assert_eq(PlayerManager.players[1].health, hp1 - 2)
+
+func test_hoard_reduces_gold_capped_at_zero() -> void:
+	PlayerManager.add_gold(0, 5)
+	var g0 := PlayerManager.players[0].gold
+	var g1 := PlayerManager.players[1].gold
+	_awaken_with(_HoardDice.new())
+	assert_eq(PlayerManager.players[0].gold, maxi(0, g0 - 3))
+	assert_eq(PlayerManager.players[1].gold, maxi(0, g1 - 3))
+
+func test_slumber_does_nothing() -> void:
+	var hp0 := PlayerManager.players[0].health
+	var g0 := PlayerManager.players[0].gold
+	_awaken_with(_SlumberDice.new())
+	assert_eq(PlayerManager.players[0].health, hp0)
+	assert_eq(PlayerManager.players[0].gold, g0)
+
+func test_environment_flags_draw_in_summary() -> void:
+	var summary := _awaken_with(_EnvDice.new())
+	assert_true(summary.get("draw_environment", false))
+
+func test_wrath_applies_fire_hoard_and_draw() -> void:
+	var hp0 := PlayerManager.players[0].health
+	var g0 := PlayerManager.players[0].gold
+	var summary := _awaken_with(_WrathDice.new())
+	assert_eq(PlayerManager.players[0].health, hp0 - 1)
+	assert_eq(PlayerManager.players[0].gold, maxi(0, g0 - 2))
+	assert_true(summary.get("draw_environment", false))
+
+func test_dragon_die_rolled_emitted() -> void:
+	DragonManager._dice = _FireDice.new()
+	watch_signals(DragonManager)
+	_fill_to_threshold()
+	TurnManager.round_ended.emit(1)
+	assert_signal_emitted(DragonManager, "dragon_die_rolled")

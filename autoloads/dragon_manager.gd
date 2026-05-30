@@ -29,6 +29,7 @@ var awakening_count: int = 0
 var rage_threshold: int = 0
 
 var _tracker: BuildupTracker = null
+var _dice: DragonDice = DragonDice.new()
 var _player_count: int = 2
 var _awakening_pending: bool = false
 var _vault_streak: Dictionary = {}   # player_index -> consecutive turns held
@@ -60,6 +61,7 @@ func _on_players_setup() -> void:
 	_vault_streak.clear()
 	_buys_this_turn = 0
 	_buy_reported = false
+	_dice = DragonDice.new()
 	rage_threshold = _threshold_for(0)
 	var config := load(RAGE_RULES_PATH) as BuildupConfig
 	_tracker = BuildupTracker.new(config, rage_threshold)
@@ -127,9 +129,51 @@ func _resolve_awakening() -> void:
 	summary["evicted"] = occupant
 	if occupant != -1:
 		PlayerManager.set_position(occupant, PlayerData.PlayerPosition.OUTSIDE)
-	# Dragon dice roll + its effects are wired in M-Dragon-4.
+	# Roll the dragon dice and apply the outcome.
+	var action := _dice.roll_action()
+	summary["action"] = action
+	dragon_die_rolled.emit(0, action)
+	var fire := 0
+	var hoard := 0
+	var draw_environment := false
+	match action:
+		DragonDice.Action.FIRE:
+			fire = _dice.roll_fire()
+		DragonDice.Action.HOARD:
+			hoard = _dice.roll_hoard()
+		DragonDice.Action.ENVIRONMENT:
+			draw_environment = true
+		DragonDice.Action.WRATH:
+			fire = _dice.roll_fire()
+			hoard = _dice.roll_hoard()
+			draw_environment = true
+		DragonDice.Action.SLUMBER:
+			pass
+	if fire > 0:
+		dragon_die_rolled.emit(1, fire)
+		_apply_fire(fire)
+	if hoard > 0:
+		dragon_die_rolled.emit(2, hoard)
+		_apply_hoard(hoard)
+	summary["fire"] = fire
+	summary["hoard"] = hoard
+	if draw_environment:
+		summary["draw_environment"] = true
+		# EnvironmentManager.draw_and_queue() is wired in M-Dragon-5.
+	# Reset and escalate for the next awakening.
 	_tracker.reset()
 	awakening_count += 1
 	rage_threshold = _threshold_for(awakening_count)
 	_tracker.set_threshold(rage_threshold)
 	awakening_resolved.emit(summary)
+
+func _apply_fire(amount: int) -> void:
+	for i in PlayerManager.players.size():
+		if not PlayerManager.players[i].is_eliminated:
+			PlayerManager.apply_damage(i, amount, -1)
+
+func _apply_hoard(amount: int) -> void:
+	for i in PlayerManager.players.size():
+		if not PlayerManager.players[i].is_eliminated:
+			var have: int = PlayerManager.players[i].gold
+			PlayerManager.spend_gold(i, mini(amount, have))
