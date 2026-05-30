@@ -83,45 +83,6 @@ func test_poison_can_eliminate_player() -> void:
 	_handler._on_turn_ended(1)
 	assert_true(PlayerManager.players[1].is_eliminated)
 
-# ── Gold Dodge ─────────────────────────────────────────────────────────────────
-
-func test_gold_dodge_sets_flag_and_spends_gold() -> void:
-	PlayerManager.players[0].gold = 5
-	var card := _make_card(CardData.CardType.ONE_TIME, CardEffectId.Id.GOLD_DODGE)
-	PlayerManager.add_card_to_hand(0, card)
-	_handler.apply_immediate(card, 0)
-	assert_true(PlayerManager.players[0].gold_dodge_active)
-	assert_eq(PlayerManager.players[0].gold, 3)
-
-func test_gold_dodge_does_not_activate_without_gold() -> void:
-	PlayerManager.players[0].gold = 1
-	var card := _make_card(CardData.CardType.ONE_TIME, CardEffectId.Id.GOLD_DODGE)
-	PlayerManager.add_card_to_hand(0, card)
-	_handler.apply_immediate(card, 0)
-	assert_false(PlayerManager.players[0].gold_dodge_active)
-
-func test_gold_dodge_blocks_all_damage_this_turn() -> void:
-	PlayerManager.players[0].gold_dodge_active = true
-	var hp_before: int = PlayerManager.players[0].health
-	PlayerManager.apply_damage(0, 3)
-	PlayerManager.apply_damage(0, 2)
-	assert_eq(PlayerManager.players[0].health, hp_before)
-
-func test_gold_dodge_flag_cleared_on_turn_end() -> void:
-	PlayerManager.players[0].gold_dodge_active = true
-	_handler._on_turn_ended(0)
-	assert_false(PlayerManager.players[0].gold_dodge_active)
-
-func test_gold_dodge_does_not_block_poison_on_turn_end() -> void:
-	PlayerManager.players[0].gold = 5
-	PlayerManager.players[0].poison_stacks = 2
-	PlayerManager.players[0].gold_dodge_active = true
-	var hp_before: int = PlayerManager.players[0].health
-	# Turn end — dodge clears AND poison ticks (dodge does not block poison)
-	_handler._on_turn_ended(0)
-	assert_false(PlayerManager.players[0].gold_dodge_active)
-	assert_lt(PlayerManager.players[0].health, hp_before)
-
 # ── Shrink ─────────────────────────────────────────────────────────────────────
 
 func test_shrink_applies_on_damage_dealt_by_owner() -> void:

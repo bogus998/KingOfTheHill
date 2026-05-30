@@ -21,40 +21,6 @@ func _ready() -> void:
 	_confirm_btn.pressed.connect(_on_confirm)
 	_cancel_btn.pressed.connect(_on_cancel)
 
-func show_recycle(player_index: int) -> void:
-	_mode = Mode.MULTI_SELECT
-	_prompt.text = "Select cards to sell for their gold cost:"
-	_cards = []
-	for card in PlayerManager.players[player_index].cards_in_hand:
-		if card.card_type == CardData.CardType.PERMANENT and card.effect != null \
-				and card.effect.effect_id != CardEffectId.Id.RECYCLE_CARDS:
-			_cards.append(card)
-	_selected = []
-	_confirm_btn.text = "Sell Selected"
-	_confirm_btn.disabled = false
-	_cancel_btn.text = "Keep All"
-	_rebuild_list(player_index)
-	visible = true
-
-func show_mimic(player_index: int) -> void:
-	_mode = Mode.SINGLE_SELECT
-	_prompt.text = "Copy the effect of a card this turn:"
-	_cards = []
-	for i in PlayerManager.players.size():
-		if i == player_index or PlayerManager.players[i].is_eliminated:
-			continue
-		for card in PlayerManager.players[i].cards_in_hand:
-			if card.card_type == CardData.CardType.PERMANENT and card.effect != null \
-					and card.effect.effect_id != CardEffectId.Id.MIMIC \
-					and card.effect.effect_id != CardEffectId.Id.GOLD_BATTERY:
-				_cards.append(card)
-	_selected = []
-	_confirm_btn.text = "Copy"
-	_confirm_btn.disabled = true
-	_cancel_btn.text = "Skip"
-	_rebuild_list(player_index)
-	visible = not _cards.is_empty()
-
 func show_buy_from_others(player_index: int) -> void:
 	_mode = Mode.SINGLE_SELECT
 	_prompt.text = "Buy a card from another dwarf:"
@@ -76,19 +42,6 @@ func show_peek(card: CardData, player_index: int) -> void:
 	_mode = Mode.PEEK
 	_peek_card = card
 	_prompt.text = "Top card of deck:"
-	_cards = [card] if card != null else []
-	_selected = []
-	var gold := PlayerManager.players[player_index].gold
-	_confirm_btn.text = "Buy (🪙%d)" % (card.gold_cost if card != null else 0)
-	_confirm_btn.disabled = card == null or gold < card.gold_cost
-	_cancel_btn.text = "Pass"
-	_rebuild_list(-1)
-	visible = true
-
-func show_opportunist(card: CardData, player_index: int) -> void:
-	_mode = Mode.PEEK
-	_peek_card = card
-	_prompt.text = "New card revealed! Buy before others?"
 	_cards = [card] if card != null else []
 	_selected = []
 	var gold := PlayerManager.players[player_index].gold

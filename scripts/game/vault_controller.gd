@@ -26,12 +26,7 @@ func handle_claws(player_index: int, claw_count: int) -> void:
 				PlayerManager.add_gems(player_index, claw_count)
 			vault_entered.emit(player_index)
 		else:
-			if _has_effect(player_index, CardEffectId.Id.NOVA_ATTACK):
-				for i in PlayerManager.players.size():
-					if i != player_index and not PlayerManager.players[i].is_eliminated:
-						PlayerManager.apply_damage(i, attack_damage, player_index)
-			else:
-				PlayerManager.apply_damage(occupant, attack_damage, player_index)
+			PlayerManager.apply_damage(occupant, attack_damage, player_index)
 			if _has_effect(player_index, CardEffectId.Id.GEM_PER_CLAW):
 				PlayerManager.add_gems(player_index, claw_count)
 			if PlayerManager.players[occupant].is_eliminated:
@@ -61,8 +56,6 @@ func handle_flee(attacker_index: int) -> void:
 		if not PlayerManager.players[occupant].is_eliminated:
 			if _has_effect(occupant, CardEffectId.Id.TUNNEL_FIGHTER):
 				PlayerManager.apply_damage(attacker_index, 1)
-			if _has_effect(occupant, CardEffectId.Id.TRICKSTER_BARGAIN):
-				_steal_permanent_from(attacker_index, occupant)
 		PlayerManager.set_position(occupant, PlayerData.PlayerPosition.OUTSIDE)
 	PlayerManager.set_position(attacker_index, PlayerData.PlayerPosition.AT_VAULT)
 
@@ -108,9 +101,3 @@ func _has_effect(player_index: int, effect_id: CardEffectId.Id) -> bool:
 			return true
 	return false
 
-func _steal_permanent_from(source_index: int, dest_index: int) -> void:
-	for card in PlayerManager.players[source_index].cards_in_hand.duplicate():
-		if card.card_type == CardData.CardType.PERMANENT:
-			PlayerManager.remove_card_from_hand(source_index, card)
-			PlayerManager.add_card_to_hand(dest_index, card)
-			return

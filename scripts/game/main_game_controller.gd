@@ -1,6 +1,6 @@
 extends Node
 
-enum PickerContext { NONE, RECYCLE, MIMIC, BUY_FROM_OTHERS, PEEK, OPPORTUNIST }
+enum PickerContext { NONE, BUY_FROM_OTHERS, PEEK }
 
 @onready var _safe_area: MarginContainer = $UILayer/SafeArea
 @onready var _dice_pool: DicePoolController = $UILayer/SafeArea/UIRoot/BottomDock/HBox/DiceSection/DicePool
@@ -17,13 +17,10 @@ enum PickerContext { NONE, RECYCLE, MIMIC, BUY_FROM_OTHERS, PEEK, OPPORTUNIST }
 var _last_roll_result: Dictionary = { "gems": 0, "gold": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
 var _picker_context: PickerContext = PickerContext.NONE
-var _pending_mimic_player: int = -1
 var _face_picker: FacePickerDialogController
 var _face_pick_player: int = -1
 var _face_pick_die: int = -1
 var _face_pick_consume: bool = false
-var _opportunist_queue: Array[Dictionary] = []  # {player_index, card}
-var _processing_opportunist: bool = false
 var _resolution_controller := ResolutionController.new()
 var _card_effect_handler := CardEffectHandler.new()
 var _bot_brain := BotBrain.new()
@@ -48,7 +45,6 @@ func _ready() -> void:
 	_escape_dialog.flee_pressed.connect(_on_flee)
 	_escape_dialog.stay_pressed.connect(_on_stay)
 
-	_pass_screen.ready_pressed.connect(_on_pass_screen_ready)
 
 	_active_player_panel.view_cards_requested.connect(
 		func(): _card_detail_screen.show_for_player(TurnManager.current_player_index)
@@ -61,15 +57,12 @@ func _ready() -> void:
 	_card_shop.buy_from_others_pressed.connect(_on_buy_from_others_pressed)
 
 	CardShop.card_purchased.connect(_card_effect_handler._on_card_purchased)
-	CardShop.new_card_revealed.connect(_on_new_card_revealed)
 	TurnManager.turn_started.connect(_card_effect_handler._on_turn_started)
 	TurnManager.turn_ended.connect(_card_effect_handler._on_turn_ended)
 	PlayerManager.damage_applied.connect(_card_effect_handler._on_damage_applied)
 	PlayerManager.player_eliminated.connect(_card_effect_handler._on_player_eliminated)
 	PlayerManager.position_changed.connect(_card_effect_handler._on_position_changed)
 	_vault_area.forced_escape.connect(_on_forced_escape)
-
-	_card_effect_handler.mimic_ui_needed.connect(_on_mimic_ui_needed)
 
 	_face_picker = FacePickerDialogController.new()
 	$OverlayLayer.add_child(_face_picker)
@@ -95,7 +88,6 @@ func _apply_safe_area() -> void:
 
 func _on_turn_started(player_index: int) -> void:
 	_last_roll_result = { "gems": 0, "gold": 0, "claws": 0, "hearts": 0 }
-	_pending_mimic_player = -1
 	var p := PlayerManager.players[player_index]
 	if p.die_jacker_pending:
 		p.die_jacker_pending = false
@@ -104,16 +96,6 @@ func _on_turn_started(player_index: int) -> void:
 		_run_bot_turn.call_deferred()
 	else:
 		_pass_screen.show_for_player(PlayerManager.players[player_index].player_name)
-
-func _on_pass_screen_ready() -> void:
-	if _pending_mimic_player >= 0:
-		var idx := _pending_mimic_player
-		_pending_mimic_player = -1
-		_picker_context = PickerContext.MIMIC
-		_card_picker_dialog.show_mimic(idx)
-
-func _on_mimic_ui_needed(player_index: int) -> void:
-	_pending_mimic_player = player_index
 
 func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:
 	if phase == TurnManager.TurnPhase.END_TURN:
@@ -225,11 +207,6 @@ func _on_face_chosen(face: DiceResolver.DieFace) -> void:
 	_face_pick_consume = false
 
 func _on_end_turn() -> void:
-	var player_idx := TurnManager.current_player_index
-	if not PlayerManager.players[player_idx].is_bot and _card_effect_handler.needs_recycle(player_idx):
-		_picker_context = PickerContext.RECYCLE
-		_card_picker_dialog.show_recycle(player_idx)
-		return
 	TurnManager.advance_phase()  # BUY_CARDS → END_TURN
 
 # ── Card picker dialog handlers ───────────────────────────────────────────────
@@ -239,34 +216,14 @@ func _on_card_picker_confirmed(selected_cards: Array[CardData]) -> void:
 	var ctx := _picker_context
 	_picker_context = PickerContext.NONE
 	match ctx:
-		PickerContext.RECYCLE:
-			_card_effect_handler.complete_recycle(player_idx, selected_cards)
-			TurnManager.advance_phase()
-		PickerContext.MIMIC:
-			if not selected_cards.is_empty():
-				_card_effect_handler.complete_mimic(player_idx, selected_cards[0])
 		PickerContext.BUY_FROM_OTHERS:
 			if not selected_cards.is_empty():
 				_card_effect_handler.complete_buy_from_others(player_idx, selected_cards[0])
 		PickerContext.PEEK:
 			CardShop.purchase_top(player_idx)
-		PickerContext.OPPORTUNIST:
-			if not selected_cards.is_empty():
-				var entry := _opportunist_queue.pop_front() as Dictionary
-				CardShop.purchase_specific_card(selected_cards[0], entry["player_index"])
-			else:
-				_opportunist_queue.pop_front()
-			_process_opportunist_queue()
 
 func _on_card_picker_cancelled() -> void:
-	var ctx := _picker_context
 	_picker_context = PickerContext.NONE
-	match ctx:
-		PickerContext.RECYCLE:
-			TurnManager.advance_phase()
-		PickerContext.OPPORTUNIST:
-			_opportunist_queue.pop_front()
-			_process_opportunist_queue()
 
 # ── peek_deck / buy_from_others buy-phase abilities ──────────────────────────
 
@@ -284,32 +241,6 @@ func _on_buy_from_others_pressed() -> void:
 	_card_picker_dialog.show_buy_from_others(player_idx)
 
 # ── opportunist (Sharp Eye) interrupt ────────────────────────────────────────
-
-func _on_new_card_revealed(card: CardData, _slot_index: int) -> void:
-	if _processing_opportunist:
-		return
-	var active_idx := TurnManager.current_player_index
-	var size := PlayerManager.players.size()
-	# Iterate in player-index order starting just after the active player
-	for offset in range(1, size):
-		var i := (active_idx + offset) % size
-		var p := PlayerManager.players[i]
-		if p.is_eliminated or p.is_bot:
-			continue
-		for c in p.cards_in_hand:
-			if c.effect != null and c.effect.effect_id == CardEffectId.Id.OPPORTUNIST:
-				_opportunist_queue.append({"player_index": i, "card": card})
-				break
-	_process_opportunist_queue()
-
-func _process_opportunist_queue() -> void:
-	if _opportunist_queue.is_empty():
-		_processing_opportunist = false
-		return
-	_processing_opportunist = true
-	var entry: Dictionary = _opportunist_queue.front()
-	_picker_context = PickerContext.OPPORTUNIST
-	_card_picker_dialog.show_opportunist(entry["card"], entry["player_index"])
 
 # ── game over ─────────────────────────────────────────────────────────────────
 

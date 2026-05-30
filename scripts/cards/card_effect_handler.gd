@@ -6,7 +6,6 @@ extends RefCounted
 ## calls the matching hook on `card.effect`. Smoke Bomb charge tracking is the
 ## one exception: charges are cross-cutting state consumed by the dice UI.
 
-signal mimic_ui_needed(player_index: int)
 signal effect_hook_called(card_name: String, hook: String, holder_name: String)
 
 var _card_charges: Dictionary = {}
@@ -98,8 +97,6 @@ func _on_turn_started(player_index: int) -> void:
 				continue
 			if card.effect.effect_id == CardEffectId.Id.GOLD_BATTERY:
 				continue  # handled separately below (needs card reference for charges)
-			if card.effect.effect_id == CardEffectId.Id.MIMIC:
-				continue  # handled separately below (needs UI or bot decision)
 			card.effect.on_turn_started(player_index)
 			effect_hook_called.emit(card.card_name, "on_turn_started", p.player_name)
 	# Gold Battery: dispense gold and decrement charge counter (skip on repeated turns)
@@ -112,14 +109,6 @@ func _on_turn_started(player_index: int) -> void:
 				if card.charges <= 0:
 					PlayerManager.remove_card_from_hand(player_index, card)
 				break
-	# Mimic (Copycat): copy an opponent's PERMANENT effect for this turn
-	for card in p.cards_in_hand.duplicate():
-		if card.effect != null and card.effect.effect_id == CardEffectId.Id.MIMIC:
-			if p.is_bot:
-				_auto_resolve_mimic(player_index)
-			else:
-				mimic_ui_needed.emit(player_index)
-			break
 	# Apply shrink penalty after PERMANENT loop (die_count_modifier already set by PERMANENT cards)
 	if p.shrink_stacks > 0:
 		p.die_count_modifier -= p.shrink_stacks
@@ -135,7 +124,6 @@ func _on_turn_ended(player_index: int) -> void:
 	if p.shrink_stacks > 0:
 		p.shrink_stacks -= 1
 	p.camouflage_active = false
-	p.gold_dodge_active = false
 	if p.poison_stacks > 0:
 		PlayerManager.apply_damage(player_index, p.poison_stacks)
 		if p.is_eliminated:
@@ -192,30 +180,6 @@ func _on_position_changed(player_index: int, new_pos: PlayerData.PlayerPosition)
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			card.effect.on_position_changed(player_index, new_pos)
 
-# ── Group 6 helpers ───────────────────────────────────────────────────────────
-
-func needs_recycle(player_index: int) -> bool:
-	var p := PlayerManager.players[player_index]
-	var has_recycle := false
-	var has_recyclable := false
-	for card in p.cards_in_hand:
-		if card.effect == null:
-			continue
-		if card.effect.effect_id == CardEffectId.Id.RECYCLE_CARDS:
-			has_recycle = true
-		elif card.card_type == CardData.CardType.PERMANENT:
-			has_recyclable = true
-	return has_recycle and has_recyclable
-
-func complete_recycle(player_index: int, chosen_cards: Array[CardData]) -> void:
-	for card in chosen_cards:
-		PlayerManager.add_gold(player_index, card.gold_cost)
-		PlayerManager.remove_card_from_hand(player_index, card)
-
-func complete_mimic(player_index: int, chosen_card: CardData) -> void:
-	if chosen_card != null and chosen_card.effect != null:
-		chosen_card.effect.on_turn_started(player_index)
-
 func complete_buy_from_others(buyer_index: int, card: CardData) -> void:
 	var owner_index := -1
 	for i in PlayerManager.players.size():
@@ -228,22 +192,3 @@ func complete_buy_from_others(buyer_index: int, card: CardData) -> void:
 		return
 	PlayerManager.remove_card_from_hand(owner_index, card)
 	PlayerManager.add_card_to_hand(buyer_index, card)
-
-func _auto_resolve_mimic(player_index: int) -> void:
-	var eligible := _mimic_eligible_cards(player_index)
-	if eligible.is_empty():
-		return
-	eligible.sort_custom(func(a: CardData, b: CardData) -> bool: return a.gold_cost > b.gold_cost)
-	complete_mimic(player_index, eligible[0])
-
-func _mimic_eligible_cards(player_index: int) -> Array[CardData]:
-	var result: Array[CardData] = []
-	for i in PlayerManager.players.size():
-		if i == player_index or PlayerManager.players[i].is_eliminated:
-			continue
-		for card in PlayerManager.players[i].cards_in_hand:
-			if card.card_type == CardData.CardType.PERMANENT and card.effect != null \
-					and card.effect.effect_id != CardEffectId.Id.MIMIC \
-					and card.effect.effect_id != CardEffectId.Id.GOLD_BATTERY:
-				result.append(card)
-	return result

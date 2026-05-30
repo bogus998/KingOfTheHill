@@ -79,7 +79,6 @@ static func _build(id: CardEffectId.Id) -> CardEffect:
 		CardEffectId.Id.POISON: return PlagueBladeEffect.new()
 		CardEffectId.Id.SHRINK: return WeakeningCurseEffect.new()
 		CardEffectId.Id.CAMOUFLAGE: return StoneSkinEffect.new()
-		CardEffectId.Id.GOLD_DODGE: return DodgeRollEffect.new()
 
 		# ── Not yet implemented — no-op stub ──────────────────────────────────
 		_: return CardEffect.new()

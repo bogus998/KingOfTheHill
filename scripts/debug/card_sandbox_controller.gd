@@ -45,7 +45,6 @@ func _connect_autoload_signals() -> void:
 	PlayerManager.damage_applied.connect(_effect_handler._on_damage_applied)
 	PlayerManager.player_eliminated.connect(_effect_handler._on_player_eliminated)
 	PlayerManager.position_changed.connect(_effect_handler._on_position_changed)
-	_effect_handler.mimic_ui_needed.connect(func(_idx): _log_line("Mimic auto-resolved"))
 	_effect_handler.effect_hook_called.connect(func(cname: String, hook: String, pname: String):
 		_log_line("  %s [%s]: %s" % [cname, pname, hook]))
 
@@ -408,8 +407,6 @@ func _refresh_states(_arg1 = null, _arg2 = null) -> void:
 			statuses.append("shrink:%d" % p.shrink_stacks)
 		if p.camouflage_active:
 			statuses.append("camouflage")
-		if p.gold_dodge_active:
-			statuses.append("gold_dodge")
 		if not statuses.is_empty():
 			vbox.add_child(_make_label("Status: " + "  ".join(statuses)))
 

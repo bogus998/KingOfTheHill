@@ -27,9 +27,6 @@ func apply_damage(player_index: int, amount: int, attacker_index: int = -1) -> v
 	var p := players[player_index]
 	if p.is_eliminated:
 		return
-	if p.gold_dodge_active:
-		damage_applied.emit(attacker_index, player_index, 0)
-		return
 	if p.nimble_dodge_active:
 		p.nimble_dodge_active = false
 		amount = max(0, amount - 1)

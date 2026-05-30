@@ -178,29 +178,6 @@ func test_gold_battery_each_player_gets_own_charges() -> void:
 	p0_card.charges = 3
 	assert_eq(p1_card.charges, 6)  # p1's copy is unaffected
 
-# ── recycle / mimic / peek_deck / buy_from_others / opportunist ───────────────
-# These require UI interaction and are tested manually on-device.
-# Pure logic continuations can be exercised here once the dialog is bypassed.
-
-func test_complete_recycle_refunds_gold_and_removes_card() -> void:
-	var gold_card := _load_card("res://data/cards/card_004_gold_vein.tres")
-	_add_to_hand(0, gold_card)
-	var in_hand: CardData = PlayerManager.players[0].cards_in_hand.back() as CardData
-	var cost: int = in_hand.gold_cost
-	var gold_before: int = PlayerManager.players[0].gold
-	_handler.complete_recycle(0, [in_hand])
-	assert_eq(PlayerManager.players[0].gold, gold_before + cost)
-	assert_eq(PlayerManager.players[0].cards_in_hand.size(), 0)
-
-func test_complete_mimic_applies_opponent_effect() -> void:
-	# Give p1 a gold_per_turn card; mimic should grant p0 some gold
-	var gold_turn := _load_card("res://data/cards/card_006_miners_luck.tres")
-	_add_to_hand(1, gold_turn)
-	var target: CardData = PlayerManager.players[1].cards_in_hand.back() as CardData
-	var gold_before: int = PlayerManager.players[0].gold
-	_handler.complete_mimic(0, target)
-	assert_gt(PlayerManager.players[0].gold, gold_before)
-
 func test_complete_buy_from_others_transfers_card() -> void:
 	var iron_hide := _load_card("res://data/cards/card_002_iron_hide.tres")
 	_add_to_hand(1, iron_hide)

@@ -36,8 +36,6 @@ const _CARD_PATHS: Array[String] = [
 	"res://data/cards/card_031_blast_furnace.tres",
 	"res://data/cards/card_032_treasure_seeker.tres",
 	"res://data/cards/card_033_healing_draught.tres",
-	# DISABLED (audit): PAID_HEALING has no handler — no-op stub
-	#"res://data/cards/card_034_healers_forge.tres",
 	"res://data/cards/card_035_pacifist_miner.tres",
 	"res://data/cards/card_036_die_picker.tres",
 	"res://data/cards/card_037_cave_in.tres",
@@ -45,18 +43,10 @@ const _CARD_PATHS: Array[String] = [
 	"res://data/cards/card_039_mercenary_squad.tres",
 	"res://data/cards/card_040_iron_boots.tres",
 	"res://data/cards/card_041_forge_master.tres",
-	# DISABLED (audit): bots never offered recycle picker — only works for humans
-	#"res://data/cards/card_042_recycle.tres",
-	# DISABLED (audit): complete_mimic only calls on_turn_started — misses on_acquired, on_turn_ended, dice passives
-	#"res://data/cards/card_043_copycat.tres",
 	"res://data/cards/card_044_gold_battery.tres",
 	"res://data/cards/card_045_militia.tres",
-	# DISABLED (audit): nova only fires in OUTSIDE→occupied-vault branch; in-vault and empty-vault claws skip it
-	#"res://data/cards/card_046_shockwave_axe.tres",
 	"res://data/cards/card_047_gold_reactor.tres",
 	"res://data/cards/card_048_combo_master.tres",
-	# DISABLED (audit): interrupt explicitly skips bots — inconsistent behavior
-	#"res://data/cards/card_049_sharp_eye.tres",
 	"res://data/cards/card_050_merchants_touch.tres",
 	"res://data/cards/card_051_wildcard.tres",
 	"res://data/cards/card_052_toxic_blade.tres",
@@ -75,8 +65,6 @@ const _CARD_PATHS: Array[String] = [
 	"res://data/cards/card_065_vault_dweller.tres",
 	"res://data/cards/card_066_tax_collection.tres",
 	"res://data/cards/card_067_stubborn_fighter.tres",
-	# DISABLED (audit): gold_dodge_active cleared same turn it's set — protection window is empty
-	#"res://data/cards/card_068_dodge_roll.tres",
 	"res://data/cards/card_069_festival_grounds.tres",
 	"res://data/cards/card_070_war_band.tres",
 	"res://data/cards/card_071_life_drain.tres",
@@ -87,8 +75,6 @@ const _CARD_PATHS: Array[String] = [
 	"res://data/cards/card_076_nimble_dodge.tres",
 	"res://data/cards/card_077_heavy_strike.tres",
 	"res://data/cards/card_078_war_drums.tres",
-	# DISABLED (audit): TRICKSTER_BARGAIN has no effect logic and no UI — completely unimplemented
-	#"res://data/cards/card_079_tricksters_bargain.tres",
 ]
 
 static func load_all_cards() -> Array[CardData]:
