@@ -79,6 +79,37 @@ func test_turn_ended_emitted_on_advance_from_buy_cards() -> void:
 	TurnManager.advance_phase()
 	assert_signal_emitted(TurnManager, "turn_ended")
 
+# ── Rounds ────────────────────────────────────────────────────────────────────
+
+func test_round_starts_at_1() -> void:
+	assert_eq(TurnManager.round_number, 1)
+
+func test_round_advances_after_full_cycle() -> void:
+	_complete_turn()                                   # P0 → P1 (round 1)
+	_complete_turn()                                   # P1 → P0 wrap → round 2
+	assert_eq(TurnManager.round_number, 2)
+
+func test_round_not_advanced_mid_round() -> void:
+	_complete_turn()                                   # P0 → P1
+	assert_eq(TurnManager.round_number, 1)
+
+func test_round_ended_emitted_on_wrap() -> void:
+	_complete_turn()
+	watch_signals(TurnManager)
+	_complete_turn()
+	assert_signal_emitted_with_parameters(TurnManager, "round_ended", [1])
+
+func test_round_started_emitted_on_wrap() -> void:
+	_complete_turn()
+	watch_signals(TurnManager)
+	_complete_turn()
+	assert_signal_emitted_with_parameters(TurnManager, "round_started", [2])
+
+func test_round_ended_not_emitted_mid_round() -> void:
+	watch_signals(TurnManager)
+	_complete_turn()
+	assert_signal_not_emitted(TurnManager, "round_ended")
+
 # ── Vault bonus ───────────────────────────────────────────────────────────────
 
 func test_vault_player_gets_2_gems_at_turn_start() -> void:

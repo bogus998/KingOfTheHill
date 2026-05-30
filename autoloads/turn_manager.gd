@@ -5,9 +5,12 @@ enum TurnPhase { DICE_ROLL, RESOLUTION, BUY_CARDS, END_TURN }
 signal phase_changed(new_phase: TurnPhase)
 signal turn_started(player_index: int)
 signal turn_ended(player_index: int)
+signal round_started(round_number: int)
+signal round_ended(round_number: int)
 
 var current_phase: TurnPhase = TurnPhase.DICE_ROLL
 var current_player_index: int = 0
+var round_number: int = 1
 var roll_count: int = 0
 var is_game_active: bool = false
 var is_repeated_turn: bool = false
@@ -18,6 +21,8 @@ var pending_extra_turn: bool = false
 func begin() -> void:
 	is_game_active = true
 	current_player_index = 0
+	round_number = 1
+	round_started.emit(round_number)
 	_start_turn()
 
 func advance_phase() -> void:
@@ -56,6 +61,11 @@ func next_player() -> void:
 		current_player_index = (current_player_index + 1) % size
 		if current_player_index == start:
 			return  # all other players eliminated — win condition already fired
+	# Wrapping to (or before) the previous holder marks a round boundary.
+	if current_player_index <= start:
+		round_ended.emit(round_number)
+		round_number += 1
+		round_started.emit(round_number)
 	_start_turn()
 
 func request_repeat_turn(_player_index: int, die_penalty: int) -> void:
