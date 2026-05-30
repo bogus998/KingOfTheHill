@@ -11,6 +11,8 @@ signal effect_hook_called(card_name: String, hook: String, holder_name: String)
 var _card_charges: Dictionary = {}
 
 func apply_immediate(card: CardData, player_index: int) -> void:
+	if not EnvironmentManager.cards_active():
+		return
 	if card.effect != null:
 		card.effect.apply_immediate(player_index)
 		if card.effect.effect_id == CardEffectId.Id.EXTRA_TURN:
@@ -28,12 +30,16 @@ func apply_immediate(card: CardData, player_index: int) -> void:
 					break
 
 func on_roll_finalized(player_index: int, final_faces: Array) -> void:
+	if not EnvironmentManager.cards_active():
+		return
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			card.effect.on_roll_finalized(player_index, final_faces)
 			effect_hook_called.emit(card.card_name, "on_roll_finalized", PlayerManager.players[player_index].player_name)
 
 func use_smoke_bomb_charge(card: CardData, player_index: int) -> void:
+	if not EnvironmentManager.cards_active():
+		return
 	if not _card_charges.has(card) or _card_charges[card] <= 0:
 		return
 	_card_charges[card] -= 1
@@ -90,8 +96,10 @@ func _on_turn_started(player_index: int) -> void:
 	# repeat_turn_used stays true through a repeated turn to block re-triggering
 	if not TurnManager.is_repeated_turn:
 		p.repeat_turn_used = false
-	# Apply PERMANENT card passives; skip income/damage passives on repeated turns
-	for card in p.cards_in_hand.duplicate():
+	# Apply PERMANENT card passives; skip income/damage passives on repeated turns.
+	# Silenced this round → no passives fire.
+	var passive_cards := p.cards_in_hand.duplicate() if EnvironmentManager.cards_active() else []
+	for card in passive_cards:
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			if TurnManager.is_repeated_turn and card.effect.is_income_passive():
 				continue
@@ -100,7 +108,7 @@ func _on_turn_started(player_index: int) -> void:
 			card.effect.on_turn_started(player_index)
 			effect_hook_called.emit(card.card_name, "on_turn_started", p.player_name)
 	# Gold Battery: dispense gold and decrement charge counter (skip on repeated turns)
-	if not TurnManager.is_repeated_turn:
+	if not TurnManager.is_repeated_turn and EnvironmentManager.cards_active():
 		for card in p.cards_in_hand.duplicate():
 			if card.effect != null and card.effect.effect_id == CardEffectId.Id.GOLD_BATTERY \
 					and card.charges > 0:
@@ -116,7 +124,8 @@ func _on_turn_started(player_index: int) -> void:
 func _on_turn_ended(player_index: int) -> void:
 	if player_index >= PlayerManager.players.size():
 		return
-	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
+	var ended_cards := PlayerManager.players[player_index].cards_in_hand.duplicate() if EnvironmentManager.cards_active() else []
+	for card in ended_cards:
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			card.effect.on_turn_ended(player_index)
 			effect_hook_called.emit(card.card_name, "on_turn_ended", PlayerManager.players[player_index].player_name)
@@ -130,6 +139,8 @@ func _on_turn_ended(player_index: int) -> void:
 			return
 
 func _on_damage_applied(attacker_index: int, target_index: int, amount: int) -> void:
+	if not EnvironmentManager.cards_active():
+		return
 	if amount <= 0 or attacker_index < 0 or attacker_index == target_index:
 		return
 	for i in PlayerManager.players.size():
@@ -138,12 +149,16 @@ func _on_damage_applied(attacker_index: int, target_index: int, amount: int) -> 
 				card.effect.on_damage_applied(i, attacker_index, target_index, amount)
 
 func _on_player_eliminated(eliminated_index: int) -> void:
+	if not EnvironmentManager.cards_active():
+		return
 	for i in PlayerManager.players.size():
 		for card in PlayerManager.players[i].cards_in_hand.duplicate():
 			if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 				card.effect.on_player_eliminated(i, eliminated_index)
 
 func apply_active_ability(effect_id: CardEffectId.Id, player_index: int) -> void:
+	if not EnvironmentManager.cards_active():
+		return
 	match effect_id:
 		CardEffectId.Id.WILDCARD_DIE:
 			for c in PlayerManager.players[player_index].cards_in_hand.duplicate():
@@ -167,6 +182,8 @@ func apply_active_ability(effect_id: CardEffectId.Id, player_index: int) -> void
 				PlayerManager.players[player_index].extra_rerolls_available += 1
 
 func apply_die_jacker(player_index: int) -> void:
+	if not EnvironmentManager.cards_active():
+		return
 	var p := PlayerManager.players[player_index]
 	if p.die_jacker_used_this_turn:
 		return
@@ -176,6 +193,8 @@ func apply_die_jacker(player_index: int) -> void:
 			PlayerManager.players[i].die_jacker_pending = true
 
 func _on_position_changed(player_index: int, new_pos: PlayerData.PlayerPosition) -> void:
+	if not EnvironmentManager.cards_active():
+		return
 	for card in PlayerManager.players[player_index].cards_in_hand.duplicate():
 		if card.card_type == CardData.CardType.PERMANENT and card.effect != null:
 			card.effect.on_position_changed(player_index, new_pos)

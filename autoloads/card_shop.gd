@@ -23,8 +23,10 @@ func reset() -> void:
 func purchase(slot_index: int, player_index: int) -> bool:
 	if slot_index >= visible_cards.size():
 		return false
+	if not EnvironmentManager.purchasing_allowed():
+		return false
 	var card: CardData = visible_cards[slot_index]
-	var effective_cost: int = max(0, card.gold_cost - discount_for(player_index))
+	var effective_cost: int = max(0, card.gold_cost - discount_for(player_index) + EnvironmentManager.shop_cost_delta())
 	if not PlayerManager.spend_gold(player_index, effective_cost):
 		return false
 	visible_cards.remove_at(slot_index)
@@ -56,8 +58,10 @@ func peek_top() -> CardData:
 func purchase_top(player_index: int) -> bool:
 	if _deck.is_empty():
 		return false
+	if not EnvironmentManager.purchasing_allowed():
+		return false
 	var card: CardData = _deck.pop_back()
-	var effective_cost: int = max(0, card.gold_cost - discount_for(player_index))
+	var effective_cost: int = max(0, card.gold_cost - discount_for(player_index) + EnvironmentManager.shop_cost_delta())
 	if not PlayerManager.spend_gold(player_index, effective_cost):
 		_deck.push_back(card)
 		return false

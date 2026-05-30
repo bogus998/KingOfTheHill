@@ -107,6 +107,7 @@ func _on_roll_completed(faces: Array) -> void:
 func _on_end_roll() -> void:
 	_dice_pool.cancel_die_selection()
 	_card_effect_handler.on_roll_finalized(TurnManager.current_player_index, _dice_pool.get_all_faces())
+	EnvironmentManager.notify_roll_finalized(TurnManager.current_player_index, TurnManager.roll_count, _dice_pool.get_all_faces())
 	TurnManager.advance_phase()  # DICE_ROLL → RESOLUTION
 	_resolution_picker.show_result(_last_roll_result)
 

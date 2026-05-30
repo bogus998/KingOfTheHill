@@ -18,6 +18,8 @@ func handle_claws(player_index: int, claw_count: int) -> void:
 	if player.position == PlayerData.PlayerPosition.OUTSIDE:
 		var occupant := PlayerManager.get_vault_occupant()
 		if occupant == -1:
+			if claw_count < 1 + EnvironmentManager.vault_entry_surcharge():
+				return  # Siege: not enough claws to breach the vault this round
 			PlayerManager.set_position(player_index, PlayerData.PlayerPosition.AT_VAULT)
 			PlayerManager.add_gems(player_index, 1)
 			if _has_effect(player_index, CardEffectId.Id.GEM_PER_CLAW):

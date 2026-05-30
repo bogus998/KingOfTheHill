@@ -36,6 +36,10 @@ func apply_damage(player_index: int, amount: int, attacker_index: int = -1) -> v
 			return
 	if _has_camouflage(player_index):
 		amount = _resolve_camouflage(amount)
+	if attacker_index >= 0 and attacker_index != player_index:
+		var cap := EnvironmentManager.damage_cap()
+		if cap >= 0:
+			amount = clampi(amount, 0, maxi(0, cap - players[attacker_index].damage_dealt_this_turn))
 	var actual: int = max(0, amount - p.damage_reduction)
 	p.health = max(0, p.health - actual)
 	player_damaged.emit(player_index, p.health)
@@ -75,6 +79,11 @@ func add_gems(player_index: int, amount: int) -> void:
 func add_gold(player_index: int, amount: int) -> void:
 	var p := players[player_index]
 	var gained := amount + p.gold_gain_bonus
+	if get_vault_occupant() == player_index:
+		if EnvironmentManager.blocks_vault_holder_gold():
+			gained = 0
+		else:
+			gained += EnvironmentManager.vault_holder_gold_bonus()
 	p.gold += gained
 	gold_changed.emit(player_index, p.gold)
 	gold_gained.emit(player_index, gained)

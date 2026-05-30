@@ -8,6 +8,7 @@ const BASE_DIE_COUNT := 6
 
 var _dice: Array[DieController] = []
 var _roll_count: int = 0
+var _forced_reroll_pending: bool = false
 
 @onready var _roll_button: Button = $RollButton
 @onready var _dice_container: HBoxContainer = $DiceContainer
@@ -23,7 +24,13 @@ func _ready() -> void:
 
 func get_max_rolls() -> int:
 	var p := PlayerManager.players[TurnManager.current_player_index]
-	return 3 + p.extra_rerolls_available
+	var base := 3 + p.extra_rerolls_available
+	if EnvironmentManager.grants_free_reroll():
+		base += 1
+	var limit := EnvironmentManager.roll_limit()
+	if limit >= 0:
+		return mini(base, limit)
+	return base
 
 func roll_active_dice() -> void:
 	if _roll_count >= get_max_rolls():
@@ -37,6 +44,7 @@ func roll_active_dice() -> void:
 		for die in _dice:
 			if die.visible:
 				die.set_holdable(true)
+		_apply_die_jacker()
 	_end_round_btn.disabled = false
 	_apply_shadow_runner()
 	_update_roll_button()
@@ -66,6 +74,7 @@ func get_all_faces() -> Array:
 	return faces
 
 func enter_die_selection_mode(callback: Callable) -> void:
+	cancel_die_selection()
 	for i in _dice.size():
 		var die := _dice[i]
 		if not die.visible:
@@ -76,6 +85,12 @@ func enter_die_selection_mode(callback: Callable) -> void:
 			_exit_die_selection_mode()
 			callback.call(idx)
 		, CONNECT_ONE_SHOT)
+
+func cancel_die_selection() -> void:
+	_exit_die_selection_mode()
+
+func set_forced_reroll_pending(value: bool) -> void:
+	_forced_reroll_pending = value
 
 func _exit_die_selection_mode() -> void:
 	for die in _dice:
@@ -133,9 +148,20 @@ func _update_die_visibility() -> void:
 	var p := PlayerManager.players[TurnManager.current_player_index]
 	var penalty: int = p.pending_die_penalty
 	p.pending_die_penalty = 0
-	var target := clampi(BASE_DIE_COUNT + p.die_count_modifier - penalty, 1, _dice.size())
+	var target := clampi(BASE_DIE_COUNT + p.die_count_modifier - penalty + EnvironmentManager.dice_count_delta(), 1, _dice.size())
 	for i in _dice.size():
 		_dice[i].visible = i < target
+
+func _apply_die_jacker() -> void:
+	if not _forced_reroll_pending:
+		return
+	_forced_reroll_pending = false
+	var active: Array[DieController] = []
+	for die in _dice:
+		if die.visible and die.state == DieController.DieState.ACTIVE:
+			active.append(die)
+	if not active.is_empty():
+		active[randi() % active.size()].roll()
 
 func _on_turn_started(_player_index: int) -> void:
 	_roll_count = 0
