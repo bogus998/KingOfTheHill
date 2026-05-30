@@ -18,6 +18,10 @@ var _last_roll_result: Dictionary = { "gems": 0, "gold": 0, "claws": 0, "hearts"
 var _pending_attacker: int = -1
 var _picker_context: PickerContext = PickerContext.NONE
 var _pending_mimic_player: int = -1
+var _face_picker: FacePickerDialogController
+var _face_pick_player: int = -1
+var _face_pick_die: int = -1
+var _face_pick_consume: bool = false
 var _opportunist_queue: Array[Dictionary] = []  # {player_index, card}
 var _processing_opportunist: bool = false
 var _resolution_controller := ResolutionController.new()
@@ -67,6 +71,10 @@ func _ready() -> void:
 
 	_card_effect_handler.mimic_ui_needed.connect(_on_mimic_ui_needed)
 
+	_face_picker = FacePickerDialogController.new()
+	$OverlayLayer.add_child(_face_picker)
+	_face_picker.face_chosen.connect(_on_face_chosen)
+
 	var config := GameManager.pending_config
 	if config.is_empty():
 		config = {"players": [
@@ -88,7 +96,11 @@ func _apply_safe_area() -> void:
 func _on_turn_started(player_index: int) -> void:
 	_last_roll_result = { "gems": 0, "gold": 0, "claws": 0, "hearts": 0 }
 	_pending_mimic_player = -1
-	if PlayerManager.players[player_index].is_bot:
+	var p := PlayerManager.players[player_index]
+	if p.die_jacker_pending:
+		p.die_jacker_pending = false
+		_dice_pool.set_forced_reroll_pending(true)
+	if p.is_bot:
 		_run_bot_turn.call_deferred()
 	else:
 		_pass_screen.show_for_player(PlayerManager.players[player_index].player_name)
@@ -111,6 +123,7 @@ func _on_roll_completed(faces: Array) -> void:
 	_last_roll_result = DiceResolver.resolve(faces)
 
 func _on_end_roll() -> void:
+	_dice_pool.cancel_die_selection()
 	_card_effect_handler.on_roll_finalized(TurnManager.current_player_index, _dice_pool.get_all_faces())
 	TurnManager.advance_phase()  # DICE_ROLL → RESOLUTION
 	_resolution_picker.show_result(_last_roll_result)
@@ -163,7 +176,53 @@ func _on_stay() -> void:
 	TurnManager.advance_phase()
 
 func _on_ability_used(effect_id: CardEffectId.Id, player_index: int) -> void:
-	_card_effect_handler.apply_active_ability(effect_id, player_index)
+	match effect_id:
+		CardEffectId.Id.WILDCARD_DIE:
+			_face_pick_player = player_index
+			_face_pick_consume = true
+			_dice_pool.enter_die_selection_mode(_on_face_pick_die_selected)
+		CardEffectId.Id.SET_DIE_TO_ONE:
+			var p := PlayerManager.players[player_index]
+			if not p.die_picker_used_this_turn:
+				p.die_picker_used_this_turn = true
+				_dice_pool.enter_die_selection_mode(_on_die_picker_die_selected)
+		CardEffectId.Id.GOLD_DIE_CHANGE:
+			if PlayerManager.spend_gold(player_index, 2):
+				_face_pick_player = player_index
+				_face_pick_consume = false
+				_dice_pool.enter_die_selection_mode(_on_face_pick_die_selected)
+		CardEffectId.Id.DIE_JACKER:
+			_card_effect_handler.apply_die_jacker(player_index)
+		CardEffectId.Id.SMOKE_BOMB:
+			for c in PlayerManager.players[player_index].cards_in_hand:
+				if c.effect != null and c.effect.effect_id == CardEffectId.Id.SMOKE_BOMB:
+					_card_effect_handler.use_smoke_bomb_charge(c, player_index)
+					break
+		_:
+			_card_effect_handler.apply_active_ability(effect_id, player_index)
+
+func _on_face_pick_die_selected(die_idx: int) -> void:
+	_face_pick_die = die_idx
+	_face_picker.show_picker()
+
+func _on_die_picker_die_selected(die_idx: int) -> void:
+	var die := _dice_pool.get_die(die_idx)
+	if die == null:
+		return
+	die.set_face(DiceResolver.DieFace.ONE)
+	die.set_holdable(true)
+	if die.state == DieController.DieState.ACTIVE:
+		die.toggle_hold()
+
+func _on_face_chosen(face: DiceResolver.DieFace) -> void:
+	var die := _dice_pool.get_die(_face_pick_die)
+	if die != null:
+		die.set_face(face)
+	if _face_pick_consume:
+		_card_effect_handler.apply_active_ability(CardEffectId.Id.WILDCARD_DIE, _face_pick_player)
+	_face_pick_player = -1
+	_face_pick_die = -1
+	_face_pick_consume = false
 
 func _on_end_turn() -> void:
 	var player_idx := TurnManager.current_player_index

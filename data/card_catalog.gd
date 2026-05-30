@@ -40,8 +40,7 @@ const _CARD_PATHS: Array[String] = [
 	# DISABLED (audit): PAID_HEALING has no handler — no-op stub
 	#"res://data/cards/card_034_healers_forge.tres",
 	"res://data/cards/card_035_pacifist_miner.tres",
-	# DISABLED (audit): can_set_die_before_roll never read; no UI
-	#"res://data/cards/card_036_die_picker.tres",
+	"res://data/cards/card_036_die_picker.tres",
 	"res://data/cards/card_037_cave_in.tres",
 	"res://data/cards/card_038_second_wind.tres",
 	"res://data/cards/card_039_mercenary_squad.tres",
@@ -60,26 +59,21 @@ const _CARD_PATHS: Array[String] = [
 	# DISABLED (audit): interrupt explicitly skips bots — inconsistent behavior
 	#"res://data/cards/card_049_sharp_eye.tres",
 	"res://data/cards/card_050_merchants_touch.tres",
-	# DISABLED (audit): wildcard_pending flag never read; no die/face picker UI
-	#"res://data/cards/card_051_wildcard.tres",
+	"res://data/cards/card_051_wildcard.tres",
 	"res://data/cards/card_052_toxic_blade.tres",
 	"res://data/cards/card_053_plague_blade.tres",
-	# DISABLED (audit): DIE_JACKER has no effect logic and no UI — completely unimplemented
-	#"res://data/cards/card_054_die_jacker.tres",
+	"res://data/cards/card_054_die_jacker.tres",
 	"res://data/cards/card_055_healing_flask.tres",
 	"res://data/cards/card_056_trollish_hide.tres",
 	"res://data/cards/card_057_underdogs_pride.tres",
 	# DISABLED (audit): immediately AoEs shrink on all players at purchase — wrong mechanic vs. description
 	#"res://data/cards/card_058_weakening_curse.tres",
 	"res://data/cards/card_059_great_hall.tres",
-	# DISABLED (audit): use_smoke_bomb_charge() has no UI caller — charges can never be spent
-	#"res://data/cards/card_060_smoke_bomb.tres",
+	"res://data/cards/card_060_smoke_bomb.tres",
 	"res://data/cards/card_061_empty_purse.tres",
-	# DISABLED (audit): no-op stub; no activation path, no UI
-	#"res://data/cards/card_062_flexible_tactics.tres",
+	"res://data/cards/card_062_flexible_tactics.tres",
 	"res://data/cards/card_063_berserker_rush.tres",
-	# DISABLED (audit): no-op stub; no activation path, no UI
-	#"res://data/cards/card_064_focus_crystal.tres",
+	"res://data/cards/card_064_focus_crystal.tres",
 	"res://data/cards/card_065_vault_dweller.tres",
 	"res://data/cards/card_066_tax_collection.tres",
 	"res://data/cards/card_067_stubborn_fighter.tres",

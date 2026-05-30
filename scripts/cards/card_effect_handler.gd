@@ -174,6 +174,9 @@ func apply_active_ability(effect_id: CardEffectId.Id, player_index: int) -> void
 		CardEffectId.Id.SLOW_GRINDER:
 			if PlayerManager.spend_gold(player_index, 3):
 				PlayerManager.add_gems(player_index, 1)
+		CardEffectId.Id.GOLD_EXTRA_REROLL:
+			if PlayerManager.spend_gold(player_index, 1):
+				PlayerManager.players[player_index].extra_rerolls_available += 1
 
 func apply_die_jacker(player_index: int) -> void:
 	var p := PlayerManager.players[player_index]
