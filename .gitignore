@@ -12,7 +12,6 @@ export_presets.cfg
 *.translation
 /builds/
 /exports/
-*.uid
 
 # Claude Code
 .claude/
