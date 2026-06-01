@@ -1,6 +1,8 @@
 {
   "enabledPlugins": {
     "godot-turn-based@local-godot-marketplace": true,
-    "godot-general@local-godot-marketplace": true
+    "godot-general@local-godot-marketplace": true,
+    "godot-rendering@local-godot-marketplace": true,
+    "godot-audio@local-godot-marketplace": false
   }
 }
