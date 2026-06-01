@@ -1,6 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+*.apk
 
 # macOS
 .DS_Store
@@ -11,6 +12,7 @@ export_presets.cfg
 *.translation
 /builds/
 /exports/
+*.uid
 
 # Claude Code
 .claude/
