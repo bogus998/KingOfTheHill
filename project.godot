@@ -25,6 +25,7 @@ TurnManager="*res://autoloads/turn_manager.gd"
 GameManager="*res://autoloads/game_manager.gd"
 DragonManager="*res://autoloads/dragon_manager.gd"
 EnvironmentManager="*res://autoloads/environment_manager.gd"
+NetworkManager="*res://autoloads/network_manager.gd"
 
 [display]
 
