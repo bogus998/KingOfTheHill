@@ -35,6 +35,12 @@ func set_threshold(t: int) -> void:
 func reset() -> void:
 	_meter.reset()
 
+## Rehydrate the running value directly (state restoration, e.g. save/load).
+func set_value(v: int) -> void:
+	_meter.value = maxi(0, v)
+	_meter.is_tripped = _meter.value >= _meter.threshold
+	value_changed.emit(_meter.value)
+
 var value: int:
 	get: return _meter.value
 

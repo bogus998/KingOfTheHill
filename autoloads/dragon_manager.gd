@@ -177,3 +177,13 @@ func _apply_hoard(amount: int) -> void:
 		if not PlayerManager.players[i].is_eliminated:
 			var have: int = PlayerManager.players[i].gold
 			PlayerManager.spend_gold(i, mini(amount, have))
+
+## Restore rage/awakening state from a saved snapshot. The rage value lives behind
+## the private tracker, so this is the only way to rehydrate it from outside.
+func restore_state(rage_value: int, threshold: int, awakenings: int, pending: bool) -> void:
+	rage_threshold = threshold
+	awakening_count = awakenings
+	_awakening_pending = pending
+	if _tracker != null:
+		_tracker.set_threshold(threshold)
+		_tracker.set_value(rage_value)
