@@ -86,7 +86,18 @@ func _ready() -> void:
 	EnvironmentManager.card_activated.connect(_on_card_activated)
 	EnvironmentManager.card_dismissed.connect(_on_card_dismissed)
 	PlayerManager.players_setup.connect(_on_new_game)
+	add_to_group(NetworkManager.REFRESH_GROUP)  # LAN client: redraw on host snapshot
 	_update_rage()
+
+## Redraw rage/warning/environment banner from current manager state. Called on LAN
+## clients after a host snapshot is applied (no simulation signals fire there).
+func refresh() -> void:
+	_update_rage()
+	_warning.visible = DragonManager.is_awakening_pending
+	if EnvironmentManager.active_card != null:
+		_on_card_activated(EnvironmentManager.active_card)
+	else:
+		_env_banner.visible = false
 
 func _make_label(parent: Node) -> Label:
 	var l := Label.new()

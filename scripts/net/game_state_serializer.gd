@@ -6,7 +6,8 @@ class_name GameStateSerializer
 ## `snapshot()` reads the host's state; `apply()` writes it back on a client. apply
 ## is deliberately SILENT (it emits no simulation signals — replaying turn/round/
 ## damage signals on a client would re-run the host-only simulation and corrupt
-## state). The client redraws afterwards via NetworkManager.snapshot_applied.
+## state). The client redraws afterwards: NetworkManager notifies every node in the
+## REFRESH_GROUP via call_group("refresh") once apply() returns.
 ##
 ## Cards are referenced by their stable `card_name` (not resource_path: in-hand
 ## cards are runtime duplicates whose resource_path is empty). Names are resolved

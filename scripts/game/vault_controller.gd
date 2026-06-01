@@ -66,7 +66,13 @@ func _ready() -> void:
 	PlayerManager.position_changed.connect(_update_display)
 	TurnManager.turn_started.connect(_on_turn_started)
 	TurnManager.round_started.connect(_on_round_started)
+	add_to_group(NetworkManager.REFRESH_GROUP)  # LAN client: redraw on host snapshot
 	_update_display(0, PlayerData.PlayerPosition.OUTSIDE)
+
+## LAN client: redraw vault occupant + round/turn labels after a host snapshot.
+func refresh() -> void:
+	_update_display(0, PlayerData.PlayerPosition.OUTSIDE)
+	_update_round_label()
 
 func _on_round_started(_round_number: int) -> void:
 	_turn_in_round = 0

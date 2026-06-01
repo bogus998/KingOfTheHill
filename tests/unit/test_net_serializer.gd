@@ -138,3 +138,27 @@ func test_environment_empty_round_trip() -> void:
 	GameStateSerializer.apply(snap)
 	assert_null(EnvironmentManager.active_card)
 	assert_null(EnvironmentManager.pending_card)
+
+# ── Client receive path (apply + refresh fan-out) ─────────────────────────────
+
+## NetworkManager._receive_snapshot is the client entry point: it must rebuild the
+## managers from the snapshot AND notify every node in REFRESH_GROUP via call_group.
+func test_receive_snapshot_applies_and_refreshes_group() -> void:
+	var spy := _RefreshSpy.new()
+	add_child_autofree(spy)
+	spy.add_to_group(NetworkManager.REFRESH_GROUP)
+
+	PlayerManager.players[0].health = 5
+	var snap := GameStateSerializer.snapshot()
+	PlayerManager.players[0].health = 99  # corrupt live state
+
+	NetworkManager._receive_snapshot(snap)
+
+	assert_eq(PlayerManager.players[0].health, 5, "snapshot was applied to managers")
+	assert_eq(spy.refresh_calls, 1, "refresh() fanned out to the group via call_group")
+
+## Stub view that records how many times the refreshable contract was invoked.
+class _RefreshSpy extends Node:
+	var refresh_calls: int = 0
+	func refresh() -> void:
+		refresh_calls += 1

@@ -13,6 +13,11 @@ extends Node
 const DEFAULT_PORT := 7777
 const MAX_CLIENTS := 3   # up to 4 players total (host + 3)
 
+## Interface contract (Godot duck-typed, see godot-interfaces skill): any node that
+## must redraw after a host snapshot joins this group and implements `refresh()`.
+## On the client, _receive_snapshot notifies the whole group with one call_group.
+const REFRESH_GROUP := "snapshot_refreshable"
+
 enum Mode { SINGLE, HOST, CLIENT }
 
 signal peer_list_changed()            ## lobby roster changed (host or client)
@@ -30,6 +35,16 @@ var local_player_name: String = "Player"
 var lobby_players: Array[Dictionary] = []
 ## Player config locked at game start (the GameManager.start_game dict).
 var game_config: Dictionary = {}
+
+func _ready() -> void:
+	# Host pushes the authoritative state to clients at every turn boundary.
+	TurnManager.turn_started.connect(_on_turn_started)
+
+## Host: snapshot the resolved state (and whose turn it now is) and broadcast it.
+## No-op for clients / single-player (broadcast_snapshot guards on host).
+func _on_turn_started(_player_index: int) -> void:
+	if is_host():
+		broadcast_snapshot(GameStateSerializer.snapshot())
 
 func is_multiplayer() -> bool:
 	return mode != Mode.SINGLE
@@ -207,6 +222,10 @@ func broadcast_snapshot(state: Dictionary) -> void:
 @rpc("authority", "call_remote", "reliable")
 func _receive_snapshot(state: Dictionary) -> void:
 	snapshot_received.emit(state)
+	# Rebuild the authoritative managers silently (apply emits no simulation
+	# signals), then notify every refreshable view to redraw from the new state.
+	GameStateSerializer.apply(state)
+	get_tree().call_group(REFRESH_GROUP, "refresh")
 
 ## Host -> all clients: a mid-turn delta to animate (dice faces, dragon result).
 func broadcast_event(event: Dictionary) -> void:

@@ -17,10 +17,15 @@ func _ready() -> void:
 	PlayerManager.player_eliminated.connect(_on_eliminated)
 	TurnManager.turn_started.connect(func(_idx): _refresh())
 	GameManager.game_started.connect(_refresh)
+	add_to_group(NetworkManager.REFRESH_GROUP)  # LAN client: redraw on host snapshot
 	_view_cards_btn.pressed.connect(func(): view_cards_requested.emit())
 	var fill_style := StyleBoxFlat.new()
 	fill_style.bg_color = Color(0.8, 0.1, 0.1)
 	_health_bar.add_theme_stylebox_override("fill", fill_style)
+	_refresh()
+
+## LAN client: redraw from current manager state after a host snapshot.
+func refresh() -> void:
 	_refresh()
 
 func _on_damaged(idx: int, new_hp: int) -> void:

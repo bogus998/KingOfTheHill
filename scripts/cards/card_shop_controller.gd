@@ -21,7 +21,16 @@ func _ready() -> void:
 	CardShop.shop_updated.connect(_on_shop_updated)
 	TurnManager.phase_changed.connect(_on_phase_changed)
 	GameManager.game_started.connect(_refresh_display)
+	add_to_group(NetworkManager.REFRESH_GROUP)  # LAN client: redraw on host snapshot
 	_on_phase_changed(TurnManager.current_phase)
+
+## LAN client: redraw the shop from current manager state after a host snapshot.
+## Visibility is phase-driven, mirroring _on_phase_changed (which won't fire on a
+## client, since apply() is silent).
+func refresh() -> void:
+	visible = TurnManager.current_phase == TurnManager.TurnPhase.BUY_CARDS
+	if visible:
+		_refresh_display()
 
 func _on_buy_pressed(slot_index: int) -> void:
 	CardShop.purchase(slot_index, TurnManager.current_player_index)

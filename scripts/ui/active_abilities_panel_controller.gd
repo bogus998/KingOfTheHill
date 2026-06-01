@@ -12,7 +12,14 @@ func _ready() -> void:
 	PlayerManager.card_hand_changed.connect(func(idx: int) -> void:
 		if not PlayerManager.players.is_empty() and idx == TurnManager.current_player_index:
 			_rebuild_rows(idx))
+	add_to_group(NetworkManager.REFRESH_GROUP)  # LAN client: redraw on host snapshot
 	visible = false
+
+## LAN client: rebuild the active player's ability rows after a host snapshot.
+func refresh() -> void:
+	if PlayerManager.players.is_empty():
+		return
+	_rebuild_rows(TurnManager.current_player_index)
 
 func _rebuild_rows(player_idx: int) -> void:
 	for child in get_children():
