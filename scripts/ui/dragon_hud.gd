@@ -19,6 +19,7 @@ var _env_banner: Label
 var _roller: DragonDiceRoller
 var _dragon: ColorRect
 var _dragon_label: Label
+var _info_panel: PanelContainer
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -53,6 +54,13 @@ func _ready() -> void:
 	_rage_bar.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	top.add_child(_rage_bar)
 
+	var info_btn := Button.new()
+	info_btn.text = "ℹ Rage Info"
+	info_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	info_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	info_btn.pressed.connect(_on_rage_info_pressed)
+	top.add_child(info_btn)
+
 	_warning = _make_label(top)
 	_warning.add_theme_color_override("font_color", Color(1.0, 0.45, 0.2))
 	_warning.visible = false
@@ -69,6 +77,8 @@ func _ready() -> void:
 	_roller.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_roller)
 
+	_build_info_panel()
+
 	DragonManager.rage_changed.connect(_on_rage_changed)
 	DragonManager.awakening_pending.connect(_on_awakening_pending)
 	DragonManager.awakening_started.connect(_on_awakening_started)
@@ -84,6 +94,44 @@ func _make_label(parent: Node) -> Label:
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(l)
 	return l
+
+# ── Rage info window ──────────────────────────────────────────────────────────
+
+## Actions that feed the rage meter, mirroring data/dragon/rage_rules.tres.
+const _RAGE_SOURCES: Array[String] = [
+	"Hold the vault a 2nd turn in a row   +1",
+	"Hold the vault a 3rd+ turn in a row   +2",
+	"Deal 3+ damage in a single turn   +1",
+	"Buy 2+ cards in one turn   +1",
+	"Refresh the card shop   +1",
+]
+
+func _build_info_panel() -> void:
+	_info_panel = PanelContainer.new()
+	_info_panel.visible = false
+	add_child(_info_panel)
+	_info_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+
+	var vbox := VBoxContainer.new()
+	_info_panel.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "🔥 What angers the dragon"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	for source in _RAGE_SOURCES:
+		var row := Label.new()
+		row.text = source
+		vbox.add_child(row)
+
+	var close_btn := Button.new()
+	close_btn.text = "Close"
+	close_btn.pressed.connect(func() -> void: _info_panel.visible = false)
+	vbox.add_child(close_btn)
+
+func _on_rage_info_pressed() -> void:
+	_info_panel.visible = not _info_panel.visible
 
 # ── Rage meter ────────────────────────────────────────────────────────────────
 
@@ -173,6 +221,7 @@ func _on_new_game() -> void:
 	_warning.visible = false
 	_outcome.visible = false
 	_env_banner.visible = false
+	_info_panel.visible = false
 	_set_dragon_awake(false)
 	_dragon.position = _dragon_sleep_pos()
 	_update_rage()

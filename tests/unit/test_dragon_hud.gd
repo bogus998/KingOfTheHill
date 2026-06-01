@@ -67,6 +67,26 @@ func test_describe_environment_names_drawn_card() -> void:
 	var text := _hud._describe({"action": DragonDice.Action.ENVIRONMENT})
 	assert_string_contains(text, "Drought")
 
+# ── Rage info window ──────────────────────────────────────────────────────────
+
+func test_info_panel_hidden_initially() -> void:
+	assert_false(_hud._info_panel.visible)
+
+func test_info_panel_shows_on_button_press() -> void:
+	_hud._on_rage_info_pressed()
+	assert_true(_hud._info_panel.visible)
+
+func test_info_panel_hidden_on_new_game() -> void:
+	_hud._on_rage_info_pressed()
+	PlayerManager.players_setup.emit()
+	assert_false(_hud._info_panel.visible)
+
+func test_info_panel_lists_rage_sources() -> void:
+	var joined := "\n".join(_hud._RAGE_SOURCES)
+	assert_string_contains(joined, "vault")
+	assert_string_contains(joined, "shop")
+	assert_string_contains(joined, "damage")
+
 # ── Dragon avatar ─────────────────────────────────────────────────────────────
 
 func test_dragon_starts_asleep() -> void:
