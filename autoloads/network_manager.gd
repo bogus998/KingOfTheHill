@@ -21,12 +21,15 @@ signal snapshot_received(state: Dictionary)   ## client-side: full state to appl
 signal event_received(event: Dictionary)      ## client-side: mid-turn delta to animate
 signal connection_failed()            ## client could not reach the host
 signal connection_lost()              ## host vanished / peer dropped mid-session
+signal game_starting()                ## host locked the lobby and launched the game
 
 var mode: Mode = Mode.SINGLE
 var my_player_id: int = 0             ## this device's seat (host = 0)
 var local_player_name: String = "Player"
 ## Locked lobby roster: [{ "peer_id": int, "seat": int, "name": String }, ...]
 var lobby_players: Array[Dictionary] = []
+## Player config locked at game start (the GameManager.start_game dict).
+var game_config: Dictionary = {}
 
 func is_multiplayer() -> bool:
 	return mode != Mode.SINGLE
@@ -89,6 +92,7 @@ func stop() -> void:
 	mode = Mode.SINGLE
 	my_player_id = 0
 	lobby_players.clear()
+	game_config = {}
 
 func _connect_multiplayer_signals() -> void:
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -154,6 +158,29 @@ func _assign_seat(seat: int) -> void:
 func _sync_lobby(players: Array) -> void:
 	lobby_players.assign(players)
 	peer_list_changed.emit()
+
+## Host: lock the lobby into a player config and launch the game on every peer.
+## Seats are already locked by the roster; the config is ordered by seat.
+func start_game_broadcast() -> void:
+	if not is_host():
+		return
+	game_config = _build_config()
+	_begin_game.rpc(game_config)
+	game_starting.emit()
+
+func _build_config() -> Dictionary:
+	var ordered: Array[Dictionary] = lobby_players.duplicate()
+	ordered.sort_custom(func(a, b): return a["seat"] < b["seat"])
+	var players: Array[Dictionary] = []
+	for p in ordered:
+		players.append({ "name": p["name"], "is_bot": false })
+	return { "players": players }
+
+## Host -> all clients: store the locked config and signal the scene swap.
+@rpc("authority", "call_remote", "reliable")
+func _begin_game(config: Dictionary) -> void:
+	game_config = config
+	game_starting.emit()
 
 # --- Gameplay routing -------------------------------------------------------
 

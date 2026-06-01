@@ -69,12 +69,18 @@ func _ready() -> void:
 	$OverlayLayer.add_child(_face_picker)
 	_face_picker.face_chosen.connect(_on_face_chosen)
 
-	var config := GameManager.pending_config
-	if config.is_empty():
-		config = {"players": [
-			{"name": "Thorin", "is_bot": false},
-			{"name": "Bot",    "is_bot": true},
-		]}
+	var config: Dictionary
+	if NetworkManager.is_multiplayer():
+		# Host and clients launch from the seat-ordered lobby config. The host is
+		# authoritative; clients will be driven by host snapshots in Phase 3.
+		config = NetworkManager.game_config
+	else:
+		config = GameManager.pending_config
+		if config.is_empty():
+			config = {"players": [
+				{"name": "Thorin", "is_bot": false},
+				{"name": "Bot",    "is_bot": true},
+			]}
 	GameManager.start_game(config)
 
 func _apply_safe_area() -> void:

@@ -45,6 +45,25 @@ func test_stop_returns_to_single_mode() -> void:
 	assert_eq(NetworkManager.mode, NetworkManager.Mode.SINGLE)
 	assert_eq(NetworkManager.lobby_players.size(), 0)
 
+# ── Game start broadcast ──────────────────────────────────────────────────────
+
+func test_start_game_broadcast_builds_seat_ordered_config() -> void:
+	NetworkManager.local_player_name = "Thorin"
+	NetworkManager.start_host()  # seat 0
+	NetworkManager.lobby_players.append({"peer_id": 2, "seat": 1, "name": "Gimli"})
+	watch_signals(NetworkManager)
+	NetworkManager.start_game_broadcast()
+	assert_signal_emitted(NetworkManager, "game_starting")
+	var players: Array = NetworkManager.game_config["players"]
+	assert_eq(players.size(), 2)
+	assert_eq(players[0]["name"], "Thorin")
+	assert_eq(players[1]["name"], "Gimli")
+	assert_false(players[0]["is_bot"])
+
+func test_start_game_broadcast_is_noop_for_non_host() -> void:
+	NetworkManager.start_game_broadcast()  # SINGLE mode
+	assert_true(NetworkManager.game_config.is_empty())
+
 # ── Local IP ──────────────────────────────────────────────────────────────────
 
 func test_get_local_ip_returns_ipv4() -> void:
