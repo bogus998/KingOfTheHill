@@ -82,6 +82,7 @@ func _ready() -> void:
 				{"name": "Bot",    "is_bot": true},
 			]}
 	GameManager.start_game(config)
+	_setup_action_routing()
 
 func _apply_safe_area() -> void:
 	var safe: Rect2i = DisplayServer.get_display_safe_area()
@@ -92,6 +93,37 @@ func _apply_safe_area() -> void:
 	_safe_area.add_theme_constant_override("margin_bottom", int((screen.y - safe.end.y) * scale.y))
 	_safe_area.add_theme_constant_override("margin_left", int(safe.position.x * scale.x))
 	_safe_area.add_theme_constant_override("margin_right", int((screen.x - safe.end.x) * scale.x))
+
+# ── Action routing (Phase 3b) ─────────────────────────────────────────────────
+# Player inputs are intents: each _on_* handler builds an action and _submit()s it.
+# A client forwards the action to the host (the transport lives in NetworkManager);
+# the host / single-player executes it locally via _dispatch() -> _do_* (the pure
+# authoritative logic). The host also feeds client actions through the same
+# _dispatch, after checking the sender is allowed to act.
+
+func _setup_action_routing() -> void:
+	if NetworkManager.is_host():
+		NetworkManager.action_received.connect(_on_action_received)
+
+## UI intent → run locally (host/single) or forward to the host (client).
+func _submit(action: Dictionary) -> void:
+	if NetworkManager.is_client():
+		NetworkManager.send_action(action)
+	else:
+		_dispatch(action)
+
+## Host: a client submitted an action. Only the active player may drive turn flow.
+func _on_action_received(action: Dictionary) -> void:
+	if action.get("sender_seat", -1) != TurnManager.current_player_index:
+		return
+	_dispatch(action)
+
+## Map an action to its authoritative executor. Shared by local play and clients.
+func _dispatch(action: Dictionary) -> void:
+	match action.get("type", ""):
+		"end_roll": _do_end_roll()
+		"apply_results": _do_apply_results()
+		"end_turn": _do_end_turn()
 
 func _on_turn_started(player_index: int) -> void:
 	_last_roll_result = { "gems": 0, "gold": 0, "claws": 0, "hearts": 0 }
@@ -112,6 +144,9 @@ func _on_roll_completed(faces: Array) -> void:
 	_last_roll_result = DiceResolver.resolve(faces)
 
 func _on_end_roll() -> void:
+	_submit({"type": "end_roll"})
+
+func _do_end_roll() -> void:
 	_dice_pool.cancel_die_selection()
 	_card_effect_handler.on_roll_finalized(TurnManager.current_player_index, _dice_pool.get_all_faces())
 	EnvironmentManager.notify_roll_finalized(TurnManager.current_player_index, TurnManager.roll_count, _dice_pool.get_all_faces())
@@ -119,6 +154,9 @@ func _on_end_roll() -> void:
 	_resolution_picker.show_result(_last_roll_result)
 
 func _on_apply_results() -> void:
+	_submit({"type": "apply_results"})
+
+func _do_apply_results() -> void:
 	var player_idx := TurnManager.current_player_index
 	_resolution_controller.apply_non_claw(player_idx, _last_roll_result)
 	_resolution_picker.hide_picker()
@@ -215,6 +253,9 @@ func _on_face_chosen(face: DiceResolver.DieFace) -> void:
 	_face_pick_consume = false
 
 func _on_end_turn() -> void:
+	_submit({"type": "end_turn"})
+
+func _do_end_turn() -> void:
 	TurnManager.advance_phase()  # BUY_CARDS → END_TURN
 
 # ── Card picker dialog handlers ───────────────────────────────────────────────
