@@ -16,6 +16,7 @@ enum PickerContext { NONE, BUY_FROM_OTHERS, PEEK }
 
 var _last_roll_result: Dictionary = { "gems": 0, "gold": 0, "claws": 0, "hearts": 0 }
 var _pending_attacker: int = -1
+var _pending_defender: int = -1   ## seat allowed to submit the current vault_decision
 var _picker_context: PickerContext = PickerContext.NONE
 var _face_picker: FacePickerDialogController
 var _face_pick_player: int = -1
@@ -57,6 +58,8 @@ func _ready() -> void:
 
 	_card_shop.peek_pressed.connect(_on_peek_pressed)
 	_card_shop.buy_from_others_pressed.connect(_on_buy_from_others_pressed)
+	_card_shop.buy_card_requested.connect(_on_buy_card)
+	_card_shop.refresh_shop_requested.connect(_on_refresh_shop)
 
 	CardShop.card_purchased.connect(_card_effect_handler._on_card_purchased)
 	TurnManager.turn_started.connect(_card_effect_handler._on_turn_started)
@@ -115,11 +118,19 @@ func _submit(action: Dictionary) -> void:
 	else:
 		_dispatch(action)
 
-## Host: a client submitted an action. Only the active player may drive turn flow.
+## Host: a client submitted an action. Validate the sender is allowed to act, then
+## execute. Most actions are driven by the active player; vault flee/stay is the one
+## exception — it is the defender's call, not the current player's.
 func _on_action_received(action: Dictionary) -> void:
-	if action.get("sender_seat", -1) != TurnManager.current_player_index:
+	if not _sender_may_act(action):
 		return
 	_dispatch(action)
+
+func _sender_may_act(action: Dictionary) -> bool:
+	var sender: int = action.get("sender_seat", -1)
+	if action.get("type", "") == "vault_decision":
+		return sender == _pending_defender
+	return sender == TurnManager.current_player_index
 
 ## Map an action to its authoritative executor. Shared by local play and clients.
 func _dispatch(action: Dictionary) -> void:
@@ -127,6 +138,9 @@ func _dispatch(action: Dictionary) -> void:
 		"roll": _do_roll(action.get("holds", []))
 		"end_roll": _do_end_roll()
 		"apply_results": _do_apply_results()
+		"vault_decision": _do_vault_decision(action.get("flee", false))
+		"buy_card": _do_buy_card(action.get("slot", -1))
+		"refresh_shop": _do_refresh_shop()
 		"end_turn": _do_end_turn()
 
 ## Client: render a mid-turn delta the host broadcast (currently the dice roll).
@@ -203,6 +217,7 @@ func _on_vault_attacked(_attacker: int, _claws: int) -> void:
 
 func _on_escape_requested(attacker_index: int, defender_index: int) -> void:
 	_pending_attacker = attacker_index
+	_pending_defender = defender_index
 	if PlayerManager.players[defender_index].is_bot:
 		if _bot_brain.decide_flee(PlayerManager.players[defender_index]):
 			_on_flee()
@@ -213,21 +228,27 @@ func _on_escape_requested(attacker_index: int, defender_index: int) -> void:
 	var defender_name := PlayerManager.players[defender_index].player_name
 	_escape_dialog.show_dialog(attacker_name, defender_name)
 
+## Defender intent: flee/stay. Routed like other actions, but validated against the
+## defender seat (see _sender_may_act), not the active player.
 func _on_flee() -> void:
-	_vault_area.handle_flee(_pending_attacker)
-	_escape_dialog.hide_dialog()
-	_pending_attacker = -1
-	AudioManager.play_sfx("vault_flee")
-	TurnManager.advance_phase()
-
-func _on_forced_escape(attacker_index: int, _occupant_index: int) -> void:
-	_pending_attacker = attacker_index
-	_on_flee()
+	_submit({"type": "vault_decision", "flee": true})
 
 func _on_stay() -> void:
+	_submit({"type": "vault_decision", "flee": false})
+
+func _do_vault_decision(flee: bool) -> void:
+	if flee:
+		_vault_area.handle_flee(_pending_attacker)
+		AudioManager.play_sfx("vault_flee")
 	_escape_dialog.hide_dialog()
 	_pending_attacker = -1
+	_pending_defender = -1
 	TurnManager.advance_phase()
+
+## Host-side consequence (e.g. camouflage), not a defender choice — execute directly.
+func _on_forced_escape(attacker_index: int, _occupant_index: int) -> void:
+	_pending_attacker = attacker_index
+	_do_vault_decision(true)
 
 func _on_ability_used(effect_id: CardEffectId.Id, player_index: int) -> void:
 	match effect_id:
@@ -277,6 +298,18 @@ func _on_face_chosen(face: DiceResolver.DieFace) -> void:
 	_face_pick_player = -1
 	_face_pick_die = -1
 	_face_pick_consume = false
+
+func _on_buy_card(slot_index: int) -> void:
+	_submit({"type": "buy_card", "slot": slot_index})
+
+func _do_buy_card(slot_index: int) -> void:
+	CardShop.purchase(slot_index, TurnManager.current_player_index)
+
+func _on_refresh_shop() -> void:
+	_submit({"type": "refresh_shop"})
+
+func _do_refresh_shop() -> void:
+	CardShop.refresh_pool(TurnManager.current_player_index)
 
 func _on_end_turn() -> void:
 	_submit({"type": "end_turn"})
@@ -373,5 +406,5 @@ func _run_bot_turn() -> void:
 	await get_tree().create_timer(_bot_brain.get_thinking_delay()).timeout
 	var buy_idx: int = _bot_brain.decide_buy(CardShop.visible_cards, PlayerManager.players[bot_index].gold)
 	if buy_idx >= 0:
-		CardShop.purchase(buy_idx, bot_index)
+		_on_buy_card(buy_idx)
 	_on_end_turn()

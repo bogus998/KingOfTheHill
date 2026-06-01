@@ -3,6 +3,8 @@ extends PanelContainer
 
 signal peek_pressed
 signal buy_from_others_pressed
+signal buy_card_requested(slot_index: int)   ## intent: player asked to buy a shop slot
+signal refresh_shop_requested                 ## intent: player asked to refresh the pool
 
 @onready var _slot0 = $VBox/Slots/Slot0
 @onready var _slot1 = $VBox/Slots/Slot1
@@ -32,11 +34,13 @@ func refresh() -> void:
 	if visible:
 		_refresh_display()
 
+## Buying/refreshing are intents: the orchestrator forwards them to the host on a
+## client, or runs them locally (host / single-player). See main_game_controller.
 func _on_buy_pressed(slot_index: int) -> void:
-	CardShop.purchase(slot_index, TurnManager.current_player_index)
+	buy_card_requested.emit(slot_index)
 
 func _on_refresh_pressed() -> void:
-	CardShop.refresh_pool(TurnManager.current_player_index)
+	refresh_shop_requested.emit()
 
 func _on_shop_updated(_cards: Array) -> void:
 	_refresh_display()
