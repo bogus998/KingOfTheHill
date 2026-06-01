@@ -86,6 +86,7 @@ func _ready() -> void:
 				{"name": "Bot",    "is_bot": true},
 			]}
 	GameManager.start_game(config)
+	$OverlayLayer.add_child(WatchOverlay.new())
 	_setup_action_routing()
 
 func _apply_safe_area() -> void:
@@ -158,7 +159,8 @@ func _on_turn_started(player_index: int) -> void:
 		_dice_pool.set_forced_reroll_pending(true)
 	if p.is_bot:
 		_run_bot_turn.call_deferred()
-	else:
+	elif not NetworkManager.is_multiplayer():
+		# Hot-seat hands the device over; LAN shows the watch overlay instead.
 		_pass_screen.show_for_player(PlayerManager.players[player_index].player_name)
 
 func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:
