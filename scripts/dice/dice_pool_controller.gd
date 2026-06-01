@@ -3,6 +3,7 @@ extends VBoxContainer
 
 signal roll_completed(faces: Array)
 signal end_roll_requested
+signal roll_requested(holds: Array)   ## intent: player asked to roll (carries current holds)
 
 const BASE_DIE_COUNT := 6
 
@@ -73,6 +74,43 @@ func get_all_faces() -> Array:
 			faces.append(die.face)
 	return faces
 
+## Held state of the visible dice, in order — sent with a roll so the host knows
+## which dice to keep.
+func get_hold_mask() -> Array:
+	var mask: Array = []
+	for die in _dice:
+		if die.visible:
+			mask.append(die.state == DieController.DieState.HELD)
+	return mask
+
+## Reconcile the visible dice's held state to a mask (host applies a client's holds).
+func set_hold_mask(mask: Array) -> void:
+	var vi := 0
+	for die in _dice:
+		if not die.visible:
+			continue
+		var want_held: bool = vi < mask.size() and mask[vi]
+		if want_held != (die.state == DieController.DieState.HELD):
+			die.toggle_hold()
+		vi += 1
+
+## Client mirror: render the host's authoritative roll. No local RNG — faces, holds
+## and roll count come from the host's `dice` event.
+func display_dice(faces: Array, held: Array, roll_count: int) -> void:
+	_roll_count = roll_count
+	for i in _dice.size():
+		var is_visible: bool = i < faces.size()
+		_dice[i].visible = is_visible
+		if not is_visible:
+			continue
+		_dice[i].set_face(faces[i])
+		_dice[i].set_holdable(roll_count >= 1)
+		var want_held: bool = i < held.size() and held[i]
+		if want_held != (_dice[i].state == DieController.DieState.HELD):
+			_dice[i].toggle_hold()
+	_end_round_btn.disabled = roll_count < 1
+	_update_roll_button()
+
 func enter_die_selection_mode(callback: Callable) -> void:
 	cancel_die_selection()
 	for i in _dice.size():
@@ -101,7 +139,18 @@ func _exit_die_selection_mode() -> void:
 		if _roll_count > 0:
 			die.set_holdable(true)
 
+## The roll button is an intent: the orchestrator forwards it to the host on a
+## client, or runs it locally (host / single-player). Holds ride along so the host
+## can roll the right dice. The host's authoritative result comes back via display_dice.
 func _on_roll_pressed() -> void:
+	roll_requested.emit(get_hold_mask())
+
+## Authoritative roll: apply the player's holds, then roll (host / single-player only).
+func roll_with_holds(holds: Array) -> void:
+	set_hold_mask(holds)
+	_perform_roll()
+
+func _perform_roll() -> void:
 	var p := PlayerManager.players[TurnManager.current_player_index]
 	if _roll_count >= get_max_rolls() and p.has_free_reroll_after_max:
 		p.has_free_reroll_after_max = false

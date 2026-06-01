@@ -35,6 +35,7 @@ func _ready() -> void:
 
 	_dice_pool.roll_completed.connect(_on_roll_completed)
 	_dice_pool.end_roll_requested.connect(_on_end_roll)
+	_dice_pool.roll_requested.connect(_on_roll_requested)
 	_action_bar.end_turn_requested.connect(_on_end_turn)
 	_action_bar.ability_used.connect(_on_ability_used)
 	_resolution_picker.apply_requested.connect(_on_apply_results)
@@ -104,6 +105,8 @@ func _apply_safe_area() -> void:
 func _setup_action_routing() -> void:
 	if NetworkManager.is_host():
 		NetworkManager.action_received.connect(_on_action_received)
+	if NetworkManager.is_client():
+		NetworkManager.event_received.connect(_on_event_received)
 
 ## UI intent → run locally (host/single) or forward to the host (client).
 func _submit(action: Dictionary) -> void:
@@ -121,9 +124,17 @@ func _on_action_received(action: Dictionary) -> void:
 ## Map an action to its authoritative executor. Shared by local play and clients.
 func _dispatch(action: Dictionary) -> void:
 	match action.get("type", ""):
+		"roll": _do_roll(action.get("holds", []))
 		"end_roll": _do_end_roll()
 		"apply_results": _do_apply_results()
 		"end_turn": _do_end_turn()
+
+## Client: render a mid-turn delta the host broadcast (currently the dice roll).
+func _on_event_received(event: Dictionary) -> void:
+	match event.get("type", ""):
+		"dice":
+			_dice_pool.display_dice(
+				event.get("faces", []), event.get("held", []), event.get("roll_count", 0))
 
 func _on_turn_started(player_index: int) -> void:
 	_last_roll_result = { "gems": 0, "gold": 0, "claws": 0, "hearts": 0 }
@@ -140,8 +151,23 @@ func _on_phase_changed(phase: TurnManager.TurnPhase) -> void:
 	if phase == TurnManager.TurnPhase.END_TURN:
 		TurnManager.next_player()
 
+func _on_roll_requested(holds: Array) -> void:
+	_submit({"type": "roll", "holds": holds})
+
+func _do_roll(holds: Array) -> void:
+	_dice_pool.roll_with_holds(holds)
+
 func _on_roll_completed(faces: Array) -> void:
 	_last_roll_result = DiceResolver.resolve(faces)
+	# Host: dice are rolled host-side; mirror the authoritative result to every
+	# client (a mid-turn delta, not a turn-boundary snapshot).
+	if NetworkManager.is_host():
+		NetworkManager.broadcast_event({
+			"type": "dice",
+			"faces": faces,
+			"held": _dice_pool.get_hold_mask(),
+			"roll_count": TurnManager.roll_count,
+		})
 
 func _on_end_roll() -> void:
 	_submit({"type": "end_roll"})
